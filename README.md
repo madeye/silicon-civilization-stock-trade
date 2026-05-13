@@ -29,11 +29,10 @@ A trading strategy system focused on **硅基文明消费股** — consumer stoc
 ## Quickstart
 
 ```bash
-# 1. Python sidecar (akshare)
+# 1. Python sidecar (akshare) — managed by uv
 cd pyserver
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --port 8001 --reload
+uv sync
+uv run uvicorn main:app --port 8001 --reload
 
 # 2. Next.js webapp
 cd web

@@ -12,10 +12,18 @@ All responses are cached in `cache.db` (SQLite) with tiered TTLs:
 
 ## Run
 
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) — `pyproject.toml` is the source of truth, `uv.lock` pins exact versions.
+
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --port 8001 --reload
+uv sync                                 # create .venv + install locked deps
+uv run uvicorn main:app --port 8001 --reload
+```
+
+To add or upgrade a dep:
+
+```bash
+uv add <pkg>           # adds to pyproject.toml + uv.lock
+uv lock --upgrade      # bump all
 ```
 
 ## Why a sidecar?
