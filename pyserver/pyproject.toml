@@ -3,9 +3,10 @@ name = "pyserver"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
-    "akshare>=1.18.60",
     "fastapi>=0.136.1",
     "pandas>=3.0.3",
     "pydantic>=2.13.4",
+    "python-dotenv>=1.2.2",
+    "tushare>=1.4.29",
     "uvicorn[standard]>=0.46.0",
 ]

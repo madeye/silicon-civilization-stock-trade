@@ -1,7 +1,9 @@
-// Typed client for the Python akshare sidecar. Adds a thin in-process LRU
-// on top of pyserver's own SQLite cache to dedupe burst calls within a render.
+// Typed client for the Python Tushare sidecar. Adds a thin in-process dedupe
+// on top of pyserver's own SQLite cache to coalesce burst calls within a render.
 const BASE = process.env.PYSERVER_URL ?? "http://localhost:8001";
-const TIMEOUT_MS = Number(process.env.PYSERVER_TIMEOUT_MS ?? 60_000);
+// Default 180s — Tushare HK endpoints are rate-limited at 2/min, so a few
+// HK symbols may need to wait in pyserver's token bucket before being served.
+const TIMEOUT_MS = Number(process.env.PYSERVER_TIMEOUT_MS ?? 180_000);
 
 export interface Kline {
   date: string;

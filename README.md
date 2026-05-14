@@ -11,7 +11,7 @@
 ```
 ┌──────────────────────────┐       ┌──────────────────────────────┐
 │   Next.js 网站 (web/)     │ HTTP  │  Python sidecar (pyserver/)      │
-│  - 自选/K 线/信号 UI      │ ────► │  - akshare 封装               │
+│  - 自选/K 线/信号 UI      │ ────► │  - Tushare Pro 封装               │
 │  - 回测引擎 (TS)          │       │  - SQLite K 线/基本面缓存     │
 │  - DeepSeek 策略大模型    │       │    (分层 TTL)                 │
 │  - SQLite 大模型回包缓存  │       │  - FastAPI                    │
@@ -22,9 +22,9 @@
 
 | 层 | 缓存位置 | TTL |
 |---|---|---|
-| akshare 日 K | SQLite (`pyserver/cache.db`) | 直到下一个交易日收盘 |
-| akshare 基本面 (PE/PB/市值) | SQLite | 24 小时 |
-| akshare 实时行情 | 内存 LRU | 30 秒 |
+| Tushare 日 K | SQLite (`pyserver/cache.db`) | 直到下一个交易日收盘 |
+| Tushare 基本面 (PE/PB/市值) | SQLite | 24 小时 |
+| Tushare 最近收盘 | 内存 LRU | 30 秒 |
 | DeepSeek 策略回包 | SQLite，键为 `sha256(prompt+model)` | 12 小时 |
 | 回测中的大模型信号 | 命中本地缓存后永不重问 | ∞ |
 
@@ -35,8 +35,9 @@
 ## 快速开始
 
 ```bash
-# 1. Python sidecar（akshare）—— 使用 uv 管理依赖
+# 1. Python sidecar (Tushare) —— 使用 uv 管理依赖
 cd pyserver
+echo "TUSHARE_TOKEN=xxx" > .env       # 从 https://tushare.pro/register 获取
 uv sync
 uv run uvicorn main:app --port 8001 --reload
 
@@ -69,7 +70,7 @@ PYSERVER_URL=http://localhost:8001
 ```
 silicon-civilization-stock-trade/
 ├── README.md
-├── pyserver/              # FastAPI + akshare sidecar
+├── pyserver/              # FastAPI + Tushare sidecar
 │   ├── main.py
 │   ├── pyproject.toml     # uv 管理
 │   └── uv.lock
@@ -81,7 +82,7 @@ silicon-civilization-stock-trade/
     │   └── api/backtest/route.ts     # 回测 API
     └── lib/
         ├── universe.ts               # 股票池
-        ├── pyserver.ts               # akshare sidecar客户端
+        ├── pyserver.ts               # Tushare sidecar 客户端
         ├── deepseek.ts               # DeepSeek 客户端 + 策略提示词
         ├── backtest.ts               # 走向无未来函数的回测引擎
         └── cache.ts                  # SQLite KV 缓存

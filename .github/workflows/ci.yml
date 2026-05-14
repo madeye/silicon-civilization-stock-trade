@@ -72,6 +72,9 @@ jobs:
         run: uv run python -m py_compile main.py
 
       - name: Import check
-        # Confirms fastapi/akshare/pandas/pydantic all resolve and main.py
-        # imports without executing network I/O.
+        # Confirms fastapi/tushare/pandas/pydantic all resolve and main.py
+        # imports without executing network I/O. ts.set_token just writes
+        # ~/.tushare/token; no validation happens until an actual API call.
+        env:
+          TUSHARE_TOKEN: dummy-ci-token
         run: uv run python -c "import importlib.util as u; spec = u.spec_from_file_location('m','main.py'); m = u.module_from_spec(spec); spec.loader.exec_module(m); print('main loaded, app =', m.app)"

@@ -1,11 +1,22 @@
-"""FastAPI sidecar exposing cached akshare data to the Next.js app.
+"""FastAPI sidecar exposing cached Tushare Pro data to the Next.js app.
 
-All endpoints write through a SQLite cache so akshare is hit at most once
-per symbol per trading day (klines/fundamentals) or per 30s (realtime).
+All endpoints write through a SQLite cache so Tushare is hit at most once
+per symbol per trading day (klines/fundamentals/analyst) or per 30s (spot).
+
+Tushare migration notes:
+- Symbols internally use compact form (`688256`, `hk00700`). At the API
+  boundary they are converted to Tushare's `ts_code` form (`688256.SH`,
+  `00700.HK`).
+- `ts.pro_bar(..., adj='qfq')` returns forward-adjusted A-share prices.
+  Hong Kong uses `pro.hk_daily` (no built-in adjustment; we return as-is).
+- `pro.daily_basic` supplies PE(TTM) / PB / total market cap.
+- `pro.report_rc` exposes broker-by-broker forecast EPS + rating, which
+  we aggregate into a consensus implied target.
 """
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import time
 from contextlib import contextmanager
@@ -13,14 +24,26 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-import akshare as ak
 import pandas as pd
+import tushare as ts
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
+# ---------- bootstrap ------------------------------------------------------
+
+load_dotenv(Path(__file__).parent / ".env")
+TUSHARE_TOKEN = os.environ.get("TUSHARE_TOKEN")
+if not TUSHARE_TOKEN:
+    raise RuntimeError(
+        "TUSHARE_TOKEN not set. Put it in pyserver/.env or export it.",
+    )
+ts.set_token(TUSHARE_TOKEN)
+_pro = ts.pro_api()
+
 DB_PATH = Path(__file__).parent / "cache.db"
 
-app = FastAPI(title="silicon-civ pyserver", version="0.1.0")
+app = FastAPI(title="silicon-civ pyserver", version="0.2.0")
 
 # ---------- cache ----------------------------------------------------------
 
@@ -76,6 +99,56 @@ def seconds_until_next_trading_close() -> int:
     return int((target - now).total_seconds())
 
 
+# ---------- retry wrapper + per-endpoint rate limiter ----------------------
+
+import threading
+from collections import deque
+
+
+class _TokenBucket:
+    """Simple token bucket — at most `n` calls per `window_s` seconds."""
+
+    def __init__(self, n: int, window_s: float) -> None:
+        self.n = n
+        self.window = window_s
+        self.calls: deque[float] = deque()
+        self.lock = threading.Lock()
+
+    def acquire(self) -> None:
+        while True:
+            with self.lock:
+                now = time.monotonic()
+                while self.calls and now - self.calls[0] > self.window:
+                    self.calls.popleft()
+                if len(self.calls) < self.n:
+                    self.calls.append(now)
+                    return
+                wait = self.window - (now - self.calls[0]) + 0.05
+            time.sleep(wait)
+
+
+# Tushare free tier caps hk_daily at 2/minute. Self-throttle to avoid 502s.
+_HK_DAILY_LIMITER = _TokenBucket(n=2, window_s=65)
+
+
+def _with_retries(fn, *args, attempts: int = 3, base_delay: float = 0.5, **kwargs):
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:  # noqa: BLE001
+            last = e
+            time.sleep(base_delay * (2 ** i))
+    assert last is not None
+    raise last
+
+
+def _hk_daily(**kwargs):
+    """Rate-limited wrapper around pro.hk_daily."""
+    _HK_DAILY_LIMITER.acquire()
+    return _pro.hk_daily(**kwargs)
+
+
 # ---------- models ---------------------------------------------------------
 
 
@@ -99,63 +172,63 @@ class Fundamental(BaseModel):
 
 
 class Analyst(BaseModel):
-    """Consensus sell-side view aggregated from eastmoney research reports.
-
-    Note: A-share brokers rarely publish a structured 目标价 field — eastmoney
-    only exposes forecast EPS. We compute an *implied* target as
-    `consensus_eps_next_year × current PE(TTM)`, which is mathematically
-    equivalent to "if PE stays flat, what would the price be at next-year EPS".
-    """
     symbol: str
     buy_count: int = 0
     total_count: int = 0
     buy_ratio: float | None = None
-    consensus_eps_next: float | None = None     # 元
-    implied_target: float | None = None          # 元
-    current_price: float | None = None           # 元
-    upside_pct: float | None = None              # %
+    consensus_eps_next: float | None = None
+    implied_target: float | None = None
+    current_price: float | None = None
+    upside_pct: float | None = None
 
 
-# ---------- helpers --------------------------------------------------------
+# ---------- symbol normalization -------------------------------------------
 
 
-def _normalize_symbol(symbol: str) -> tuple[str, str]:
-    """Return (akshare-symbol-no-prefix, market). market in {sh, sz, bj, hk}."""
+def _to_ts_code(symbol: str) -> tuple[str, str]:
+    """Convert internal symbol -> (ts_code, market). market in {sh, sz, bj, hk}."""
     s = symbol.lower().strip()
     if s.startswith(("sh", "sz", "bj")):
-        return s[2:], s[:2]
-    if s.startswith("hk"):
-        return s[2:], "hk"
-    # A-share heuristic
-    if s.startswith(("60", "68", "9")):
-        return s, "sh"
-    if s.startswith(("00", "30", "20")):
-        return s, "sz"
-    if s.startswith(("8", "4")):
-        return s, "bj"
-    return s, "hk"
+        code, mkt = s[2:], s[:2]
+    elif s.startswith("hk"):
+        code, mkt = s[2:].zfill(5), "hk"
+    elif s.startswith(("60", "68", "9")):
+        code, mkt = s, "sh"
+    elif s.startswith(("00", "30", "20")):
+        code, mkt = s, "sz"
+    elif s.startswith(("8", "4")):
+        code, mkt = s, "bj"
+    else:
+        code, mkt = s.zfill(5), "hk"
+    suffix = {"sh": ".SH", "sz": ".SZ", "bj": ".BJ", "hk": ".HK"}[mkt]
+    return code + suffix, mkt
 
 
-# ---------- retry wrapper --------------------------------------------------
+# Tushare expects YYYYMMDD; the route accepts both forms.
+def _date(s: str) -> str:
+    s = s.replace("-", "")
+    return s
 
 
-def _with_retries(fn, *args, attempts: int = 3, base_delay: float = 0.5, **kwargs):
-    """Run an akshare call with exponential-backoff retries.
+# Cache the stock_basic / hk_basic name lookups once per process startup.
+_NAME_CACHE: dict[str, str] = {}
 
-    Upstream east-money endpoints respond with sporadic ConnectionResetError /
-    ReadTimeout / 502 / empty results when too many concurrent symbols hit at
-    once. A small retry loop lets the sidecar absorb that without bubbling
-    up an error that the caller would only react to by retrying anyway.
-    """
-    last: Exception | None = None
-    for i in range(attempts):
-        try:
-            return fn(*args, **kwargs)
-        except Exception as e:  # noqa: BLE001
-            last = e
-            time.sleep(base_delay * (2 ** i))
-    assert last is not None
-    raise last
+
+def _resolve_name(ts_code: str, market: str) -> str | None:
+    if ts_code in _NAME_CACHE:
+        return _NAME_CACHE[ts_code]
+    try:
+        if market == "hk":
+            df = _pro.hk_basic(fields="ts_code,name")
+        else:
+            df = _pro.stock_basic(list_status="L", fields="ts_code,name")
+    except Exception:
+        return None
+    if df is None or df.empty:
+        return None
+    for r in df.itertuples():
+        _NAME_CACHE[r.ts_code] = r.name
+    return _NAME_CACHE.get(ts_code)
 
 
 # ---------- endpoints ------------------------------------------------------
@@ -163,7 +236,7 @@ def _with_retries(fn, *args, attempts: int = 3, base_delay: float = 0.5, **kwarg
 
 @app.get("/health")
 def health():
-    return {"ok": True, "time": datetime.now().isoformat()}
+    return {"ok": True, "time": datetime.now().isoformat(), "source": "tushare"}
 
 
 @app.get("/klines", response_model=list[Kline])
@@ -171,36 +244,45 @@ def klines(
     symbol: str = Query(..., description="e.g. sh600519, 000858, hk00700"),
     start: str = Query("20230101"),
     end: str | None = Query(None),
-    adjust: str = Query("qfq", regex="^(|qfq|hfq)$"),
+    adjust: str = Query("qfq", pattern="^(|qfq|hfq)$"),
 ):
     end = end or date.today().strftime("%Y%m%d")
+    start, end = _date(start), _date(end)
     key = f"kline:{symbol}:{start}:{end}:{adjust}"
     cached = cache_get(key)
     if cached is not None:
         return cached
 
-    code, market = _normalize_symbol(symbol)
+    ts_code, market = _to_ts_code(symbol)
     try:
         if market == "hk":
-            df = _with_retries(
-                ak.stock_hk_hist,
-                symbol=code, period="daily", start_date=start, end_date=end, adjust=adjust,
-            )
+            # HK adjustment is not exposed via ts.pro_bar; return unadjusted.
+            df = _with_retries(_hk_daily, ts_code=ts_code, start_date=start, end_date=end)
         else:
             df = _with_retries(
-                ak.stock_zh_a_hist,
-                symbol=code, period="daily", start_date=start, end_date=end, adjust=adjust,
+                ts.pro_bar,
+                ts_code=ts_code, adj=(adjust or None), start_date=start, end_date=end,
             )
     except Exception as e:
-        raise HTTPException(502, f"akshare error: {e}") from e
+        raise HTTPException(502, f"tushare error: {e}") from e
 
     if df is None or df.empty:
         cache_put(key, [], 3600)
         return []
 
-    df = df.rename(columns={"日期": "date", "开盘": "open", "最高": "high", "最低": "low", "收盘": "close", "成交量": "volume"})
-    df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
-    rows = df[["date", "open", "high", "low", "close", "volume"]].to_dict(orient="records")
+    df = df.sort_values("trade_date")
+    rows = [
+        {
+            "date": f"{d[:4]}-{d[4:6]}-{d[6:]}",
+            "open": float(r.open),
+            "high": float(r.high),
+            "low": float(r.low),
+            "close": float(r.close),
+            "volume": float(r.vol),
+        }
+        for r in df.itertuples()
+        for d in [str(r.trade_date)]
+    ]
     cache_put(key, rows, seconds_until_next_trading_close())
     return rows
 
@@ -212,30 +294,34 @@ def fundamental(symbol: str):
     if cached is not None:
         return cached
 
-    code, market = _normalize_symbol(symbol)
-    out: dict[str, Any] = {"symbol": symbol}
+    ts_code, market = _to_ts_code(symbol)
+    out: dict[str, Any] = {"symbol": symbol, "name": _resolve_name(ts_code, market)}
+
     try:
-        if market != "hk":
-            # PE(TTM) / PB / 总市值 from eastmoney —— stock_a_indicator_lg was
-            # removed in akshare 1.18.x; stock_value_em is the supported successor.
-            ind = _with_retries(ak.stock_value_em, symbol=code)
-            if ind is not None and not ind.empty:
-                latest = ind.iloc[-1]
-                pe = latest.get("PE(TTM)")
-                pb = latest.get("市净率")
-                mc = latest.get("总市值")  # 元
-                out["pe_ttm"] = float(pe) if pd.notna(pe) else None
-                out["pb"] = float(pb) if pd.notna(pb) else None
-                out["market_cap"] = float(mc) / 1e8 if pd.notna(mc) else None  # 元 -> 亿元
-            try:
-                info = ak.stock_individual_info_em(symbol=code)
-                if info is not None and not info.empty:
-                    kv = dict(zip(info["item"], info["value"]))
-                    out["name"] = kv.get("股票简称")
-            except Exception:
-                pass
+        if market == "hk":
+            # daily_basic is A-share only; for HK we leave fundamentals blank.
+            cache_put(key, out, 24 * 3600)
+            return out
+        # Latest trading day's basic metrics. Pull last 5 days then take tail.
+        today = date.today().strftime("%Y%m%d")
+        start = (date.today() - timedelta(days=10)).strftime("%Y%m%d")
+        df = _with_retries(
+            _pro.daily_basic,
+            ts_code=ts_code, start_date=start, end_date=today,
+            fields="ts_code,trade_date,close,pe_ttm,pb,total_mv",
+        )
     except Exception as e:
-        raise HTTPException(502, f"akshare error: {e}") from e
+        raise HTTPException(502, f"tushare error: {e}") from e
+
+    if df is not None and not df.empty:
+        latest = df.sort_values("trade_date").iloc[-1]
+        if pd.notna(latest.get("pe_ttm")):
+            out["pe_ttm"] = float(latest["pe_ttm"])
+        if pd.notna(latest.get("pb")):
+            out["pb"] = float(latest["pb"])
+        if pd.notna(latest.get("total_mv")):
+            # tushare returns 万元 -> convert to 亿元
+            out["market_cap"] = float(latest["total_mv"]) / 1e4
 
     cache_put(key, out, 24 * 3600)
     return out
@@ -243,57 +329,72 @@ def fundamental(symbol: str):
 
 @app.get("/analyst", response_model=Analyst)
 def analyst(symbol: str):
-    """Sell-side consensus. 24h cache (slow upstream)."""
+    """Sell-side consensus from Tushare `report_rc` broker reports.
+
+    Aggregates EPS forecasts for next fiscal year across recent analyst
+    reports; implied target = consensus EPS * current PE(TTM).
+    """
     key = f"analyst:{symbol}"
     cached = cache_get(key)
     if cached is not None:
         return cached
 
-    code, market = _normalize_symbol(symbol)
+    ts_code, market = _to_ts_code(symbol)
     out: dict[str, Any] = {"symbol": symbol}
     if market == "hk":
-        # eastmoney research-report API is A-share only. Leave fields null.
+        # report_rc covers A-share only.
         cache_put(key, out, 24 * 3600)
         return out
 
+    # Pull last ~180 days of broker reports.
+    start = (date.today() - timedelta(days=180)).strftime("%Y%m%d")
     try:
-        df = _with_retries(ak.stock_research_report_em, symbol=code)
+        rc = _with_retries(_pro.report_rc, ts_code=ts_code, start_date=start)
     except Exception as e:
-        raise HTTPException(502, f"akshare error: {e}") from e
+        raise HTTPException(502, f"tushare error: {e}") from e
 
-    if df is None or df.empty:
+    if rc is None or rc.empty:
         cache_put(key, out, 24 * 3600)
         return out
 
-    out["total_count"] = int(len(df))
-    if "东财评级" in df.columns:
-        out["buy_count"] = int((df["东财评级"] == "买入").sum())
-        out["buy_ratio"] = round(out["buy_count"] / out["total_count"], 3) if out["total_count"] else None
+    out["total_count"] = int(len(rc))
+    if "rating" in rc.columns:
+        # tushare ratings: 买入/推荐/增持/中性/减持/卖出 etc.
+        bullish = rc["rating"].isin(["买入", "推荐", "强烈推荐", "增持"]).sum()
+        out["buy_count"] = int(bullish)
+        out["buy_ratio"] = round(out["buy_count"] / out["total_count"], 3)
 
-    # consensus EPS for next fiscal year — pick the smallest year column we have
-    year_cols = sorted(
-        c for c in df.columns if c.endswith("-盈利预测-收益") and c[:4].isdigit()
-    )
-    if year_cols:
-        # Skip the first column if it is the current year; prefer the next one.
-        import datetime as _dt
-        this_year = _dt.date.today().year
-        next_col = next((c for c in year_cols if int(c[:4]) >= this_year + 1), year_cols[0])
-        series = pd.to_numeric(df[next_col], errors="coerce").dropna()
-        if not series.empty:
-            out["consensus_eps_next"] = round(float(series.median()), 4)
+    # Consensus next-year EPS: pick the median forecast for the soonest
+    # forward fiscal year present in the data.
+    next_year = date.today().year + 1
+    yr_str = f"{next_year}Q4"
+    pool = rc[rc.get("quarter") == yr_str]
+    if pool.empty:
+        # fall back to nearest available future year
+        future = rc[rc["quarter"].str.match(r"^\d{4}Q4$", na=False)]
+        future = future[future["quarter"].str[:4].astype(int) > date.today().year]
+        if not future.empty:
+            soonest = future["quarter"].min()
+            pool = future[future["quarter"] == soonest]
+    eps_series = pd.to_numeric(pool.get("eps"), errors="coerce").dropna() if not pool.empty else pd.Series(dtype=float)
+    if not eps_series.empty:
+        out["consensus_eps_next"] = round(float(eps_series.median()), 4)
 
-    # current price + PE(TTM) from stock_value_em to compute implied target.
+    # Current price + PE(TTM) from daily_basic for the implied target.
     try:
-        val = ak.stock_value_em(symbol=code)
-        if val is not None and not val.empty:
-            latest = val.iloc[-1]
-            price = latest.get("当日收盘价")
-            pe = latest.get("PE(TTM)")
-            if pd.notna(price):
-                out["current_price"] = round(float(price), 3)
-            if out.get("consensus_eps_next") is not None and pd.notna(pe):
-                out["implied_target"] = round(out["consensus_eps_next"] * float(pe), 3)
+        today = date.today().strftime("%Y%m%d")
+        start_d = (date.today() - timedelta(days=10)).strftime("%Y%m%d")
+        db = _with_retries(
+            _pro.daily_basic,
+            ts_code=ts_code, start_date=start_d, end_date=today,
+            fields="ts_code,trade_date,close,pe_ttm",
+        )
+        if db is not None and not db.empty:
+            latest = db.sort_values("trade_date").iloc[-1]
+            if pd.notna(latest.get("close")):
+                out["current_price"] = round(float(latest["close"]), 3)
+            if out.get("consensus_eps_next") is not None and pd.notna(latest.get("pe_ttm")):
+                out["implied_target"] = round(out["consensus_eps_next"] * float(latest["pe_ttm"]), 3)
                 if out.get("current_price"):
                     out["upside_pct"] = round(
                         (out["implied_target"] / out["current_price"] - 1) * 100, 2
@@ -307,31 +408,32 @@ def analyst(symbol: str):
 
 @app.get("/spot")
 def spot(symbol: str):
-    """30-second TTL realtime quote."""
+    """Most-recent close (Tushare Pro has no realtime quote). 30s cache."""
     key = f"spot:{symbol}"
     cached = cache_get(key)
     if cached is not None:
         return cached
-    code, market = _normalize_symbol(symbol)
+
+    ts_code, market = _to_ts_code(symbol)
+    start = (date.today() - timedelta(days=10)).strftime("%Y%m%d")
+    end = date.today().strftime("%Y%m%d")
     try:
         if market == "hk":
-            df = ak.stock_hk_spot_em()
-            row = df[df["代码"] == code]
+            df = _with_retries(_hk_daily, ts_code=ts_code, start_date=start, end_date=end)
         else:
-            df = ak.stock_zh_a_spot_em()
-            row = df[df["代码"] == code]
+            df = _with_retries(_pro.daily, ts_code=ts_code, start_date=start, end_date=end)
     except Exception as e:
-        raise HTTPException(502, f"akshare error: {e}") from e
-    if row.empty:
+        raise HTTPException(502, f"tushare error: {e}") from e
+    if df is None or df.empty:
         raise HTTPException(404, f"symbol {symbol} not found")
-    r = row.iloc[0]
+    r = df.sort_values("trade_date").iloc[-1]
     out = {
         "symbol": symbol,
-        "name": str(r.get("名称", "")),
-        "price": float(r.get("最新价", 0) or 0),
-        "change_pct": float(r.get("涨跌幅", 0) or 0),
-        "volume": float(r.get("成交量", 0) or 0),
-        "turnover": float(r.get("成交额", 0) or 0),
+        "name": _resolve_name(ts_code, market) or "",
+        "price": float(r.get("close", 0) or 0),
+        "change_pct": float(r.get("pct_chg", 0) or 0),
+        "volume": float(r.get("vol", 0) or 0),
+        "turnover": float(r.get("amount", 0) or 0),
     }
     cache_put(key, out, 30)
     return out

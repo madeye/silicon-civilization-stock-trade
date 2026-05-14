@@ -83,7 +83,7 @@ export async function proposeRefresh(current: UniverseFile): Promise<RefreshProp
 async function validateSymbol(symbol: string): Promise<{ ok: boolean; reason?: string }> {
   try {
     const f = await fetchFundamental(symbol);
-    // Even if fields are null, pyserver returned 200 -> symbol parses + akshare didn't 502.
+    // Even if fields are null, pyserver returned 200 -> symbol parses + tushare didn't 502.
     if (!f) return { ok: false, reason: "pyserver returned empty" };
     return { ok: true };
   } catch (e) {

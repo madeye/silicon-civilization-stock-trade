@@ -12,7 +12,7 @@ export default function Home() {
     <div className="container">
       <h1>硅基文明消费股 · 交易策略系统</h1>
       <p style={{ color: "var(--muted)", marginTop: -8 }}>
-        DeepSeek v4 pro · akshare · 回测 · 缓存优先
+        DeepSeek v4 pro · Tushare · 回测 · 缓存优先
       </p>
 
       <div className="row" style={{ marginTop: 16 }}>
