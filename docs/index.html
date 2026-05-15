@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>硅基文明消费股 · 静态快照</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="page-header">
+      <div>
+        <div class="eyebrow">DeepSeek · Tushare · A股股票池 · 静态快照</div>
+        <h1>硅基文明消费股交易系统</h1>
+        <p>
+          算力芯片、光模块、AI 服务器、液冷、电力、IDC、半导体材料、AI-PCB 等"喂养"硅基文明的卖铲人。
+          本页面是 Next.js 应用的静态快照，数据来自 <code>web/scripts/snapshot.ts</code> 的最新一次输出。
+        </p>
+        <p class="muted" id="meta-line">加载中…</p>
+      </div>
+      <nav class="header-actions">
+        <a class="button secondary" href="#universe">股票池</a>
+        <a class="button secondary" href="#signals">实时信号</a>
+        <a class="button secondary" href="#backtest">回测</a>
+      </nav>
+    </header>
+
+    <div class="summary-grid" id="kpi-grid"></div>
+
+    <h2 class="subheading" id="universe">股票池</h2>
+    <p class="muted">分主题排列，含分析师目标价、上行空间、买入评级数。</p>
+    <div class="toolbar">
+      <div class="field">
+        <span>搜索</span>
+        <input id="search" placeholder="代码、名称、主题" />
+      </div>
+      <div class="field">
+        <span>主题</span>
+        <select id="theme"><option value="all">全部主题</option></select>
+      </div>
+      <label class="check"><input id="onlyGlobal" type="checkbox" /> <span>全球供应链</span></label>
+      <label class="check"><input id="onlyUpside" type="checkbox" /> <span>目标价高于现价</span></label>
+      <div class="toolbar-status" id="status"></div>
+    </div>
+    <div class="theme-grid" id="universe-grid"></div>
+
+    <h2 class="subheading" id="signals">DeepSeek 实时信号</h2>
+    <p class="muted">基于近 90 日价格与基本面，输出 5-20 个交易日的动作建议。</p>
+    <div class="theme-panel">
+      <div class="theme-title"><strong>信号列表</strong><span id="signals-summary"></span></div>
+      <div class="table-wrap"><table id="signals-table">
+        <thead><tr>
+          <th>代码</th><th>名称</th><th>主题</th><th>动作</th>
+          <th class="num">置信度</th><th class="num">仓位</th><th class="num">PE(TTM)</th><th>理由</th>
+        </tr></thead><tbody></tbody>
+      </table></div>
+    </div>
+
+    <h2 class="subheading" id="backtest">策略回测</h2>
+    <p class="muted" id="backtest-window"></p>
+    <div class="summary-grid" id="backtest-kpi"></div>
+    <div class="card chart-card"><canvas id="equity-chart"></canvas></div>
+    <div class="theme-panel" style="margin-top:14px">
+      <div class="theme-title"><strong>近期交易</strong><span id="trades-count"></span></div>
+      <div class="table-wrap compact-table"><table id="trades-table">
+        <thead><tr><th>日期</th><th>方向</th><th>代码</th><th class="num">股数</th><th class="num">价格</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+
+    <footer class="muted" style="margin-top:32px;font-size:12px;line-height:1.6">
+      源代码：<a href="https://github.com/madeye/silicon-civilization-stock-trade">github.com/madeye/silicon-civilization-stock-trade</a>。
+      本站点为静态快照，不构成任何投资建议。
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
