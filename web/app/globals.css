@@ -65,6 +65,10 @@ input, select { background: var(--field); color: var(--fg); border: 1px solid va
 .field span, .check { color: var(--muted); font-size: 12px; }
 .check { display: flex; gap: 6px; align-items: center; min-height: 34px; cursor: pointer; }
 .toolbar-status { margin-left: auto; color: var(--muted); font-size: 12px; min-height: 34px; display: flex; align-items: center; }
+.fetch-progress { flex: 1 1 100%; display: flex; flex-direction: column; gap: 6px; padding-top: 2px; }
+.fetch-progress-meta, .fetch-progress-detail { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; }
+.fetch-progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: var(--field); border: 1px solid var(--border); }
+.fetch-progress-bar { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--warn)); transition: width .25s ease; }
 .theme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
 .theme-panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-width: 0; }
 .theme-title { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 14px; background: var(--card-2); border-bottom: 1px solid var(--border); }

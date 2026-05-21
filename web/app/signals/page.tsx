@@ -1,9 +1,11 @@
 import { loadEntries } from "@/lib/universe";
-import { fetchKlines, fetchFundamental } from "@/lib/pyserver";
+import { fetchKlines, fetchFundamental, fetchSpot } from "@/lib/pyserver";
 import { scoreSymbols, type SymbolSnapshot } from "@/lib/deepseek";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+
+type LiveSnapshot = SymbolSnapshot & { spotPrice?: number };
 
 async function loadSignals() {
   const universe = loadEntries();
@@ -13,16 +15,18 @@ async function loadSignals() {
     return d.toISOString().slice(0, 10).replaceAll("-", "");
   })();
 
-  const snapshots: SymbolSnapshot[] = await Promise.all(
+  const snapshots: LiveSnapshot[] = await Promise.all(
     universe.map(async (e) => {
-      const [klines, fund] = await Promise.all([
+      const [klines, fund, spot] = await Promise.all([
         fetchKlines(e.symbol, start).catch(() => []),
         fetchFundamental(e.symbol).catch(() => undefined),
+        fetchSpot(e.symbol).catch(() => undefined),
       ]);
       return {
         symbol: e.symbol,
         name: e.name,
         theme: e.theme,
+        spotPrice: spot?.price,
         closes: klines.map((k) => k.close),
         fundamental: fund
           ? { pe_ttm: fund.pe_ttm, pb: fund.pb, market_cap: fund.market_cap }
@@ -84,6 +88,7 @@ export default async function SignalsPage() {
                   <th>名称</th>
                   <th>主题</th>
                   <th>动作</th>
+                  <th className="num">现价</th>
                   <th className="num">置信度</th>
                   <th className="num">仓位</th>
                   <th className="num">PE(TTM)</th>
@@ -103,6 +108,7 @@ export default async function SignalsPage() {
                         <span className="badge">n/a</span>
                       )}
                     </td>
+                    <td className="num">{snapshot?.spotPrice?.toFixed(2) ?? snapshot?.closes.at(-1)?.toFixed(2) ?? "—"}</td>
                     <td className="num">{signal ? (signal.confidence * 100).toFixed(0) + "%" : "—"}</td>
                     <td className="num">{signal ? (signal.size * 100).toFixed(0) + "%" : "—"}</td>
                     <td className="num">{snapshot?.fundamental?.pe_ttm?.toFixed(1) ?? "—"}</td>
