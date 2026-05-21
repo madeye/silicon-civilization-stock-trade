@@ -23,21 +23,14 @@
 
 ## 架构
 
-```
-┌──────────────────────────────┐      HTTP       ┌──────────────────────────────┐
-│ Next.js 15 App Router (web/) │ ──────────────► │ FastAPI sidecar (pyserver/)  │
-│ - 自选股、信号、回测 UI       │                 │ - Tushare Pro + AkShare       │
-│ - API routes 与 TS 回测       │                 │ - SQLite 市场数据缓存          │
-│ - DeepSeek 策略与缓存         │                 │ - 批量行情/分析师接口          │
-│ - 浏览器 24h localStorage     │                 │                              │
-└──────────────────────────────┘                 └──────────────────────────────┘
-                 │
-                 ▼
-┌──────────────────────────────┐
-│ docs/ GitHub Pages snapshot  │
-│ - https://scs.maxlv.net      │
-│ - 社交卡片、图标、CNAME       │
-└──────────────────────────────┘
+```mermaid
+flowchart LR
+  web["Next.js 15 App Router<br/>web/<br/><br/>自选股 / 信号 / 回测 UI<br/>API routes 与 TypeScript 回测<br/>DeepSeek 策略与缓存<br/>浏览器 24h localStorage"]
+  py["FastAPI sidecar<br/>pyserver/<br/><br/>Tushare Pro + AkShare<br/>SQLite 市场数据缓存<br/>批量行情 / 分析师接口"]
+  docs["GitHub Pages snapshot<br/>docs/<br/><br/>https://scs.maxlv.net<br/>社交卡片 / 图标 / CNAME"]
+
+  web -- HTTP --> py
+  web --> docs
 ```
 
 ## 数据与缓存
