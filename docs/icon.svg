@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Silicon civilization stock trade icon">
+  <defs>
+    <linearGradient id="bg" x1="64" y1="448" x2="448" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#111318"/>
+      <stop offset=".55" stop-color="#17231d"/>
+      <stop offset="1" stop-color="#274033"/>
+    </linearGradient>
+    <linearGradient id="line" x1="112" y1="344" x2="400" y2="144" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#63d471"/>
+      <stop offset=".5" stop-color="#f2b84b"/>
+      <stop offset="1" stop-color="#8bd7ff"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="104" fill="url(#bg)"/>
+  <path d="M118 338h276" stroke="#30343b" stroke-width="20" stroke-linecap="round"/>
+  <path d="M132 326l76-84 64 42 108-126" fill="none" stroke="url(#line)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+  <circle cx="132" cy="326" r="22" fill="#63d471"/>
+  <circle cx="208" cy="242" r="22" fill="#f2b84b"/>
+  <circle cx="272" cy="284" r="22" fill="#8bd7ff"/>
+  <circle cx="380" cy="158" r="24" fill="#f2f4f1"/>
+  <path d="M144 392h224" stroke="#f2f4f1" stroke-width="24" stroke-linecap="round" opacity=".9"/>
+  <path d="M166 392h180" stroke="#63d471" stroke-width="8" stroke-linecap="round"/>
+</svg>

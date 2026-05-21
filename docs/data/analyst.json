@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-21T02:32:39.770Z",
+  "generated_at": "2026-05-21T03:09:09.671Z",
   "items": [
     {
       "symbol": "688256",
@@ -397,9 +397,9 @@
       "total_count": 85,
       "buy_ratio": 0.953,
       "consensus_eps_next": 2.58,
-      "implied_target": null,
-      "current_price": 16,
-      "upside_pct": null
+      "implied_target": -69.944,
+      "current_price": 16.49,
+      "upside_pct": -524.16
     },
     {
       "symbol": "603986",

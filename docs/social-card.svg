@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="硅基文明消费股交易系统">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="630" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#101114"/>
+      <stop offset=".5" stop-color="#17231d"/>
+      <stop offset="1" stop-color="#263c32"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="160" y1="446" x2="1040" y2="152" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#63d471"/>
+      <stop offset=".48" stop-color="#f2b84b"/>
+      <stop offset="1" stop-color="#8bd7ff"/>
+    </linearGradient>
+    <filter id="soft-glow" x="-20%" y="-30%" width="140%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g opacity=".18" stroke="#f2f4f1" stroke-width="1">
+    <path d="M0 122h1200M0 242h1200M0 362h1200M0 482h1200"/>
+    <path d="M164 0v630M344 0v630M524 0v630M704 0v630M884 0v630M1064 0v630"/>
+  </g>
+  <path d="M132 450h936" stroke="#30343b" stroke-width="28" stroke-linecap="round"/>
+  <path d="M156 426l156-148 128 86 160-184 136 80 222-150" fill="none" stroke="url(#accent)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft-glow)"/>
+  <g fill="#101114" stroke="#f2f4f1" stroke-width="10">
+    <circle cx="156" cy="426" r="25"/>
+    <circle cx="312" cy="278" r="25"/>
+    <circle cx="440" cy="364" r="25"/>
+    <circle cx="600" cy="180" r="25"/>
+    <circle cx="736" cy="260" r="25"/>
+    <circle cx="958" cy="110" r="27"/>
+  </g>
+  <rect x="74" y="70" width="1052" height="490" rx="34" fill="none" stroke="#f2f4f1" stroke-opacity=".12" stroke-width="2"/>
+  <text x="112" y="154" fill="#f2b84b" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="28" font-weight="700" letter-spacing="1">DEEPSEEK · TUSHARE · AKSHARE · A股股票池</text>
+  <text x="112" y="244" fill="#f2f4f1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="64" font-weight="800">硅基文明消费股</text>
+  <text x="112" y="324" fill="#f2f4f1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="64" font-weight="800">交易系统</text>
+  <text x="112" y="388" fill="#c9d2c6" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="30">算力芯片 · 光模块 · AI服务器 · 电力 · IDC · AI-PCB</text>
+  <g transform="translate(1000 410)">
+    <rect width="84" height="84" rx="20" fill="#181a1f" stroke="#30343b"/>
+    <path d="M18 56l16-20 15 12 20-26" fill="none" stroke="#63d471" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="18" cy="56" r="6" fill="#63d471"/>
+    <circle cx="69" cy="22" r="7" fill="#f2b84b"/>
+  </g>
+</svg>
