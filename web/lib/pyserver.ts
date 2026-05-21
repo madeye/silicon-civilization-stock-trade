@@ -63,8 +63,8 @@ export function fetchFundamental(symbol: string) {
 
 export interface Analyst {
   symbol: string;
-  buy_count?: number;
-  total_count?: number;
+  buy_count?: number | null;
+  total_count?: number | null;
   buy_ratio?: number | null;
   consensus_eps_next?: number | null;
   implied_target?: number | null;
@@ -76,9 +76,24 @@ export function fetchAnalyst(symbol: string) {
   return get<Analyst>("/analyst", { symbol });
 }
 
+export function fetchAnalysts(symbols: string[]) {
+  const uniq = [...new Set(symbols.map((s) => s.trim()).filter(Boolean))];
+  if (uniq.length === 0) return Promise.resolve([] as Analyst[]);
+  return get<Analyst[]>("/analysts", { symbols: uniq.join(",") });
+}
+
 export function fetchSpot(symbol: string) {
   return get<{ symbol: string; name: string; price: number; change_pct: number }>(
     "/spot",
     { symbol },
   );
+}
+
+export interface Spot {
+  symbol: string;
+  name: string;
+  price: number;
+  change_pct: number;
+  volume?: number;
+  turnover?: number;
 }

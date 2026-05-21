@@ -1,6 +1,6 @@
 {
   "$schema_note": "硅基文明消费股 watchlist. Edit via UI or directly. Each entry: {symbol, name, theme, note?}.",
-  "updated_at": "2026-05-14",
+  "updated_at": "2026-05-21",
   "updated_by": "deepseek-refresh",
   "entries": [
     {
@@ -414,6 +414,41 @@
       "theme": "半导体材料",
       "note": "半导体前驱体与SOD龙头，向SK海力士、三星等出货用于HBM先进制程",
       "global_supply": true
+    },
+    {
+      "symbol": "688981",
+      "name": "中芯国际",
+      "theme": "晶圆代工",
+      "note": "中国大陆晶圆代工龙头，先进制程为AI芯片提供代工",
+      "global_supply": false
+    },
+    {
+      "symbol": "600941",
+      "name": "中国移动",
+      "theme": "云/AI基建",
+      "note": "国内最大运营商，移动云和AI基础设施服务",
+      "global_supply": false
+    },
+    {
+      "symbol": "601728",
+      "name": "中国电信",
+      "theme": "云/AI基建",
+      "note": "天翼云稳居国内前三，支撑AI算力调度",
+      "global_supply": false
+    },
+    {
+      "symbol": "688082",
+      "name": "盛美上海",
+      "theme": "半导体设备",
+      "note": "清洗设备龙头，TSV电镀设备用于先进封装",
+      "global_supply": false
+    },
+    {
+      "symbol": "300346",
+      "name": "南大光电",
+      "theme": "半导体材料",
+      "note": "国内光刻胶领先，高纯电子特气用于先进制程",
+      "global_supply": false
     }
   ]
 }

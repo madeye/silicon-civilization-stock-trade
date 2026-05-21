@@ -1,7 +1,9 @@
-"""FastAPI sidecar wrapping Tushare Pro (A-share) + akshare (HK fallback).
+"""FastAPI sidecar wrapping Tushare Pro + AkShare.
 
 Data-source split:
-- A-share (sh/sz/bj): Tushare Pro via ts.pro_bar / daily_basic / report_rc.
+- A-share (sh/sz/bj): AkShare market-wide spot snapshot for fast current
+  price/basic metrics; Tushare Pro remains the historical kline and fallback
+  source for daily_basic / report_rc.
 - HK: akshare's stock_hk_hist — Tushare's hk_daily is hard-capped at
   10 calls/day on the free Pro tier (and 2/min within that), making it
   unusable for a HK watchlist beyond the first ~10 requests of the day.
@@ -23,6 +25,7 @@ from typing import Any
 
 import akshare as ak
 import pandas as pd
+import requests
 import tushare as ts
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
@@ -227,6 +230,96 @@ def _num_or_none(value: Any) -> float | None:
     return sum(nums) / len(nums)
 
 
+def _compact_code(ts_code: str) -> str:
+    return ts_code.split(".")[0]
+
+
+def _ak_col(row: pd.Series, *names: str) -> Any:
+    for name in names:
+        if name in row and pd.notna(row.get(name)):
+            return row.get(name)
+    return None
+
+
+def _market_cap_to_yi(value: float | None) -> float | None:
+    if value is None:
+        return None
+    # AkShare's Eastmoney spot endpoint reports market cap in yuan. Keep this
+    # defensive in case an alternate backend already returns 亿元.
+    if abs(value) > 1_000_000:
+        return value / 1e8
+    return value
+
+
+def _eastmoney_market_code(market: str) -> int:
+    # Eastmoney uses 1 for Shanghai and 0 for Shenzhen/Beijing in these quote
+    # endpoints.
+    return 1 if market == "sh" else 0
+
+
+def _ak_a_spot_rows(ts_code: str, market: str) -> dict[str, Any] | None:
+    """Fetch/cached A-share spot quote with a hard timeout.
+
+    AkShare's whole-market spot helpers paginate thousands of rows and can take
+    tens of seconds. This mirrors the single-symbol Eastmoney endpoint used by
+    AkShare so a slow upstream can fall back to Tushare quickly.
+    """
+    code = _compact_code(ts_code)
+    key = f"ak:a:spot:em:{code}"
+    cached = cache_get(key)
+    if cached is not None:
+        return cached
+    url = "https://push2.eastmoney.com/api/qt/stock/get"
+    params = {
+        "fltt": "2",
+        "invt": "2",
+        "fields": "f43,f57,f58,f116,f117,f162,f167,f168,f47,f48,f170",
+        "secid": f"{_eastmoney_market_code(market)}.{code}",
+    }
+    try:
+        response = requests.get(url, params=params, timeout=3)
+        response.raise_for_status()
+        data = response.json().get("data")
+    except Exception:
+        cache_put(key, None, 10)
+        return None
+    if not data:
+        cache_put(key, None, 10)
+        return None
+    row = {
+        "代码": data.get("f57") or code,
+        "名称": data.get("f58"),
+        "最新价": data.get("f43"),
+        "涨跌幅": data.get("f170"),
+        "成交量": data.get("f47"),
+        "成交额": data.get("f48"),
+        "总市值": data.get("f116"),
+        "流通市值": data.get("f117"),
+        "市盈率-动态": data.get("f162"),
+        "市净率": data.get("f167"),
+        "换手率": data.get("f168"),
+    }
+    cache_put(key, row, 30)
+    return row
+
+
+def _ak_a_spot(ts_code: str, market: str) -> dict[str, Any] | None:
+    if market not in {"sh", "sz", "bj"}:
+        return None
+    try:
+        return _ak_a_spot_rows(ts_code, market)
+    except Exception:
+        return None
+
+
+def _spot_price_from_ak(row: dict[str, Any]) -> float | None:
+    return _num_or_none(row.get("最新价"))
+
+
+def _spot_change_pct_from_ak(row: dict[str, Any]) -> float | None:
+    return _num_or_none(row.get("涨跌幅"))
+
+
 def _ak_consensus_eps(symbol: str) -> tuple[float | None, int | None]:
     """Fetch nearest annual EPS forecast from 同花顺 via akshare."""
     try:
@@ -397,6 +490,22 @@ def fundamental(symbol: str):
     ts_code, market = _to_ts_code(symbol)
     out: dict[str, Any] = {"symbol": symbol, "name": _resolve_name(ts_code, market)}
 
+    ak_spot = _ak_a_spot(ts_code, market)
+    if ak_spot is not None:
+        out["name"] = str(ak_spot.get("名称") or out.get("name") or "")
+        pe_ttm = _num_or_none(_ak_col(pd.Series(ak_spot), "市盈率-动态", "市盈率", "PE"))
+        pb = _num_or_none(_ak_col(pd.Series(ak_spot), "市净率", "PB"))
+        market_cap = _market_cap_to_yi(_num_or_none(_ak_col(pd.Series(ak_spot), "总市值")))
+        if pe_ttm is not None:
+            out["pe_ttm"] = pe_ttm
+        if pb is not None:
+            out["pb"] = pb
+        if market_cap is not None:
+            out["market_cap"] = market_cap
+        if out.get("pe_ttm") is not None and out.get("pb") is not None and out.get("market_cap") is not None:
+            cache_put(key, out, 30)
+            return out
+
     try:
         if market == "hk":
             # daily_basic is A-share only; for HK we leave fundamentals blank.
@@ -449,20 +558,27 @@ def analyst(symbol: str):
     # Always fetch most-recent close first so the UI can show current price even
     # when sell-side reports are absent or Tushare report_rc is rate-limited.
     pe_ttm: float | None = None
+    ak_spot = _ak_a_spot(ts_code, market)
+    if ak_spot is not None:
+        price = _spot_price_from_ak(ak_spot)
+        if price is not None:
+            out["current_price"] = round(price, 3)
+        pe_ttm = _num_or_none(_ak_col(pd.Series(ak_spot), "市盈率-动态", "市盈率", "PE"))
     try:
-        today = date.today().strftime("%Y%m%d")
-        start_d = (date.today() - timedelta(days=10)).strftime("%Y%m%d")
-        db = _with_retries(
-            _pro.daily_basic,
-            ts_code=ts_code, start_date=start_d, end_date=today,
-            fields="ts_code,trade_date,close,pe_ttm",
-        )
-        if db is not None and not db.empty:
-            latest = db.sort_values("trade_date").iloc[-1]
-            if pd.notna(latest.get("close")):
-                out["current_price"] = round(float(latest["close"]), 3)
-            if pd.notna(latest.get("pe_ttm")):
-                pe_ttm = float(latest["pe_ttm"])
+        if out.get("current_price") is None or pe_ttm is None:
+            today = date.today().strftime("%Y%m%d")
+            start_d = (date.today() - timedelta(days=10)).strftime("%Y%m%d")
+            db = _with_retries(
+                _pro.daily_basic,
+                ts_code=ts_code, start_date=start_d, end_date=today,
+                fields="ts_code,trade_date,close,pe_ttm",
+            )
+            if db is not None and not db.empty:
+                latest = db.sort_values("trade_date").iloc[-1]
+                if out.get("current_price") is None and pd.notna(latest.get("close")):
+                    out["current_price"] = round(float(latest["close"]), 3)
+                if pe_ttm is None and pd.notna(latest.get("pe_ttm")):
+                    pe_ttm = float(latest["pe_ttm"])
     except Exception:
         pass
 
@@ -545,6 +661,23 @@ def analyst(symbol: str):
     return out
 
 
+@app.get("/analysts", response_model=list[Analyst])
+def analysts(symbols: str = Query(..., description="comma-separated symbols")):
+    uniq = [s.strip() for s in symbols.split(",") if s.strip()]
+    seen: set[str] = set()
+    out: list[dict[str, Any]] = []
+    for symbol in uniq:
+        if symbol in seen:
+            continue
+        seen.add(symbol)
+        try:
+            out.append(analyst(symbol))
+        except Exception:
+            # Keep a batch refresh useful even if one upstream symbol fails.
+            out.append({"symbol": symbol})
+    return out
+
+
 @app.get("/spot")
 def spot(symbol: str):
     """Most-recent close (Tushare Pro has no realtime quote). 30s cache."""
@@ -557,6 +690,20 @@ def spot(symbol: str):
     start = (date.today() - timedelta(days=10)).strftime("%Y%m%d")
     end = date.today().strftime("%Y%m%d")
     try:
+        if market in {"sh", "sz", "bj"}:
+            ak_spot = _ak_a_spot(ts_code, market)
+            price = _spot_price_from_ak(ak_spot) if ak_spot is not None else None
+            if ak_spot is not None and price is not None:
+                out = {
+                    "symbol": symbol,
+                    "name": str(ak_spot.get("名称") or _resolve_name(ts_code, market) or ""),
+                    "price": price,
+                    "change_pct": _spot_change_pct_from_ak(ak_spot) or 0,
+                    "volume": _num_or_none(ak_spot.get("成交量")) or 0,
+                    "turnover": _num_or_none(ak_spot.get("成交额")) or 0,
+                }
+                cache_put(key, out, 30)
+                return out
         if market == "hk":
             ak_code = ts_code.split(".")[0]
             df = _with_retries(
@@ -571,6 +718,8 @@ def spot(symbol: str):
                 "成交额": "amount", "涨跌幅": "pct_chg",
             })
         else:
+            # A-share fallback when the AkShare/Eastmoney realtime quote is
+            # unavailable or too slow.
             df = _with_retries(_pro.daily, ts_code=ts_code, start_date=start, end_date=end)
             if df is None or df.empty:
                 raise HTTPException(404, f"symbol {symbol} not found")
