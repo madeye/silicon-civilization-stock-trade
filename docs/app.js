@@ -35,7 +35,9 @@ function renderKpis({ universe, analyst, signals, backtest, meta }) {
   const grid = $("#kpi-grid");
   grid.innerHTML = "";
   const themes = new Set(universe.entries.map((e) => e.theme));
+  const total = universe.entries.length;
   const globalCount = universe.entries.filter((e) => e.global_supply).length;
+  const globalPct = total ? Math.round((globalCount / total) * 100) : 0;
   const upsideCount = analyst.items.filter((a) => (a.upside_pct ?? 0) > 0).length;
   const buys = (signals?.signals ?? []).filter((s) => s.action === "buy").length;
   const sells = (signals?.signals ?? []).filter((s) => s.action === "sell").length;
@@ -44,7 +46,7 @@ function renderKpis({ universe, analyst, signals, backtest, meta }) {
 
   const cards = [
     ["股票池", `${universe.entries.length}`, `${themes.size} 个子主题`],
-    ["全球供应链", `${globalCount}`, `${Math.round(globalCount / universe.entries.length * 100)}% 覆盖`],
+    ["全球供应链", `${globalCount}`, `${globalPct}% 覆盖`],
     ["上行空间 > 0", `${upsideCount}`, `按分析师目标价`],
     ["DeepSeek 信号", `${buys} 买 / ${sells} 卖`, `共 ${signals?.signals?.length ?? 0} 条`],
   ];
@@ -136,8 +138,8 @@ function renderSignals({ universe, signals }) {
     tbody.appendChild(el("tr", {}, el("td", { colspan: 8, class: "muted" }, "无信号快照")));
     return;
   }
-  const sigBySym = new Map(signals.signals.map((s) => [s.symbol, s]));
-  const fundBySym = new Map(signals.fundamentals.map((f) => [f.symbol, f]));
+  const sigBySym = new Map((signals.signals ?? []).map((s) => [s.symbol, s]));
+  const fundBySym = new Map((signals.fundamentals ?? []).map((f) => [f.symbol, f]));
   let buys = 0, sells = 0;
   // Sort: buys by confidence desc, then sells, then holds.
   const order = { buy: 0, hold: 2, sell: 1 };
@@ -179,7 +181,7 @@ function renderBacktest(bt) {
     ["总收益", fmt.pct(stats.totalReturnPct, 1), stats.totalReturnPct >= 0 ? "pos" : "neg", "全程"],
     ["年化(CAGR)", fmt.pct(stats.cagrPct, 1), stats.cagrPct >= 0 ? "pos" : "neg", "复合年化"],
     ["最大回撤", fmt.pct(stats.maxDrawdownPct, 1), "neg", "峰谷"],
-    ["夏普", stats.sharpe.toFixed(2), "", `${stats.trades} 笔交易`],
+    ["夏普", stats.sharpe == null ? "无" : stats.sharpe.toFixed(2), "", `${stats.trades} 笔交易`],
   ];
   for (const [label, value, cls, sub] of cards) {
     kpi.appendChild(el("div", { class: "metric" }, [
@@ -209,6 +211,7 @@ function renderBacktest(bt) {
 
 function drawEquityChart(curve, baseline) {
   const canvas = $("#equity-chart");
+  if (!curve || curve.length === 0) return;
   const ctx = canvas.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
 
@@ -227,7 +230,8 @@ function drawEquityChart(curve, baseline) {
     const min = Math.min(baseline, ...values);
     const max = Math.max(baseline, ...values);
     const range = max - min || 1;
-    const xAt = (i) => pad.l + (i / (curve.length - 1)) * innerW;
+    const denom = curve.length > 1 ? curve.length - 1 : 1;
+    const xAt = (i) => pad.l + (i / denom) * innerW;
     const yAt = (v) => pad.t + innerH - ((v - min) / range) * innerH;
 
     // grid + y axis labels
