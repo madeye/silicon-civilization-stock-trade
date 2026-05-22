@@ -157,6 +157,39 @@ def _report_rc(**kwargs):
     return _pro.report_rc(**kwargs)
 
 
+def _latest_profit_yoy(ts_code: str) -> float | None:
+    """Return the latest available net-profit growth percentage for PEG."""
+    start = (date.today() - timedelta(days=540)).strftime("%Y%m%d")
+    today = date.today().strftime("%Y%m%d")
+    df = _with_retries(
+        _pro.fina_indicator,
+        ts_code=ts_code,
+        start_date=start,
+        end_date=today,
+        fields="ts_code,ann_date,end_date,netprofit_yoy,q_netprofit_yoy,q_profit_yoy",
+    )
+    if df is None or df.empty:
+        return None
+    df = df.sort_values(["end_date", "ann_date"], na_position="first")
+    latest = df.iloc[-1]
+    for col in ("netprofit_yoy", "q_netprofit_yoy", "q_profit_yoy"):
+        value = _num_or_none(latest.get(col))
+        if value is not None:
+            return value
+    return None
+
+
+def _attach_profit_yoy(out: dict[str, Any], ts_code: str, market: str) -> None:
+    if market == "hk":
+        return
+    try:
+        profit_yoy = _latest_profit_yoy(ts_code)
+    except Exception:
+        return
+    if profit_yoy is not None:
+        out["profit_yoy"] = profit_yoy
+
+
 # ---------- models ---------------------------------------------------------
 
 
@@ -482,7 +515,7 @@ def klines(
 
 @app.get("/fundamental", response_model=Fundamental)
 def fundamental(symbol: str):
-    key = f"fund:{symbol}"
+    key = f"fund:v2:{symbol}"
     cached = cache_get(key)
     if cached is not None:
         return cached
@@ -502,8 +535,9 @@ def fundamental(symbol: str):
             out["pb"] = pb
         if market_cap is not None:
             out["market_cap"] = market_cap
+        _attach_profit_yoy(out, ts_code, market)
         if out.get("pe_ttm") is not None and out.get("pb") is not None and out.get("market_cap") is not None:
-            cache_put(key, out, 30)
+            cache_put(key, out, 24 * 3600 if out.get("profit_yoy") is not None else 30)
             return out
 
     try:
@@ -531,6 +565,7 @@ def fundamental(symbol: str):
         if pd.notna(latest.get("total_mv")):
             # tushare returns 万元 -> convert to 亿元
             out["market_cap"] = float(latest["total_mv"]) / 1e4
+        _attach_profit_yoy(out, ts_code, market)
 
     cache_put(key, out, 24 * 3600)
     return out

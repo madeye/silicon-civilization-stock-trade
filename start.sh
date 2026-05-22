@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Start pyserver (FastAPI on :8001) and web (Next.js on :3000) together.
+# If a port is already taken by our own process, reuse it; otherwise kill the
+# stale listener so the fresh server can bind.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PY_PORT="${PY_PORT:-8001}"
+WEB_PORT="${WEB_PORT:-3000}"
+
+free_port() {
+  local port="$1" label="$2"
+  local pid
+  pid="$(lsof -ti tcp:"$port" -sTCP:LISTEN || true)"
+  if [[ -z "$pid" ]]; then
+    return 0
+  fi
+  echo "[start] port $port ($label) busy (pid $pid) — killing"
+  kill "$pid" 2>/dev/null || true
+  for _ in 1 2 3 4 5; do
+    sleep 0.5
+    lsof -ti tcp:"$port" -sTCP:LISTEN >/dev/null || return 0
+  done
+  echo "[start] pid $pid did not exit, sending SIGKILL"
+  kill -9 "$pid" 2>/dev/null || true
+  sleep 0.5
+}
+
+free_port "$PY_PORT" pyserver
+free_port "$WEB_PORT" web
+
+cleanup() {
+  echo "[start] shutting down"
+  [[ -n "${PY_PID:-}" ]] && kill "$PY_PID" 2>/dev/null || true
+  [[ -n "${WEB_PID:-}" ]] && kill "$WEB_PID" 2>/dev/null || true
+  wait 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
+
+echo "[start] launching pyserver on :$PY_PORT"
+( cd "$ROOT/pyserver" && uv run uvicorn main:app --port "$PY_PORT" ) &
+PY_PID=$!
+
+echo "[start] launching web on :$WEB_PORT"
+( cd "$ROOT/web" && npm run dev -- --port "$WEB_PORT" ) &
+WEB_PID=$!
+
+wait -n "$PY_PID" "$WEB_PID"

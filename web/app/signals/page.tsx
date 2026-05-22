@@ -7,6 +7,13 @@ export const dynamic = "force-dynamic";
 
 type LiveSnapshot = SymbolSnapshot & { spotPrice?: number };
 
+function calcPeg(pe?: number | null, profitYoyPct?: number | null) {
+  if (pe == null || profitYoyPct == null || pe <= 0 || profitYoyPct <= 0) {
+    return null;
+  }
+  return pe / profitYoyPct;
+}
+
 async function loadSignals() {
   const universe = loadEntries();
   const start = (() => {
@@ -29,7 +36,12 @@ async function loadSignals() {
         spotPrice: spot?.price,
         closes: klines.map((k) => k.close),
         fundamental: fund
-          ? { pe_ttm: fund.pe_ttm, pb: fund.pb, market_cap: fund.market_cap }
+          ? {
+              pe_ttm: fund.pe_ttm,
+              pb: fund.pb,
+              market_cap: fund.market_cap,
+              profit_yoy: fund.profit_yoy,
+            }
           : undefined,
       };
     }),
@@ -62,7 +74,7 @@ export default async function SignalsPage() {
         <div>
           <div className="eyebrow">Live scoring</div>
           <h1>实时信号</h1>
-          <p>基于近 90 日价格、估值和主题信息生成 5-20 个交易日动作建议。</p>
+          <p>以 PEG 和利润增速/估值匹配为主，短期价格指标降权，生成 5-20 个交易日动作建议。</p>
         </div>
       </header>
       {error && (
@@ -92,6 +104,8 @@ export default async function SignalsPage() {
                   <th className="num">置信度</th>
                   <th className="num">仓位</th>
                   <th className="num">PE(TTM)</th>
+                  <th className="num">利润同比</th>
+                  <th className="num">PEG</th>
                   <th>理由</th>
                 </tr>
               </thead>
@@ -112,6 +126,8 @@ export default async function SignalsPage() {
                     <td className="num">{signal ? (signal.confidence * 100).toFixed(0) + "%" : "—"}</td>
                     <td className="num">{signal ? (signal.size * 100).toFixed(0) + "%" : "—"}</td>
                     <td className="num">{snapshot?.fundamental?.pe_ttm?.toFixed(1) ?? "—"}</td>
+                    <td className="num">{snapshot?.fundamental?.profit_yoy != null ? `${snapshot.fundamental.profit_yoy.toFixed(1)}%` : "—"}</td>
+                    <td className="num">{calcPeg(snapshot?.fundamental?.pe_ttm, snapshot?.fundamental?.profit_yoy)?.toFixed(2) ?? "—"}</td>
                     <td className="muted signal-reason">{signal?.rationale ?? "—"}</td>
                   </tr>
                 ))}
