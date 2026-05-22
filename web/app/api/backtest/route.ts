@@ -3,6 +3,7 @@ import { loadEntries } from "@/lib/universe";
 import { fetchKlines, fetchFundamental } from "@/lib/pyserver";
 import { runBacktest, type BacktestConfig, type SymbolSeries } from "@/lib/backtest";
 import { mapPool } from "@/lib/concurrent";
+import { saveBacktestResult } from "@/lib/cache";
 
 const LOAD_CONCURRENCY = Number(process.env.BACKTEST_LOAD_CONCURRENCY ?? 6);
 
@@ -12,7 +13,7 @@ export const maxDuration = 300;
 // NDJSON streaming protocol. Each line is one JSON object, one of:
 //   { type: "progress", phase, done, total }
 //   { type: "log", message }
-//   { type: "result", result }            // terminal — full BacktestResult
+//   { type: "result", result, stored }    // terminal — full BacktestResult
 //   { type: "error", message }            // terminal
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as Partial<BacktestConfig> & {
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
                   pe_ttm: fund.pe_ttm ?? null,
                   pb: fund.pb ?? null,
                   market_cap: fund.market_cap ?? null,
+                  profit_yoy: fund.profit_yoy ?? null,
                 }
               : undefined,
           };
@@ -86,7 +88,9 @@ export async function POST(req: NextRequest) {
         const result = await runBacktest(series, cfg, (p) => {
           send({ type: "progress", ...p });
         });
-        send({ type: "result", result });
+        const stored = saveBacktestResult(result);
+        send({ type: "log", message: `stored backtest ${stored.id}` });
+        send({ type: "result", result, stored });
         controller.close();
       } catch (e) {
         send({ type: "error", message: e instanceof Error ? e.message : String(e) });
