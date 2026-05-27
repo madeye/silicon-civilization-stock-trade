@@ -2,46 +2,33 @@
   <defs>
     <linearGradient id="bg" x1="0" y1="630" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#101114"/>
-      <stop offset=".5" stop-color="#17231d"/>
+      <stop offset=".58" stop-color="#17231d"/>
       <stop offset="1" stop-color="#263c32"/>
     </linearGradient>
-    <linearGradient id="accent" x1="160" y1="446" x2="1040" y2="152" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#63d471"/>
-      <stop offset=".48" stop-color="#f2b84b"/>
-      <stop offset="1" stop-color="#8bd7ff"/>
-    </linearGradient>
     <filter id="soft-glow" x="-20%" y="-30%" width="140%" height="160%">
-      <feGaussianBlur stdDeviation="10" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <g opacity=".18" stroke="#f2f4f1" stroke-width="1">
+  <g opacity=".14" stroke="#f2f4f1" stroke-width="1">
     <path d="M0 122h1200M0 242h1200M0 362h1200M0 482h1200"/>
     <path d="M164 0v630M344 0v630M524 0v630M704 0v630M884 0v630M1064 0v630"/>
   </g>
-  <path d="M132 450h936" stroke="#30343b" stroke-width="28" stroke-linecap="round"/>
-  <path d="M156 426l156-148 128 86 160-184 136 80 222-150" fill="none" stroke="url(#accent)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft-glow)"/>
-  <g fill="#101114" stroke="#f2f4f1" stroke-width="10">
-    <circle cx="156" cy="426" r="25"/>
-    <circle cx="312" cy="278" r="25"/>
-    <circle cx="440" cy="364" r="25"/>
-    <circle cx="600" cy="180" r="25"/>
-    <circle cx="736" cy="260" r="25"/>
-    <circle cx="958" cy="110" r="27"/>
+  <rect x="74" y="70" width="1052" height="490" rx="34" fill="#181a1f" fill-opacity=".68" stroke="#f2f4f1" stroke-opacity=".14" stroke-width="2"/>
+  <text x="112" y="150" fill="#f2b84b" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="28" font-weight="700">DeepSeek · Tushare · A股股票池</text>
+  <text x="112" y="252" fill="#f2f4f1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="84" font-weight="850">硅基文明消费股</text>
+  <text x="112" y="352" fill="#f2f4f1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="84" font-weight="850">交易系统</text>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+    <g transform="translate(112 470)">
+      <rect width="956" height="54" rx="14" fill="#121418" stroke="#30343b"/>
+      <text x="24" y="36" fill="#63d471" font-size="28" font-weight="800">+121.8%</text>
+      <text x="172" y="35" fill="#9ca39a" font-size="20">回测收益</text>
+      <text x="320" y="35" fill="#f2f4f1" font-size="22" font-weight="700">年化 +183.0%</text>
+      <text x="508" y="35" fill="#f2f4f1" font-size="22" font-weight="700">回撤 -23.8%</text>
+      <text x="694" y="35" fill="#f2f4f1" font-size="22" font-weight="700">夏普 2.59</text>
+      <text x="820" y="35" fill="#9ca39a" font-size="18">¥2,215,794</text>
+    </g>
   </g>
-  <rect x="74" y="70" width="1052" height="490" rx="34" fill="none" stroke="#f2f4f1" stroke-opacity=".12" stroke-width="2"/>
-  <text x="112" y="154" fill="#f2b84b" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="28" font-weight="700" letter-spacing="1">DEEPSEEK · TUSHARE · AKSHARE · A股股票池</text>
-  <text x="112" y="244" fill="#f2f4f1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="64" font-weight="800">硅基文明消费股</text>
-  <text x="112" y="324" fill="#f2f4f1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="64" font-weight="800">交易系统</text>
-  <text x="112" y="388" fill="#c9d2c6" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="30">算力芯片 · 光模块 · AI服务器 · 电力 · IDC · AI-PCB</text>
-  <g transform="translate(1000 410)">
-    <rect width="84" height="84" rx="20" fill="#181a1f" stroke="#30343b"/>
-    <path d="M18 56l16-20 15 12 20-26" fill="none" stroke="#63d471" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="18" cy="56" r="6" fill="#63d471"/>
-    <circle cx="69" cy="22" r="7" fill="#f2b84b"/>
-  </g>
+  <polyline points="646.0,360.0 648.0,359.7 650.1,359.4 652.1,359.5 654.1,358.0 656.2,358.0 658.2,356.0 660.2,356.2 662.3,357.2 664.3,358.1 666.3,357.5 668.3,355.9 670.4,355.7 672.4,354.9 674.4,354.4 676.5,353.8 678.5,354.8 680.5,352.3 682.6,351.1 684.6,351.5 686.6,347.8 688.7,349.0 690.7,350.4 692.7,350.3 694.8,350.1 696.8,346.5 698.8,348.5 700.8,345.2 702.9,346.5 704.9,347.0 706.9,347.7 709.0,348.4 711.0,347.3 713.0,346.9 715.1,342.6 717.1,340.5 719.1,338.3 721.2,337.8 723.2,339.9 725.2,339.7 727.3,338.7 729.3,337.5 731.3,337.8 733.3,337.4 735.4,336.4 737.4,332.9 739.4,327.4 741.5,330.1 743.5,328.1 745.5,327.9 747.6,326.3 749.6,326.4 751.6,327.7 753.7,324.4 755.7,320.4 757.7,322.8 759.8,321.1 761.8,315.6 763.8,312.8 765.8,320.3 767.9,314.9 769.9,307.3 771.9,304.8 774.0,307.0 776.0,306.7 778.0,306.1 780.1,303.6 782.1,302.7 784.1,298.5 786.2,298.0 788.2,297.8 790.2,307.4 792.3,304.6 794.3,297.5 796.3,300.3 798.3,302.1 800.4,295.2 802.4,288.1 804.4,286.9 806.5,282.0 808.5,285.4 810.5,294.3 812.6,291.3 814.6,293.7 816.6,293.4 818.7,290.6 820.7,294.3 822.7,296.1 824.8,299.9 826.8,300.0 828.8,298.5 830.8,304.9 832.9,303.6 834.9,304.4 836.9,304.2 839.0,304.1 841.0,310.9 843.0,314.4 845.1,311.8 847.1,308.0 849.1,307.2 851.2,307.0 853.2,305.4 855.2,304.8 857.3,305.3 859.3,305.1 861.3,305.7 863.3,301.9 865.4,297.4 867.4,299.2 869.4,302.5 871.5,301.9 873.5,305.0 875.5,306.9 877.6,302.8 879.6,305.4 881.6,291.5 883.7,287.8 885.7,289.8 887.7,291.2 889.8,288.8 891.8,286.4 893.8,289.7 895.8,289.7 897.9,286.7 899.9,285.3 901.9,289.9 904.0,287.7 906.0,293.5 908.0,291.6 910.1,297.1 912.1,299.6 914.1,293.7 916.2,292.9 918.2,286.6 920.2,288.2 922.3,289.9 924.3,295.4 926.3,296.3 928.3,295.0 930.4,295.3 932.4,295.3 934.4,293.4 936.5,294.1 938.5,296.3 940.5,298.5 942.6,297.5 944.6,301.2 946.6,297.7 948.7,299.0 950.7,301.0 952.7,302.7 954.8,301.3 956.8,298.4 958.8,300.2 960.8,301.0 962.9,302.0 964.9,303.2 966.9,301.9 969.0,303.6 971.0,304.5 973.0,305.8 975.1,301.3 977.1,301.7 979.1,300.7 981.2,301.0 983.2,299.7 985.2,300.3 987.3,297.4 989.3,297.3 991.3,296.1 993.3,297.1 995.4,295.0 997.4,294.8 999.4,297.5 1001.5,298.7 1003.5,300.2 1005.5,299.4 1007.6,297.0 1009.6,295.2 1011.6,295.6 1013.7,293.6 1015.7,294.3 1017.7,285.1 1019.8,287.6 1021.8,287.5 1023.8,289.8 1025.8,289.5 1027.9,291.7 1029.9,296.4 1031.9,291.1 1034.0,288.6 1036.0,289.4" fill="none" stroke="#63d471" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft-glow)"/>
 </svg>
