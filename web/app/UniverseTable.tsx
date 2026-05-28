@@ -20,72 +20,17 @@ interface Spot {
 
 type Row = UniverseEntry & { analyst?: Analyst | null; loading?: boolean };
 
-const ANALYST_BATCH_SIZE = 8;
-const SPOT_BATCH_SIZE = 12;
+const ANALYST_BATCH_SIZE = 1;
+const ANALYST_BATCH_CONCURRENCY = 8;
+const SPOT_BATCH_SIZE = 1000;
 const EMPTY_SPOTS: Spot[] = [];
-const BROWSER_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const SPOT_CACHE_KEY = "silicon-civ:spot:v1";
-const ANALYST_CACHE_KEY = "silicon-civ:analyst:v1";
 
-interface CacheEntry<T> {
-  value: T;
-  fetchedAt: number;
-}
-
-type CacheMap<T> = Record<string, CacheEntry<T>>;
-
-function canUseStorage(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
-}
-
-function readCache<T>(key: string): CacheMap<T> {
-  if (!canUseStorage()) return {};
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as CacheMap<T>;
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeCache<T>(key: string, cache: CacheMap<T>): void {
-  if (!canUseStorage()) return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify(cache));
-  } catch {
-    // Storage can be full or disabled; fetching should still work.
-  }
-}
-
-function readFreshCacheValues<T>(key: string, symbols: string[]): T[] {
-  const now = Date.now();
-  const cache = readCache<T>(key);
-  let changed = false;
-  const values: T[] = [];
-  for (const symbol of symbols) {
-    const hit = cache[symbol];
-    if (!hit) continue;
-    if (now - hit.fetchedAt <= BROWSER_CACHE_TTL_MS) {
-      values.push(hit.value);
-    } else {
-      delete cache[symbol];
-      changed = true;
-    }
-  }
-  if (changed) writeCache(key, cache);
-  return values;
-}
-
-function cacheValues<T extends { symbol: string }>(key: string, values: T[]): void {
-  if (values.length === 0) return;
-  const cache = readCache<T>(key);
-  const fetchedAt = Date.now();
-  for (const value of values) {
-    cache[value.symbol] = { value, fetchedAt };
-  }
-  writeCache(key, cache);
+function hasResearchValue(analyst: Analyst): boolean {
+  return analyst.buy_count != null
+    || analyst.total_count != null
+    || analyst.consensus_eps_next != null
+    || analyst.implied_target != null
+    || analyst.upside_pct != null;
 }
 
 async function fetchSpotsFor(symbols: string[]): Promise<Spot[]> {
@@ -197,30 +142,17 @@ export default function UniverseTable({
       return;
     }
 
-    const cachedSpots = readFreshCacheValues<Spot>(SPOT_CACHE_KEY, symbols);
-    const cachedAnalysts = readFreshCacheValues<Analyst>(ANALYST_CACHE_KEY, symbols);
-    const cachedSpotSymbols = new Set(cachedSpots.map((s) => s.symbol));
-    const cachedAnalystSymbols = new Set(cachedAnalysts.map((a) => a.symbol));
-    setRows((prev) =>
-      mergeAnalysts(
-        mergeSpots(prev, cachedSpots),
-        cachedAnalysts,
-        [...cachedAnalystSymbols],
-      ),
-    );
     setProgress({
-      spotDone: cachedSpotSymbols.size,
-      analystDone: cachedAnalystSymbols.size,
+      spotDone: 0,
+      analystDone: 0,
       total: symbols.length,
     });
 
     async function loadSpotInBatches() {
-      const pending = symbols.filter((symbol) => !cachedSpotSymbols.has(symbol));
-      for (let i = 0; i < pending.length; i += SPOT_BATCH_SIZE) {
-        const batch = pending.slice(i, i + SPOT_BATCH_SIZE);
+      for (let i = 0; i < symbols.length; i += SPOT_BATCH_SIZE) {
+        const batch = symbols.slice(i, i + SPOT_BATCH_SIZE);
         const spots = await fetchSpotsFor(batch);
         if (cancelled) return;
-        cacheValues(SPOT_CACHE_KEY, spots);
         setProgress((prev) => ({
           ...prev,
           spotDone: Math.min(symbols.length, prev.spotDone + batch.length),
@@ -230,36 +162,32 @@ export default function UniverseTable({
     }
     loadSpotInBatches();
 
-    const timer = setTimeout(() => {
-      if (!cancelled) {
-        setProgress((prev) => ({
-          ...prev,
-          spotDone: symbols.length,
-          analystDone: symbols.length,
-        }));
-        setRows((prev) => prev.map((r) => ({ ...r, loading: false })));
-      }
-    }, 45_000);
-
     async function loadInBatches() {
-      const pending = symbols.filter((symbol) => !cachedAnalystSymbols.has(symbol));
-      for (let i = 0; i < pending.length; i += ANALYST_BATCH_SIZE) {
-        const batch = pending.slice(i, i + ANALYST_BATCH_SIZE);
-        const analysts = await fetchAnalystsFor(batch);
-        if (cancelled) return;
-        cacheValues(ANALYST_CACHE_KEY, analysts);
-        setProgress((prev) => ({
-          ...prev,
-          analystDone: Math.min(symbols.length, prev.analystDone + batch.length),
-        }));
-        setRows((prev) => mergeAnalysts(prev, analysts, batch));
+      const batches: string[][] = [];
+      for (let i = 0; i < symbols.length; i += ANALYST_BATCH_SIZE) {
+        batches.push(symbols.slice(i, i + ANALYST_BATCH_SIZE));
       }
-      clearTimeout(timer);
+      let nextBatch = 0;
+      async function worker() {
+        while (!cancelled) {
+          const batch = batches[nextBatch++];
+          if (!batch) return;
+          const analysts = await fetchAnalystsFor(batch);
+          if (cancelled) return;
+          setProgress((prev) => ({
+            ...prev,
+            analystDone: Math.min(symbols.length, prev.analystDone + batch.length),
+          }));
+          setRows((prev) => mergeAnalysts(prev, analysts.filter(hasResearchValue), batch));
+        }
+      }
+      await Promise.all(
+        Array.from({ length: Math.min(ANALYST_BATCH_CONCURRENCY, batches.length) }, () => worker()),
+      );
     }
     loadInBatches();
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
   }, [entries]);
 

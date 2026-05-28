@@ -97,3 +97,9 @@ export interface Spot {
   volume?: number;
   turnover?: number;
 }
+
+export function fetchSpots(symbols: string[]) {
+  const uniq = [...new Set(symbols.map((s) => s.trim()).filter(Boolean))];
+  if (uniq.length === 0) return Promise.resolve([] as Spot[]);
+  return get<Spot[]>("/spots", { symbols: uniq.join(",") });
+}

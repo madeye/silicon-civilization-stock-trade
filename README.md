@@ -18,14 +18,14 @@
 - 主题股票池：按子主题维护 A 股标的，数据源为 `web/data/universe.json`。
 - 实时行情与目标价：从本地 Python sidecar 拉取现价、估值、分析师目标价和上涨空间。
 - DeepSeek 策略信号：支持实时信号页和 TypeScript 回测引擎。
-- 前端加载体验：从 pyserver 拉取行情时显示进度条，并把行情/分析师数据缓存在浏览器 `localStorage` 中，TTL 为 24 小时。
+- 前端加载体验：从 pyserver 拉取行情时显示进度条；行情/分析师缓存集中在 pyserver SQLite，前端不写浏览器缓存。
 - 静态快照：生成 `docs/` 下的 GitHub Pages 静态页面，包含社交卡片、站点图标和自定义域名。
 
 ## 架构
 
 ```mermaid
 flowchart LR
-  web["Next.js 15 App Router<br/>web/<br/><br/>自选股 / 信号 / 回测 UI<br/>API routes 与 TypeScript 回测<br/>DeepSeek 策略与缓存<br/>浏览器 24h localStorage"]
+  web["Next.js 15 App Router<br/>web/<br/><br/>自选股 / 信号 / 回测 UI<br/>API routes 与 TypeScript 回测<br/>DeepSeek 策略与缓存"]
   py["FastAPI sidecar<br/>pyserver/<br/><br/>Tushare Pro + AkShare<br/>SQLite 市场数据缓存<br/>批量行情 / 分析师接口"]
   docs["GitHub Pages snapshot<br/>docs/<br/><br/>https://scs.maxlv.net<br/>社交卡片 / 图标 / CNAME"]
 
@@ -37,7 +37,6 @@ flowchart LR
 
 | 层 | 位置 | 用途 | TTL |
 |---|---|---|---|
-| 浏览器行情缓存 | `localStorage` | 首页现价与目标价批量加载结果 | 24 小时 |
 | Python 市场数据缓存 | `pyserver/cache.db` | K 线、基本面、现价、分析师数据 | 分层 TTL |
 | DeepSeek 回包缓存 | `web` SQLite cache | `sha256(prompt+model)` 对应的大模型响应 | 12 小时 |
 | 回测信号缓存 | `web` SQLite cache | 已命中的历史调仓信号 | 长期复用 |

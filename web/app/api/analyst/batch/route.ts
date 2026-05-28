@@ -40,6 +40,10 @@ export async function POST(req: NextRequest) {
   if (symbols.length === 0) return NextResponse.json({ error: "symbols required" }, { status: 400 });
 
   try {
+    if (symbols.length === 1) {
+      const data = await Promise.race([fetchAnalyst(symbols[0]), timeout(ANALYST_TIMEOUT_MS)]);
+      return NextResponse.json([data]);
+    }
     const data = await Promise.race([fetchAnalysts(symbols), timeout(ANALYST_TIMEOUT_MS)]);
     return NextResponse.json(data);
   } catch {

@@ -1,7 +1,7 @@
 {
   "$schema_note": "硅基文明消费股 watchlist. Edit via UI or directly. Each entry: {symbol, name, theme, note?}.",
-  "updated_at": "2026-05-21",
-  "updated_by": "deepseek-refresh",
+  "updated_at": "2026-05-28",
+  "updated_by": "manual-remove-weak",
   "entries": [
     {
       "symbol": "688256",
@@ -94,6 +94,27 @@
       "global_supply": true
     },
     {
+      "symbol": "300620",
+      "name": "光库科技",
+      "theme": "光模块",
+      "note": "铌酸锂调制器芯片及器件，薄膜铌酸锂光子集成",
+      "global_supply": true
+    },
+    {
+      "symbol": "600330",
+      "name": "天通股份",
+      "theme": "半导体材料",
+      "note": "铌酸锂单晶/晶圆，上游关键原材料",
+      "global_supply": false
+    },
+    {
+      "symbol": "002222",
+      "name": "福晶科技",
+      "theme": "半导体材料",
+      "note": "铌酸锂等光学晶体材料",
+      "global_supply": false
+    },
+    {
       "symbol": "601138",
       "name": "工业富联",
       "theme": "AI服务器",
@@ -118,20 +139,6 @@
       "name": "紫光股份",
       "theme": "AI服务器",
       "note": "新华三",
-      "global_supply": false
-    },
-    {
-      "symbol": "000063",
-      "name": "中兴通讯",
-      "theme": "AI服务器",
-      "note": "服务器+网络",
-      "global_supply": false
-    },
-    {
-      "symbol": "002837",
-      "name": "英维克",
-      "theme": "液冷",
-      "note": "数据中心液冷龙头",
       "global_supply": false
     },
     {
@@ -162,24 +169,10 @@
       "global_supply": false
     },
     {
-      "symbol": "601985",
-      "name": "中国核电",
-      "theme": "电力",
-      "note": "核电",
-      "global_supply": false
-    },
-    {
       "symbol": "003816",
       "name": "中国广核",
       "theme": "电力",
       "note": "核电",
-      "global_supply": false
-    },
-    {
-      "symbol": "600905",
-      "name": "三峡能源",
-      "theme": "电力",
-      "note": "新能源运营",
       "global_supply": false
     },
     {
@@ -193,13 +186,6 @@
       "name": "华能国际",
       "theme": "电力",
       "note": "火电+新能源",
-      "global_supply": false
-    },
-    {
-      "symbol": "300442",
-      "name": "润泽科技",
-      "theme": "IDC",
-      "note": "AIDC 园区龙头",
       "global_supply": false
     },
     {
@@ -449,6 +435,20 @@
       "theme": "半导体材料",
       "note": "国内光刻胶领先，高纯电子特气用于先进制程",
       "global_supply": false
+    },
+    {
+      "symbol": "000021",
+      "name": "深科技",
+      "theme": "存储/HBM",
+      "note": "内存芯片封测龙头，为海力士等国际大厂提供存储芯片封装测试服务，间接受益于HBM扩产",
+      "global_supply": true
+    },
+    {
+      "symbol": "002475",
+      "name": "立讯精密",
+      "theme": "AI服务器",
+      "note": "进入英伟达GB200供应链，提供服务器组装及高速铜缆互连组件，深度参与全球AI服务器制造",
+      "global_supply": true
     }
   ]
 }
