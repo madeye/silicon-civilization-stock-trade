@@ -104,6 +104,7 @@ def seconds_until_next_trading_close() -> int:
 
 import threading
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class _TokenBucket:
@@ -131,6 +132,7 @@ class _TokenBucket:
 # Tushare free tier caps hk_daily at 2/minute. Self-throttle to avoid 502s.
 _HK_DAILY_LIMITER = _TokenBucket(n=2, window_s=65)
 _REPORT_RC_LIMITER = _TokenBucket(n=2, window_s=65)
+_SPOT_BATCH_CONCURRENCY = 12
 
 
 def _with_retries(fn, *args, attempts: int = 3, base_delay: float = 0.5, **kwargs):
@@ -422,6 +424,47 @@ def _ak_research_consensus(symbol: str) -> dict[str, Any]:
     return out
 
 
+def _implied_target_from_eps_pe(eps: Any, pe_ttm: Any) -> float | None:
+    """Return an EPS * PE target only when both inputs are economically valid."""
+    eps_value = _num_or_none(eps)
+    pe_value = _num_or_none(pe_ttm)
+    if eps_value is None or pe_value is None or eps_value <= 0 or pe_value <= 0:
+        return None
+    return round(eps_value * pe_value, 3)
+
+
+def _sanitize_analyst_payload(out: dict[str, Any]) -> dict[str, Any]:
+    out = dict(out)
+    target = _num_or_none(out.get("implied_target"))
+    current_price = _num_or_none(out.get("current_price"))
+    if target is None or target <= 0:
+        out["implied_target"] = None
+        out["upside_pct"] = None
+        return out
+    out["implied_target"] = target
+    if current_price is not None and current_price > 0:
+        out["upside_pct"] = round((target / current_price - 1) * 100, 2)
+    return out
+
+
+def _prefer_richer_analyst_payload(
+    primary: dict[str, Any],
+    fallback: dict[str, Any] | None,
+) -> dict[str, Any]:
+    primary = _sanitize_analyst_payload(primary)
+    if fallback is None:
+        return primary
+    fallback = _sanitize_analyst_payload(fallback)
+    primary_has_research = primary.get("buy_count") is not None or primary.get("implied_target") is not None
+    fallback_has_research = fallback.get("buy_count") is not None or fallback.get("implied_target") is not None
+    if fallback_has_research and not primary_has_research:
+        return {
+            **fallback,
+            "current_price": primary.get("current_price") or fallback.get("current_price"),
+        }
+    return primary
+
+
 # Cache the stock_basic / hk_basic name lookups once per process startup.
 _NAME_CACHE: dict[str, str] = {}
 
@@ -578,10 +621,17 @@ def analyst(symbol: str):
     Aggregates EPS forecasts for next fiscal year across recent analyst
     reports; implied target = consensus EPS * current PE(TTM).
     """
-    key = f"analyst:{symbol}"
+    key = f"analyst:v2:{symbol}"
     cached = cache_get(key)
+    legacy_cached = cache_get(f"analyst:{symbol}")
     if cached is not None:
-        return cached
+        out = _prefer_richer_analyst_payload(cached, legacy_cached)
+        cache_put(key, out, 24 * 3600)
+        return out
+    if legacy_cached is not None:
+        out = _sanitize_analyst_payload(legacy_cached)
+        cache_put(key, out, 24 * 3600)
+        return out
 
     ts_code, market = _to_ts_code(symbol)
     out: dict[str, Any] = {"symbol": symbol}
@@ -628,8 +678,9 @@ def analyst(symbol: str):
             if forecast_count is not None and out.get("total_count") is None:
                 out["total_count"] = forecast_count
 
-    if out.get("consensus_eps_next") is not None and pe_ttm is not None:
-        out["implied_target"] = round(out["consensus_eps_next"] * pe_ttm, 3)
+    implied_target = _implied_target_from_eps_pe(out.get("consensus_eps_next"), pe_ttm)
+    if implied_target is not None:
+        out["implied_target"] = implied_target
         if out.get("current_price"):
             out["upside_pct"] = round(
                 (out["implied_target"] / out["current_price"] - 1) * 100, 2
@@ -684,8 +735,10 @@ def analyst(symbol: str):
         targets.extend(x for x in (_num_or_none(v) for v in rc[col]) if x is not None and x > 0)
     if targets:
         out["implied_target"] = round(float(pd.Series(targets).median()), 3)
-    elif out.get("consensus_eps_next") is not None and pe_ttm is not None:
-        out["implied_target"] = round(out["consensus_eps_next"] * pe_ttm, 3)
+    else:
+        implied_target = _implied_target_from_eps_pe(out.get("consensus_eps_next"), pe_ttm)
+        if implied_target is not None:
+            out["implied_target"] = implied_target
 
     if out.get("implied_target") is not None and out.get("current_price"):
         out["upside_pct"] = round(
@@ -774,3 +827,42 @@ def spot(symbol: str):
     }
     cache_put(key, out, 30)
     return out
+
+
+@app.get("/spots")
+def spots(symbols: str = Query(..., description="comma-separated symbols")):
+    """Batch spot quotes for the frontend table.
+
+    This endpoint keeps caching authoritative in pyserver while avoiding the
+    Next.js layer fanning one browser batch out into dozens of HTTP requests.
+    """
+    uniq: list[str] = []
+    seen: set[str] = set()
+    for raw in symbols.split(","):
+        symbol = raw.strip()
+        if not symbol or symbol in seen:
+            continue
+        seen.add(symbol)
+        uniq.append(symbol)
+
+    out: list[dict[str, Any]] = []
+    missing: list[str] = []
+    for symbol in uniq:
+        cached = cache_get(f"spot:{symbol}")
+        if cached is not None:
+            out.append(cached)
+        else:
+            missing.append(symbol)
+
+    if missing:
+        with ThreadPoolExecutor(max_workers=min(_SPOT_BATCH_CONCURRENCY, len(missing))) as executor:
+            futures = {executor.submit(spot, symbol): symbol for symbol in missing}
+            for future in as_completed(futures):
+                try:
+                    out.append(future.result())
+                except Exception:
+                    # Keep a batch refresh useful even if one upstream symbol fails.
+                    continue
+
+    by_symbol = {str(row.get("symbol")): row for row in out}
+    return [by_symbol[symbol] for symbol in uniq if symbol in by_symbol]

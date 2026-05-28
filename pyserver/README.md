@@ -11,6 +11,7 @@
 | `GET /analyst` | 24 小时 | AkShare 研报/盈利预测优先，缺字段回退 `pro.report_rc` |
 | `GET /analysts` | 24 小时 | 批量包装 `GET /analyst`，避免前端逐行请求 |
 | `GET /spot` | 30 秒 | A 股优先 AkShare 东方财富全市场快照；港股 `ak.stock_hk_hist`；缺失回退 Tushare daily |
+| `GET /spots` | 30 秒 | 批量包装 `GET /spot`，优先读取 `cache.db`，避免前端逐行请求 |
 
 ## Token
 
@@ -68,6 +69,9 @@ curl 'http://localhost:8001/analysts?symbols=300476,601138,688256'
 
 # 最新价/最近收盘（30 秒缓存）
 curl 'http://localhost:8001/spot?symbol=hk00700'
+
+# 批量最新价/最近收盘，前端股票池表格使用这个接口
+curl 'http://localhost:8001/spots?symbols=300476,601138,688256'
 ```
 
 ## 代码符号规则
