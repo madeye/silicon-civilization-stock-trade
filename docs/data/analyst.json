@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-26T08:38:48.385Z",
+  "generated_at": "2026-05-28T07:06:54.134Z",
   "items": [
     {
       "symbol": "688256",
@@ -7,9 +7,9 @@
       "total_count": 40,
       "buy_ratio": 0.925,
       "consensus_eps_next": 8.51,
-      "implied_target": 1861.392,
-      "current_price": 1410.96,
-      "upside_pct": 31.92
+      "implied_target": 1833.224,
+      "current_price": 1389.56,
+      "upside_pct": 31.93
     },
     {
       "symbol": "688041",
@@ -17,28 +17,28 @@
       "total_count": 110,
       "buy_ratio": 0.964,
       "consensus_eps_next": 1.81,
-      "implied_target": 526.497,
-      "current_price": 341.16,
-      "upside_pct": 54.33
+      "implied_target": 481.695,
+      "current_price": 314.68,
+      "upside_pct": 53.07
     },
     {
       "symbol": "688047",
-      "current_price": 159.67,
-      "buy_count": null,
-      "total_count": null,
-      "buy_ratio": null,
-      "consensus_eps_next": null,
+      "buy_count": 26,
+      "total_count": 27,
+      "buy_ratio": 0.963,
+      "consensus_eps_next": 0.22,
       "implied_target": null,
+      "current_price": 156.81,
       "upside_pct": null
     },
     {
       "symbol": "300474",
-      "current_price": 64.54,
-      "buy_count": null,
-      "total_count": null,
-      "buy_ratio": null,
-      "consensus_eps_next": null,
+      "buy_count": 51,
+      "total_count": 57,
+      "buy_ratio": 0.895,
+      "consensus_eps_next": 1.01,
       "implied_target": null,
+      "current_price": 63.68,
       "upside_pct": null
     },
     {
@@ -47,9 +47,9 @@
       "total_count": 112,
       "buy_ratio": 0.955,
       "consensus_eps_next": 4.01,
-      "implied_target": 171.057,
-      "current_price": 82.95,
-      "upside_pct": 106.22
+      "implied_target": 220.269,
+      "current_price": 86.45,
+      "upside_pct": 154.79
     },
     {
       "symbol": "688385",
@@ -57,29 +57,29 @@
       "total_count": 39,
       "buy_ratio": 0.974,
       "consensus_eps_next": 1.265,
-      "implied_target": 289.199,
-      "current_price": 67.85,
-      "upside_pct": 326.23
+      "implied_target": 119.72,
+      "current_price": 68.16,
+      "upside_pct": 75.65
     },
     {
       "symbol": "300308",
-      "buy_count": 273,
-      "total_count": 289,
+      "buy_count": 274,
+      "total_count": 290,
       "buy_ratio": 0.945,
-      "consensus_eps_next": 11.075,
-      "implied_target": 909.997,
-      "current_price": 1103,
-      "upside_pct": -17.5
+      "consensus_eps_next": 11.1125,
+      "implied_target": 640.747,
+      "current_price": 1187.69,
+      "upside_pct": -46.05
     },
     {
       "symbol": "300502",
-      "buy_count": 94,
-      "total_count": 96,
+      "buy_count": 95,
+      "total_count": 97,
       "buy_ratio": 0.979,
-      "consensus_eps_next": 10.031,
-      "implied_target": 651.13,
-      "current_price": 700,
-      "upside_pct": -6.98
+      "consensus_eps_next": 10.102,
+      "implied_target": 651.074,
+      "current_price": 719.66,
+      "upside_pct": -9.53
     },
     {
       "symbol": "300394",
@@ -87,9 +87,9 @@
       "total_count": 145,
       "buy_ratio": 0.945,
       "consensus_eps_next": 4.88,
-      "implied_target": 712.121,
-      "current_price": 406.76,
-      "upside_pct": 75.07
+      "implied_target": 849.95,
+      "current_price": 440.11,
+      "upside_pct": 93.12
     },
     {
       "symbol": "000988",
@@ -97,9 +97,9 @@
       "total_count": 59,
       "buy_ratio": 1,
       "consensus_eps_next": 2.17,
-      "implied_target": 218.688,
-      "current_price": 170.32,
-      "upside_pct": 28.4
+      "implied_target": 141.441,
+      "current_price": 165.56,
+      "upside_pct": -14.57
     },
     {
       "symbol": "002281",
@@ -107,9 +107,9 @@
       "total_count": 112,
       "buy_ratio": 0.866,
       "consensus_eps_next": 1.805,
-      "implied_target": 290.517,
-      "current_price": 206.72,
-      "upside_pct": 40.54
+      "implied_target": 316.651,
+      "current_price": 208.72,
+      "upside_pct": 51.71
     },
     {
       "symbol": "603083",
@@ -117,9 +117,9 @@
       "total_count": 12,
       "buy_ratio": 0.917,
       "consensus_eps_next": 2.52,
-      "implied_target": 519.794,
-      "current_price": 204.94,
-      "upside_pct": 153.63
+      "implied_target": 381.2,
+      "current_price": 203.03,
+      "upside_pct": 87.76
     },
     {
       "symbol": "301205",
@@ -127,9 +127,39 @@
       "total_count": 1,
       "buy_ratio": 1,
       "consensus_eps_next": 1.28,
-      "implied_target": 483.802,
-      "current_price": 254.7,
-      "upside_pct": 89.95
+      "implied_target": 3978.394,
+      "current_price": 291.86,
+      "upside_pct": 1263.12
+    },
+    {
+      "symbol": "300620",
+      "buy_count": 25,
+      "total_count": 26,
+      "buy_ratio": 0.962,
+      "consensus_eps_next": 0.655,
+      "implied_target": 267.895,
+      "current_price": 293.72,
+      "upside_pct": -8.79
+    },
+    {
+      "symbol": "600330",
+      "buy_count": 26,
+      "total_count": 26,
+      "buy_ratio": 1,
+      "consensus_eps_next": 0.05,
+      "implied_target": null,
+      "current_price": 34.33,
+      "upside_pct": null
+    },
+    {
+      "symbol": "002222",
+      "buy_count": 22,
+      "total_count": 22,
+      "buy_ratio": 1,
+      "consensus_eps_next": 0.7,
+      "implied_target": 135.926,
+      "current_price": 107.76,
+      "upside_pct": 26.14
     },
     {
       "symbol": "601138",
@@ -137,9 +167,9 @@
       "total_count": 108,
       "buy_ratio": 0.963,
       "consensus_eps_next": 1.88,
-      "implied_target": 64.225,
-      "current_price": 69.98,
-      "upside_pct": -8.22
+      "implied_target": 66.12,
+      "current_price": 75.1,
+      "upside_pct": -11.96
     },
     {
       "symbol": "000977",
@@ -147,9 +177,9 @@
       "total_count": 172,
       "buy_ratio": 0.936,
       "consensus_eps_next": 2.365,
-      "implied_target": 91.477,
-      "current_price": 67.3,
-      "upside_pct": 35.92
+      "implied_target": 94.837,
+      "current_price": 66.07,
+      "upside_pct": 43.54
     },
     {
       "symbol": "603019",
@@ -157,9 +187,9 @@
       "total_count": 114,
       "buy_ratio": 0.912,
       "consensus_eps_next": 2.07,
-      "implied_target": 128.826,
-      "current_price": 94.33,
-      "upside_pct": 36.57
+      "implied_target": 304.394,
+      "current_price": 91.6,
+      "upside_pct": 232.31
     },
     {
       "symbol": "000938",
@@ -167,29 +197,9 @@
       "total_count": 121,
       "buy_ratio": 0.967,
       "consensus_eps_next": 1.005,
-      "implied_target": 39.094,
-      "current_price": 28.9,
-      "upside_pct": 35.27
-    },
-    {
-      "symbol": "000063",
-      "buy_count": 247,
-      "total_count": 278,
-      "buy_ratio": 0.888,
-      "consensus_eps_next": 2.395,
-      "implied_target": 90.987,
-      "current_price": 35.54,
-      "upside_pct": 156.01
-    },
-    {
-      "symbol": "002837",
-      "buy_count": 85,
-      "total_count": 86,
-      "buy_ratio": 0.988,
-      "consensus_eps_next": 1.2805,
-      "implied_target": 256.399,
-      "current_price": 98.57,
-      "upside_pct": 160.12
+      "implied_target": 26.14,
+      "current_price": 28.66,
+      "upside_pct": -8.79
     },
     {
       "symbol": "301018",
@@ -197,8 +207,8 @@
       "total_count": 24,
       "buy_ratio": 1,
       "consensus_eps_next": 1.33,
-      "implied_target": 291.626,
-      "current_price": 156.61,
+      "implied_target": 283.098,
+      "current_price": 152.03,
       "upside_pct": 86.21
     },
     {
@@ -207,9 +217,9 @@
       "total_count": 8,
       "buy_ratio": 1,
       "consensus_eps_next": 0.21,
-      "implied_target": 92.061,
-      "current_price": 43.85,
-      "upside_pct": 109.95
+      "implied_target": 85.909,
+      "current_price": 40.92,
+      "upside_pct": 109.94
     },
     {
       "symbol": "300602",
@@ -217,8 +227,8 @@
       "total_count": 41,
       "buy_ratio": 1,
       "consensus_eps_next": 0.8,
-      "implied_target": 56.697,
-      "current_price": 46.79,
+      "implied_target": 54.322,
+      "current_price": 44.83,
       "upside_pct": 21.17
     },
     {
@@ -227,19 +237,9 @@
       "total_count": 124,
       "buy_ratio": 0.968,
       "consensus_eps_next": 1.497,
-      "implied_target": 27.551,
-      "current_price": 27.14,
+      "implied_target": 27.652,
+      "current_price": 27.24,
       "upside_pct": 1.51
-    },
-    {
-      "symbol": "601985",
-      "buy_count": 88,
-      "total_count": 90,
-      "buy_ratio": 0.978,
-      "consensus_eps_next": 0.64,
-      "implied_target": 13.992,
-      "current_price": 8.75,
-      "upside_pct": 59.91
     },
     {
       "symbol": "003816",
@@ -247,19 +247,9 @@
       "total_count": 62,
       "buy_ratio": 0.968,
       "consensus_eps_next": 0.25,
-      "implied_target": 6.139,
-      "current_price": 4.61,
-      "upside_pct": 33.17
-    },
-    {
-      "symbol": "600905",
-      "buy_count": 49,
-      "total_count": 51,
-      "buy_ratio": 0.961,
-      "consensus_eps_next": 0.295,
-      "implied_target": 15.022,
-      "current_price": 4.11,
-      "upside_pct": 265.5
+      "implied_target": 5.992,
+      "current_price": 4.5,
+      "upside_pct": 33.16
     },
     {
       "symbol": "600886",
@@ -267,9 +257,9 @@
       "total_count": 60,
       "buy_ratio": 0.95,
       "consensus_eps_next": 1.06,
-      "implied_target": 15.832,
-      "current_price": 13.87,
-      "upside_pct": 14.15
+      "implied_target": 13.865,
+      "current_price": 13.84,
+      "upside_pct": 0.18
     },
     {
       "symbol": "600011",
@@ -277,29 +267,19 @@
       "total_count": 99,
       "buy_ratio": 0.97,
       "consensus_eps_next": 0.915,
-      "implied_target": 7.749,
-      "current_price": 7.51,
-      "upside_pct": 3.18
-    },
-    {
-      "symbol": "300442",
-      "buy_count": 32,
-      "total_count": 32,
-      "buy_ratio": 1,
-      "consensus_eps_next": 2.29,
-      "implied_target": 64.039,
-      "current_price": 89.01,
-      "upside_pct": -28.05
+      "implied_target": 6.451,
+      "current_price": 8.06,
+      "upside_pct": -19.96
     },
     {
       "symbol": "300383",
-      "current_price": 15.16,
-      "buy_count": null,
-      "total_count": null,
-      "buy_ratio": null,
-      "consensus_eps_next": null,
-      "implied_target": null,
-      "upside_pct": null
+      "buy_count": 90,
+      "total_count": 104,
+      "buy_ratio": 0.865,
+      "consensus_eps_next": 0.25,
+      "implied_target": 72.615,
+      "current_price": 14.52,
+      "upside_pct": 400.1
     },
     {
       "symbol": "603881",
@@ -307,8 +287,8 @@
       "total_count": 41,
       "buy_ratio": 0.976,
       "consensus_eps_next": 0.29,
-      "implied_target": 55.406,
-      "current_price": 37.09,
+      "implied_target": 54.211,
+      "current_price": 36.29,
       "upside_pct": 49.38
     },
     {
@@ -317,9 +297,9 @@
       "total_count": 27,
       "buy_ratio": 1,
       "consensus_eps_next": 0.32,
-      "implied_target": 43.546,
-      "current_price": 23.94,
-      "upside_pct": 81.9
+      "implied_target": 41.599,
+      "current_price": 22.87,
+      "upside_pct": 81.89
     },
     {
       "symbol": "002335",
@@ -327,9 +307,9 @@
       "total_count": 34,
       "buy_ratio": 1,
       "consensus_eps_next": 2.03,
-      "implied_target": 150.089,
-      "current_price": 61.26,
-      "upside_pct": 145
+      "implied_target": 202.533,
+      "current_price": 60.4,
+      "upside_pct": 235.32
     },
     {
       "symbol": "603290",
@@ -337,8 +317,8 @@
       "total_count": 94,
       "buy_ratio": 0.957,
       "consensus_eps_next": 5.39,
-      "implied_target": 522.904,
-      "current_price": 132.94,
+      "implied_target": 531.007,
+      "current_price": 135,
       "upside_pct": 293.34
     },
     {
@@ -347,8 +327,8 @@
       "total_count": 48,
       "buy_ratio": 1,
       "consensus_eps_next": 3.55,
-      "implied_target": 68.11,
-      "current_price": 58.49,
+      "implied_target": 72.057,
+      "current_price": 61.88,
       "upside_pct": 16.45
     },
     {
@@ -357,8 +337,8 @@
       "total_count": 25,
       "buy_ratio": 0.96,
       "consensus_eps_next": 0.965,
-      "implied_target": 439.06,
-      "current_price": 36.17,
+      "implied_target": 450.956,
+      "current_price": 37.15,
       "upside_pct": 1113.88
     },
     {
@@ -367,18 +347,18 @@
       "total_count": 94,
       "buy_ratio": 1,
       "consensus_eps_next": 1.666,
-      "implied_target": 117.205,
-      "current_price": 64.35,
+      "implied_target": 125.127,
+      "current_price": 68.7,
       "upside_pct": 82.14
     },
     {
       "symbol": "600460",
       "buy_count": 86,
-      "total_count": 86,
-      "buy_ratio": 1,
+      "total_count": 87,
+      "buy_ratio": 0.989,
       "consensus_eps_next": 0.495,
-      "implied_target": 60.86,
-      "current_price": 33.9,
+      "implied_target": 63.876,
+      "current_price": 35.58,
       "upside_pct": 79.53
     },
     {
@@ -387,29 +367,29 @@
       "total_count": 74,
       "buy_ratio": 0.905,
       "consensus_eps_next": 0.97,
-      "implied_target": 91.416,
-      "current_price": 64.38,
+      "implied_target": 93.688,
+      "current_price": 65.98,
       "upside_pct": 41.99
     },
     {
       "symbol": "600745",
-      "current_price": 17.86,
-      "buy_count": null,
-      "total_count": null,
-      "buy_ratio": null,
-      "consensus_eps_next": null,
+      "buy_count": 81,
+      "total_count": 85,
+      "buy_ratio": 0.953,
+      "consensus_eps_next": 2.58,
       "implied_target": null,
+      "current_price": 18.75,
       "upside_pct": null
     },
     {
       "symbol": "603986",
-      "buy_count": 205,
-      "total_count": 220,
+      "buy_count": 206,
+      "total_count": 221,
       "buy_ratio": 0.932,
-      "consensus_eps_next": 3.13,
-      "implied_target": 401.707,
-      "current_price": 526.22,
-      "upside_pct": -23.66
+      "consensus_eps_next": 3.14,
+      "implied_target": 393.77,
+      "current_price": 514.18,
+      "upside_pct": -23.42
     },
     {
       "symbol": "688008",
@@ -417,9 +397,9 @@
       "total_count": 130,
       "buy_ratio": 0.9,
       "consensus_eps_next": 2.495,
-      "implied_target": 324.645,
-      "current_price": 272.29,
-      "upside_pct": 19.23
+      "implied_target": 234.081,
+      "current_price": 260.2,
+      "upside_pct": -10.04
     },
     {
       "symbol": "300223",
@@ -427,8 +407,8 @@
       "total_count": 89,
       "buy_ratio": 0.978,
       "consensus_eps_next": 1.45,
-      "implied_target": 168.474,
-      "current_price": 149.6,
+      "implied_target": 180.197,
+      "current_price": 160.01,
       "upside_pct": 12.62
     },
     {
@@ -437,8 +417,8 @@
       "total_count": 12,
       "buy_ratio": 1,
       "consensus_eps_next": 2.72,
-      "implied_target": 114.06,
-      "current_price": 538.95,
+      "implied_target": 116.735,
+      "current_price": 551.59,
       "upside_pct": -78.84
     },
     {
@@ -447,8 +427,8 @@
       "total_count": 121,
       "buy_ratio": 0.967,
       "consensus_eps_next": 1.04,
-      "implied_target": 82.266,
-      "current_price": 75.39,
+      "implied_target": 78.043,
+      "current_price": 71.52,
       "upside_pct": 9.12
     },
     {
@@ -457,8 +437,8 @@
       "total_count": 134,
       "buy_ratio": 0.955,
       "consensus_eps_next": 1.7,
-      "implied_target": 162.379,
-      "current_price": 88.19,
+      "implied_target": 158.641,
+      "current_price": 86.16,
       "upside_pct": 84.12
     },
     {
@@ -467,8 +447,8 @@
       "total_count": 80,
       "buy_ratio": 0.912,
       "consensus_eps_next": 0.4,
-      "implied_target": 29.905,
-      "current_price": 18.67,
+      "implied_target": 32.276,
+      "current_price": 20.15,
       "upside_pct": 60.18
     },
     {
@@ -477,8 +457,8 @@
       "total_count": 275,
       "buy_ratio": 0.982,
       "consensus_eps_next": 17.26,
-      "implied_target": 1503.802,
-      "current_price": 670.25,
+      "implied_target": 1469.071,
+      "current_price": 654.77,
       "upside_pct": 124.36
     },
     {
@@ -487,8 +467,8 @@
       "total_count": 216,
       "buy_ratio": 0.935,
       "consensus_eps_next": 5.18,
-      "implied_target": 553.281,
-      "current_price": 463.51,
+      "implied_target": 543.182,
+      "current_price": 455.05,
       "upside_pct": 19.37
     },
     {
@@ -497,18 +477,18 @@
       "total_count": 65,
       "buy_ratio": 1,
       "consensus_eps_next": 5.56,
-      "implied_target": 716.937,
-      "current_price": 750,
-      "upside_pct": -4.41
+      "implied_target": 463.204,
+      "current_price": 672.66,
+      "upside_pct": -31.14
     },
     {
       "symbol": "688126",
-      "current_price": 26.9,
-      "buy_count": null,
-      "total_count": null,
-      "buy_ratio": null,
-      "consensus_eps_next": null,
+      "buy_count": 52,
+      "total_count": 54,
+      "buy_ratio": 0.963,
+      "consensus_eps_next": 0.09,
       "implied_target": null,
+      "current_price": 28.07,
       "upside_pct": null
     },
     {
@@ -517,8 +497,8 @@
       "total_count": 83,
       "buy_ratio": 0.928,
       "consensus_eps_next": 8.065,
-      "implied_target": 665.542,
-      "current_price": 392.95,
+      "implied_target": 642.423,
+      "current_price": 379.3,
       "upside_pct": 69.37
     },
     {
@@ -527,9 +507,9 @@
       "total_count": 167,
       "buy_ratio": 0.994,
       "consensus_eps_next": 2.3,
-      "implied_target": 137.208,
-      "current_price": 133.36,
-      "upside_pct": 2.89
+      "implied_target": 118.22,
+      "current_price": 132.71,
+      "upside_pct": -10.92
     },
     {
       "symbol": "002916",
@@ -537,9 +517,9 @@
       "total_count": 170,
       "buy_ratio": 0.9,
       "consensus_eps_next": 5.985,
-      "implied_target": 470.546,
-      "current_price": 419.5,
-      "upside_pct": 12.17
+      "implied_target": 479.099,
+      "current_price": 399.68,
+      "upside_pct": 19.87
     },
     {
       "symbol": "002938",
@@ -547,19 +527,19 @@
       "total_count": 117,
       "buy_ratio": 0.932,
       "consensus_eps_next": 2.18,
-      "implied_target": 157.899,
-      "current_price": 116,
-      "upside_pct": 36.12
+      "implied_target": 282.681,
+      "current_price": 103.54,
+      "upside_pct": 173.02
     },
     {
       "symbol": "600183",
-      "buy_count": 134,
-      "total_count": 137,
+      "buy_count": 135,
+      "total_count": 138,
       "buy_ratio": 0.978,
-      "consensus_eps_next": 1.61,
-      "implied_target": 127.597,
-      "current_price": 128.17,
-      "upside_pct": -0.45
+      "consensus_eps_next": 1.615,
+      "implied_target": 115.166,
+      "current_price": 136,
+      "upside_pct": -15.32
     },
     {
       "symbol": "002436",
@@ -567,8 +547,8 @@
       "total_count": 92,
       "buy_ratio": 1,
       "consensus_eps_next": 0.29,
-      "implied_target": 130.161,
-      "current_price": 38.11,
+      "implied_target": 126.438,
+      "current_price": 37.02,
       "upside_pct": 241.54
     },
     {
@@ -577,8 +557,8 @@
       "total_count": 42,
       "buy_ratio": 1,
       "consensus_eps_next": 1.555,
-      "implied_target": 383.7,
-      "current_price": 88.5,
+      "implied_target": 405.292,
+      "current_price": 93.48,
       "upside_pct": 333.56
     },
     {
@@ -587,9 +567,9 @@
       "total_count": 52,
       "buy_ratio": 0.808,
       "consensus_eps_next": 6.939,
-      "implied_target": 500.926,
-      "current_price": 339.3,
-      "upside_pct": 47.64
+      "implied_target": 452.631,
+      "current_price": 309.64,
+      "upside_pct": 46.18
     },
     {
       "symbol": "002409",
@@ -597,9 +577,9 @@
       "total_count": 61,
       "buy_ratio": 0.967,
       "consensus_eps_next": 3.2,
-      "implied_target": 186.39,
-      "current_price": 123.21,
-      "upside_pct": 51.28
+      "implied_target": 165.888,
+      "current_price": 116.2,
+      "upside_pct": 42.76
     },
     {
       "symbol": "688981",
@@ -607,19 +587,19 @@
       "total_count": 104,
       "buy_ratio": 0.933,
       "consensus_eps_next": 0.775,
-      "implied_target": 183.614,
-      "current_price": 149.18,
-      "upside_pct": 23.08
+      "implied_target": 177.932,
+      "current_price": 156,
+      "upside_pct": 14.06
     },
     {
       "symbol": "600941",
-      "buy_count": 77,
-      "total_count": 79,
+      "buy_count": 78,
+      "total_count": 80,
       "buy_ratio": 0.975,
       "consensus_eps_next": 7.3,
-      "implied_target": 113.205,
-      "current_price": 97.19,
-      "upside_pct": 16.48
+      "implied_target": 132.276,
+      "current_price": 98.13,
+      "upside_pct": 34.8
     },
     {
       "symbol": "601728",
@@ -627,9 +607,9 @@
       "total_count": 47,
       "buy_ratio": 0.979,
       "consensus_eps_next": 0.42,
-      "implied_target": 7.378,
-      "current_price": 6.08,
-      "upside_pct": 21.35
+      "implied_target": 7.816,
+      "current_price": 5.98,
+      "upside_pct": 30.7
     },
     {
       "symbol": "688082",
@@ -637,8 +617,8 @@
       "total_count": 67,
       "buy_ratio": 0.985,
       "consensus_eps_next": 4.28,
-      "implied_target": 423.321,
-      "current_price": 256.98,
+      "implied_target": 396.997,
+      "current_price": 241,
       "upside_pct": 64.73
     },
     {
@@ -647,9 +627,29 @@
       "total_count": 5,
       "buy_ratio": 1,
       "consensus_eps_next": 0.65,
-      "implied_target": 76.699,
-      "current_price": 59.48,
+      "implied_target": 72.495,
+      "current_price": 56.22,
       "upside_pct": 28.95
+    },
+    {
+      "symbol": "000021",
+      "buy_count": 17,
+      "total_count": 18,
+      "buy_ratio": 0.944,
+      "consensus_eps_next": null,
+      "implied_target": null,
+      "current_price": 43.98,
+      "upside_pct": null
+    },
+    {
+      "symbol": "002475",
+      "buy_count": 191,
+      "total_count": 207,
+      "buy_ratio": 0.923,
+      "consensus_eps_next": 2.89,
+      "implied_target": 105.225,
+      "current_price": 73.16,
+      "upside_pct": 43.83
     }
   ]
 }
