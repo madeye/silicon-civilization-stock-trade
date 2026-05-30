@@ -1,9 +1,11 @@
-"""FastAPI sidecar wrapping Tushare Pro + AkShare.
+"""FastAPI sidecar wrapping easy-tdx (通达信) + Tushare Pro + AkShare.
 
 Data-source split:
-- A-share (sh/sz/bj): AkShare market-wide spot snapshot for fast current
-  price/basic metrics; Tushare Pro remains the historical kline and fallback
-  source for daily_basic / report_rc.
+- A-share (sh/sz/bj): easy-tdx (direct 通达信 TCP, no token/quota) is the
+  preferred source for klines and realtime spot quotes, with the Tushare/
+  AkShare paths kept as automatic fallbacks. AkShare's Eastmoney snapshot
+  remains the source for spot/fundamental PE/PB/market-cap; Tushare Pro
+  remains the fallback kline source plus daily_basic / report_rc.
 - HK: akshare's stock_hk_hist — Tushare's hk_daily is hard-capped at
   10 calls/day on the free Pro tier (and 2/min within that), making it
   unusable for a HK watchlist beyond the first ~10 requests of the day.
@@ -28,6 +30,7 @@ import pandas as pd
 import requests
 import tushare as ts
 from dotenv import load_dotenv
+from easy_tdx import Adjust, MacClient, Market, Period
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
@@ -157,6 +160,118 @@ def _report_rc(**kwargs):
     """Rate-limited wrapper around pro.report_rc."""
     _REPORT_RC_LIMITER.acquire()
     return _pro.report_rc(**kwargs)
+
+
+# ---------- easy-tdx (通达信) A-share datasource ----------------------------
+# Direct TCP to a 通达信 quote server: no token, no daily quota. Preferred for
+# A-share klines and realtime spot quotes; the Tushare/AkShare paths below are
+# automatic fallbacks. HK is unaffected and still served by AkShare.
+
+_TDX_MARKET = {"sh": Market.SH, "sz": Market.SZ, "bj": Market.BJ}
+_TDX_ADJUST = {"": Adjust.NONE, "qfq": Adjust.QFQ, "hfq": Adjust.HFQ}
+
+# A single socket speaks the TDX request/response protocol, so every call is
+# serialized through this lock (the /spots batch fans out across threads).
+_TDX_LOCK = threading.Lock()
+_tdx_client: MacClient | None = None
+_tdx_down_until = 0.0  # monotonic deadline; skip (re)connect attempts until then
+
+
+def _tdx_call(method: str, *args, **kwargs):
+    """Call a MacClient method under the lock, reconnecting once on failure.
+
+    Returns None when the upstream is unreachable so callers fall back to the
+    existing Tushare/AkShare path instead of erroring.
+    """
+    global _tdx_client, _tdx_down_until
+    with _TDX_LOCK:
+        for attempt in range(2):
+            if _tdx_client is None:
+                if time.monotonic() < _tdx_down_until:
+                    return None
+                try:
+                    _tdx_client = MacClient.from_best_host(ping_timeout=3.0)
+                except Exception:
+                    _tdx_down_until = time.monotonic() + 120
+                    return None
+            try:
+                return getattr(_tdx_client, method)(*args, **kwargs)
+            except Exception:
+                try:
+                    _tdx_client.close()
+                except Exception:
+                    pass
+                _tdx_client = None  # retry once with a fresh connection
+        _tdx_down_until = time.monotonic() + 60
+        return None
+
+
+def _tdx_klines(
+    market: str, ts_code: str, start: str, end: str, adjust: str
+) -> list[dict[str, Any]] | None:
+    """A-share daily klines via easy-tdx, filtered to [start, end] (YYYYMMDD)."""
+    mkt = _TDX_MARKET.get(market)
+    if mkt is None:
+        return None
+    # get_stock_kline returns the most-recent `count` bars; size the request
+    # from the requested window (≈242 trading days/year) so a multi-year range
+    # is still fully covered, with headroom and a sane ceiling.
+    try:
+        start_d = datetime.strptime(start, "%Y%m%d").date()
+    except ValueError:
+        start_d = date.today() - timedelta(days=365)
+    span_days = max((date.today() - start_d).days, 1)
+    count = min(int(span_days * 0.72) + 30, 2000)
+    df = _tdx_call(
+        "get_stock_kline", mkt, _compact_code(ts_code), Period.DAILY,
+        count=count, adjust=_TDX_ADJUST.get(adjust, Adjust.NONE),
+    )
+    if df is None or df.empty:
+        return None
+    rows: list[dict[str, Any]] = []
+    for r in df.itertuples():
+        d = pd.Timestamp(r.datetime).strftime("%Y-%m-%d")
+        ymd = d.replace("-", "")
+        if ymd < start or ymd > end:
+            continue
+        rows.append({
+            "date": d,
+            "open": float(r.open),
+            "high": float(r.high),
+            "low": float(r.low),
+            "close": float(r.close),
+            # TDX klines report raw shares; Tushare pro_bar (the fallback) and
+            # the rest of the API use 手 (lots = 100 shares). Normalize so the
+            # volume field is identical regardless of which source served it.
+            "volume": float(r.vol) / 100,
+        })
+    return rows or None
+
+
+def _tdx_spot(symbol: str, ts_code: str, market: str) -> dict[str, Any] | None:
+    """Realtime A-share quote via easy-tdx (live price, not last close)."""
+    mkt = _TDX_MARKET.get(market)
+    if mkt is None:
+        return None
+    df = _tdx_call("get_stock_quotes", [(mkt, _compact_code(ts_code))])
+    if df is None or df.empty:
+        return None
+    r = df.iloc[0]
+    price = _num_or_none(r.get("close"))
+    if price is None or price <= 0:
+        return None
+    pre_close = _num_or_none(r.get("pre_close"))
+    change_pct = round((price / pre_close - 1) * 100, 2) if pre_close and pre_close > 0 else 0
+    # TDX names can carry padding spaces (e.g. "五 粮 液"); collapse them.
+    name = "".join(str(r.get("name") or "").split()) or _resolve_name(ts_code, market) or ""
+    return {
+        "symbol": symbol,
+        "name": name,
+        "price": round(price, 3),
+        "change_pct": change_pct,
+        "volume": _num_or_none(r.get("vol")) or 0,
+        "turnover": _num_or_none(r.get("amount")) or 0,
+    }
 
 
 def _latest_profit_yoy(ts_code: str) -> float | None:
@@ -509,6 +624,14 @@ def klines(
         return cached
 
     ts_code, market = _to_ts_code(symbol)
+
+    # easy-tdx first for A-shares (no token/quota); Tushare is the fallback.
+    if market in {"sh", "sz", "bj"}:
+        tdx_rows = _tdx_klines(market, ts_code, start, end, adjust)
+        if tdx_rows is not None:
+            cache_put(key, tdx_rows, seconds_until_next_trading_close())
+            return tdx_rows
+
     try:
         if market == "hk":
             # akshare for HK — Tushare's hk_daily is capped at 10/day.
@@ -779,6 +902,10 @@ def spot(symbol: str):
     end = date.today().strftime("%Y%m%d")
     try:
         if market in {"sh", "sz", "bj"}:
+            tdx_spot = _tdx_spot(symbol, ts_code, market)
+            if tdx_spot is not None:
+                cache_put(key, tdx_spot, 30)
+                return tdx_spot
             ak_spot = _ak_a_spot(ts_code, market)
             price = _spot_price_from_ak(ak_spot) if ak_spot is not None else None
             if ak_spot is not None and price is not None:

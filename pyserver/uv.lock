@@ -276,6 +276,20 @@ wheels = [
 ]
 
 [[package]]
+name = "easy-tdx"
+version = "1.4.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "pandas" },
+    { name = "tzdata" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ea/20/2d0e9ca241687e82406706ed9f1c02175c60a82cfd38516f9cd7d522c40f/easy_tdx-1.4.3.tar.gz", hash = "sha256:089b5f2716568ca82bd0cdc3ffe3a0d251e07e0bbab37e3851858533f5469fea", size = 10409118, upload-time = "2026-05-28T14:32:32.96Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/be/0d/d86fe6a92cc3940d89c787fc80f67192a58402fd3d4725f154d773517cfb/easy_tdx-1.4.3-py3-none-any.whl", hash = "sha256:ab63d9fbbbbcaa3016c286b86972086bdedcedbdc4622e4a41d896dbd180fec7", size = 176436, upload-time = "2026-05-28T14:32:31.727Z" },
+]
+
+[[package]]
 name = "et-xmlfile"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -664,6 +678,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "akshare" },
+    { name = "easy-tdx" },
     { name = "fastapi" },
     { name = "pandas" },
     { name = "pydantic" },
@@ -675,6 +690,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "akshare", specifier = ">=1.18.60" },
+    { name = "easy-tdx", specifier = ">=1.4.3" },
     { name = "fastapi", specifier = ">=0.136.1" },
     { name = "pandas", specifier = ">=3.0.3" },
     { name = "pydantic", specifier = ">=2.13.4" },
