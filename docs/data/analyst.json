@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-30T00:51:53.674Z",
+  "generated_at": "2026-05-30T02:20:51.094Z",
   "items": [
     {
       "symbol": "688256",
@@ -273,13 +273,13 @@
     },
     {
       "symbol": "300383",
+      "buy_count": 12,
+      "total_count": 19,
+      "buy_ratio": 0.632,
+      "consensus_eps_next": 0.26,
+      "implied_target": 48672,
       "current_price": 13.66,
-      "buy_count": null,
-      "total_count": null,
-      "buy_ratio": null,
-      "consensus_eps_next": null,
-      "implied_target": null,
-      "upside_pct": null
+      "upside_pct": 356210.4
     },
     {
       "symbol": "603881",
