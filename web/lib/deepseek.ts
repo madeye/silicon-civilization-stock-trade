@@ -64,7 +64,19 @@ export async function chat(
     const j = (await r.json()) as {
       choices: { message: { content: string } }[];
     };
-    return j.choices[0]?.message?.content ?? "";
+    const content = j.choices[0]?.message?.content ?? "";
+    // Validate BEFORE returning: cached() persists whatever doFetch resolves to,
+    // so an empty or unparseable json_object response must throw here rather than
+    // poison the cache for 12h with a string that downstream JSON.parse rejects.
+    if (responseFormat === "json_object") {
+      if (!content.trim()) throw new Error("deepseek returned empty content");
+      try {
+        JSON.parse(content);
+      } catch {
+        throw new Error("deepseek returned unparseable json_object content");
+      }
+    }
+    return content;
   };
 
   if (opts.bypassCache) return doFetch();

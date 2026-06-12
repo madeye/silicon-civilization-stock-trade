@@ -82,17 +82,21 @@ export async function proposeRefresh(current: UniverseFile): Promise<RefreshProp
   };
 }
 
-/** Validate a symbol by calling pyserver /fundamental. Returns true if pyserver
- *  knows it (200) regardless of whether all fields populated. */
 function isHongKongSymbol(symbol: string): boolean {
   return symbol.trim().toLowerCase().startsWith("hk");
 }
 
+/** Validate a symbol by calling pyserver /fundamental. pyserver returns 200 with
+ *  a null `name` for any well-formed-but-nonexistent code, so a 200 alone is not
+ *  evidence the symbol trades. Require a non-empty `name` — that is only populated
+ *  for codes Tushare resolves to a real listed A-share. */
 async function validateSymbol(symbol: string): Promise<{ ok: boolean; reason?: string }> {
   try {
     const f = await fetchFundamental(symbol);
-    // Even if fields are null, pyserver returned 200 -> symbol parses + tushare didn't 502.
     if (!f) return { ok: false, reason: "pyserver returned empty" };
+    if (!f.name || !f.name.trim()) {
+      return { ok: false, reason: "no listed A-share resolves this code (null name)" };
+    }
     return { ok: true };
   } catch (e) {
     return { ok: false, reason: e instanceof Error ? e.message : String(e) };
@@ -110,10 +114,18 @@ export async function applyRefresh(
   const added: UniverseEntry[] = [];
   const rejected: { symbol: string; reason: string }[] = [];
   const ADD_CONCURRENCY = 6;
-  const hkAdds = proposal.adds.filter((a) => a.symbol && !known.has(a.symbol) && isHongKongSymbol(a.symbol));
+  // Dedupe proposed adds by symbol: DeepSeek can propose the same code twice,
+  // and without this it would validate + push twice into universe.json.
+  const seen = new Set<string>();
+  const uniqueAdds = proposal.adds.filter((a) => {
+    if (!a.symbol || seen.has(a.symbol)) return false;
+    seen.add(a.symbol);
+    return true;
+  });
+  const hkAdds = uniqueAdds.filter((a) => !known.has(a.symbol) && isHongKongSymbol(a.symbol));
   rejected.push(...hkAdds.map((a) => ({ symbol: a.symbol, reason: "Hong Kong stocks are excluded from the universe" })));
 
-  const candidates = proposal.adds.filter((a) => a.symbol && !known.has(a.symbol) && !isHongKongSymbol(a.symbol));
+  const candidates = uniqueAdds.filter((a) => !known.has(a.symbol) && !isHongKongSymbol(a.symbol));
   for (let i = 0; i < candidates.length; i += ADD_CONCURRENCY) {
     const slice = candidates.slice(i, i + ADD_CONCURRENCY);
     const results = await Promise.all(
