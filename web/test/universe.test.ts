@@ -68,3 +68,19 @@ test("writeUniverse round-trips", () => {
   assert.equal(reloaded.updated_by, "round-trip-test");
   assert.equal(reloaded.entries.at(-1)!.symbol, "002463");
 });
+
+test("writeUniverse leaves no temp file behind and keeps content intact", () => {
+  const u = readUniverse();
+  u.updated_by = "atomic-test";
+  writeUniverse(u);
+
+  // The write-then-rename must not leave a .tmp sibling in the data dir.
+  const dataDir = path.join(tmp, "data");
+  const strays = fs.readdirSync(dataDir).filter((f) => f.includes(".tmp"));
+  assert.deepEqual(strays, []);
+
+  // The live file is whole and reflects the write.
+  const reloaded = readUniverse();
+  assert.equal(reloaded.updated_by, "atomic-test");
+  assert.equal(reloaded.entries.length, u.entries.length);
+});

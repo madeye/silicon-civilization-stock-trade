@@ -29,7 +29,11 @@ export function readUniverse(): UniverseFile {
 }
 
 export function writeUniverse(file: UniverseFile): void {
-  fs.writeFileSync(FILE, JSON.stringify(file, null, 2) + "\n", "utf-8");
+  // Write-then-rename so a crash mid-write can't truncate the live file: rename
+  // is atomic within a directory, so readers see either the old or new file whole.
+  const tmp = path.join(path.dirname(FILE), `.${path.basename(FILE)}.${process.pid}.tmp`);
+  fs.writeFileSync(tmp, JSON.stringify(file, null, 2) + "\n", "utf-8");
+  fs.renameSync(tmp, FILE);
 }
 
 /** Convenience accessor for callers that only want the entries. */
