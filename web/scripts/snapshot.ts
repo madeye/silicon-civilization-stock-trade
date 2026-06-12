@@ -119,7 +119,8 @@ function writeSocialCard(bt: SnapshotBacktest) {
     if (!m) continue;
     const [, k, raw] = m;
     if (process.env[k]) continue;
-    process.env[k] = raw.replace(/^["']|["']$/g, "");
+    // Strip inline comments (env.example.txt uses them) before unquoting.
+    process.env[k] = raw.replace(/\s+#.*$/, "").replace(/^["']|["']$/g, "").trim();
   }
 })();
 
