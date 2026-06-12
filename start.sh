@@ -45,4 +45,8 @@ echo "[start] launching web on :$WEB_PORT"
 ( cd "$ROOT/web" && npm run dev -- --port "$WEB_PORT" ) &
 WEB_PID=$!
 
-wait -n "$PY_PID" "$WEB_PID"
+# Exit when either server dies. (`wait -n` with PIDs needs bash 5.1+; stock
+# macOS bash is 3.2, where it errors out and instantly kills both servers.)
+while kill -0 "$PY_PID" 2>/dev/null && kill -0 "$WEB_PID" 2>/dev/null; do
+  sleep 1
+done
