@@ -1,7 +1,7 @@
 {
   "$schema_note": "硅基文明消费股 watchlist. Edit via UI or directly. Each entry: {symbol, name, theme, note?}.",
-  "updated_at": "2026-05-28",
-  "updated_by": "manual-remove-weak",
+  "updated_at": "2026-06-12",
+  "updated_by": "deepseek-refresh",
   "entries": [
     {
       "symbol": "688256",
@@ -103,14 +103,14 @@
     {
       "symbol": "600330",
       "name": "天通股份",
-      "theme": "半导体材料",
+      "theme": "半导体设备",
       "note": "铌酸锂单晶/晶圆，上游关键原材料",
       "global_supply": false
     },
     {
       "symbol": "002222",
       "name": "福晶科技",
-      "theme": "半导体材料",
+      "theme": "光模块",
       "note": "铌酸锂等光学晶体材料",
       "global_supply": false
     },
@@ -449,6 +449,62 @@
       "theme": "AI服务器",
       "note": "进入英伟达GB200供应链，提供服务器组装及高速铜缆互连组件，深度参与全球AI服务器制造",
       "global_supply": true
+    },
+    {
+      "symbol": "688498",
+      "name": "源杰科技",
+      "theme": "光模块",
+      "note": "光芯片龙头，为AI光模块提供激光器芯片",
+      "global_supply": false
+    },
+    {
+      "symbol": "688120",
+      "name": "华海清科",
+      "theme": "半导体设备",
+      "note": "CMP设备龙头，用于AI芯片先进制程和封装",
+      "global_supply": false
+    },
+    {
+      "symbol": "688037",
+      "name": "芯源微",
+      "theme": "半导体设备",
+      "note": "涂胶显影设备龙头，用于前道晶圆制造",
+      "global_supply": false
+    },
+    {
+      "symbol": "600050",
+      "name": "中国联通",
+      "theme": "云/AI基建",
+      "note": "三大运营商之一，提供AI算力网络和云服务",
+      "global_supply": false
+    },
+    {
+      "symbol": "688347",
+      "name": "华虹公司",
+      "theme": "晶圆代工",
+      "note": "国内第二大晶圆代工厂，特色工艺助力AI功率和存储",
+      "global_supply": false
+    },
+    {
+      "symbol": "688268",
+      "name": "华特气体",
+      "theme": "半导体材料",
+      "note": "高纯特种气体龙头，供应台积电等全球先进制程",
+      "global_supply": true
+    },
+    {
+      "symbol": "688234",
+      "name": "天岳先进",
+      "theme": "半导体材料",
+      "note": "碳化硅衬底龙头，AI服务器功率器件关键材料",
+      "global_supply": false
+    },
+    {
+      "symbol": "300655",
+      "name": "晶瑞电材",
+      "theme": "半导体材料",
+      "note": "高纯化学试剂和光刻胶，用于AI芯片制造",
+      "global_supply": false
     }
   ]
 }
