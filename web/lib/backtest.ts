@@ -1,6 +1,9 @@
 // Bar-by-bar backtest engine. Walks the price series forward, asks DeepSeek
-// for signals every `rebalanceEveryNDays` bars using only data available at
-// that point (look-ahead-free), and applies them to a virtual portfolio.
+// for signals every `rebalanceEveryNDays` bars and applies them to a virtual
+// portfolio. Look-ahead rules: signals at rebalance date D see closes strictly
+// BEFORE D (you cannot compute a signal from a close and then trade at that
+// same close), and fundamentals are excluded entirely — we only have today's
+// snapshot, which would leak future valuations into historical decisions.
 //
 // Signals are cached by (model, messages) hash, so re-running the same
 // backtest is free in tokens — only adding new bars or symbols pays cost.
@@ -47,17 +50,16 @@ export interface BacktestResult {
 export interface SymbolSeries {
   entry: UniverseEntry;
   klines: Kline[];
-  fundamental?: SymbolSnapshot["fundamental"];
 }
 
-function alignedTradingDates(series: SymbolSeries[]): string[] {
-  const sets = series.map((s) => new Set(s.klines.map((k) => k.date)));
+// Union of all series' dates. An intersection would let a single suspended
+// (停牌) or late-listed symbol delete whole stretches of the portfolio clock —
+// months of marks vanish and CAGR/Sharpe are computed over a warped calendar.
+// Symbols without a bar on a given date simply can't trade that day.
+function unionTradingDates(series: SymbolSeries[]): string[] {
   const all = new Set<string>();
   series.forEach((s) => s.klines.forEach((k) => all.add(k.date)));
-  // intersection — only dates present in all series, to keep portfolio aligned
-  return [...all]
-    .filter((d) => sets.every((s) => s.has(d)))
-    .sort();
+  return [...all].sort();
 }
 
 function indexByDate(klines: Kline[]) {
@@ -68,7 +70,7 @@ function indexByDate(klines: Kline[]) {
 
 // A-share daily price-limit (涨跌停) thresholds by board, as a fraction of the
 // prior close. Main board ±10% (ST ±5%), 科创板/创业板 ±20%, 北交所 ±30%.
-function priceLimitFraction(symbol: string, name: string): number {
+export function priceLimitFraction(symbol: string, name: string): number {
   const code = symbol.replace(/^(sh|sz|bj)/i, "").replace(/\.(sh|sz|bj)$/i, "");
   if (/^(688|300|301)/.test(code)) return 0.2; // 科创板 / 创业板
   if (/^(4|8|92)/.test(code)) return 0.3; // 北交所
@@ -105,7 +107,7 @@ export async function runBacktest(
     : (optsOrOnProgress ?? {});
   const onProgress = opts.onProgress;
   const scorer: Scorer = opts.scorer ?? scoreSymbols;
-  const dates = alignedTradingDates(series).filter(
+  const dates = unionTradingDates(series).filter(
     (d) => d >= cfg.startDate && d <= cfg.endDate,
   );
   if (dates.length < 5) {
@@ -152,16 +154,19 @@ export async function runBacktest(
     const slice = rebalanceDates.slice(i, i + CONCURRENCY);
     const results = await Promise.all(
       slice.map(async (d) => {
-        const snapshots: SymbolSnapshot[] = series.map((s) => {
-          const upto = s.klines.filter((k) => k.date <= d);
-          return {
-            symbol: s.entry.symbol,
-            name: s.entry.name,
-            theme: s.entry.theme,
-            closes: upto.map((k) => k.close),
-            fundamental: s.fundamental,
-          };
-        });
+        const snapshots: SymbolSnapshot[] = series
+          .map((s) => {
+            // Strictly before d: the decision is made knowing yesterday's
+            // close, then executed at today's. No fundamentals — see header.
+            const upto = s.klines.filter((k) => k.date < d);
+            return {
+              symbol: s.entry.symbol,
+              name: s.entry.name,
+              theme: s.entry.theme,
+              closes: upto.map((k) => k.close),
+            };
+          })
+          .filter((s) => s.closes.length > 0); // not yet listed as of d
         const sigs = await scorer(snapshots, { asOf: d, mode: "backtest" });
         signalsDone++;
         onProgress?.({ phase: "signals", done: signalsDone, total: rebalanceDates.length });
@@ -178,8 +183,10 @@ export async function runBacktest(
 
   let cash = cfg.startCash;
   const shares: Record<string, number> = Object.fromEntries(symbols.map((s) => [s, 0]));
-  // Sells blocked by a 跌停 lock; retried each bar until the name can trade.
+  // Sells blocked by a 跌停 lock or 停牌; retried each bar until tradable.
   const pendingSell: Record<string, boolean> = {};
+  // Last traded close per symbol, for marking positions on days it has no bar.
+  const lastPrice: Record<string, number> = {};
   const equityCurve: PortfolioBar[] = [];
   const trades: BacktestResult["trades"] = [];
   const fee = cfg.feeBps / 10_000;
@@ -191,13 +198,30 @@ export async function runBacktest(
     if (i % progressEvery === 0 || i === dates.length - 1) {
       onProgress?.({ phase: "simulating", done: i + 1, total: dates.length });
     }
+    // Symbols without a bar today (停牌, not yet listed) get no price entry
+    // and are untradable; held positions mark at their last traded close.
     const prices: Record<string, number> = {};
     for (let j = 0; j < symbols.length; j++) {
-      const k = byDate[j].get(date)!;
-      prices[symbols[j]] = k.close;
+      const k = byDate[j].get(date);
+      if (k) {
+        prices[symbols[j]] = k.close;
+        lastPrice[symbols[j]] = k.close;
+      }
     }
 
-    // Retry sells deferred by a prior 跌停 as soon as the name can trade again.
+    const isRebalance = i % cfg.rebalanceEveryNDays === 0;
+    const signals = isRebalance ? signalsByDate[date] ?? [] : [];
+
+    // A fresh buy decision supersedes a sell deferred from an earlier
+    // rebalance — otherwise the stale deferral force-dumps the position the
+    // newer signal just (re)built, paying fees both ways.
+    for (const sig of signals) {
+      if (sig.action === "buy" && pendingSell[sig.symbol]) {
+        pendingSell[sig.symbol] = false;
+      }
+    }
+
+    // Retry sells deferred by a prior 跌停/停牌 as soon as the name trades again.
     for (const sym of symbols) {
       if (!pendingSell[sym]) continue;
       const held = shares[sym] ?? 0;
@@ -207,6 +231,7 @@ export async function runBacktest(
       }
       const j = symbolIndex.get(sym)!;
       const px = prices[sym];
+      if (px === undefined) continue; // 停牌 — keep waiting
       if (atLimitDown(j, date, px)) continue; // still 跌停 — keep waiting
       cash += held * px * (1 - fee);
       trades.push({ date, symbol: sym, side: "sell", shares: held, price: px });
@@ -214,10 +239,7 @@ export async function runBacktest(
       pendingSell[sym] = false;
     }
 
-    // Rebalance day?
-    if (i % cfg.rebalanceEveryNDays === 0) {
-      const signals = signalsByDate[date] ?? [];
-
+    if (isRebalance) {
       // Sells first to free cash
       for (const sig of signals) {
         if (sig.action !== "sell") continue;
@@ -225,6 +247,11 @@ export async function runBacktest(
         if (held <= 0) continue;
         const j = symbolIndex.get(sig.symbol);
         const px = prices[sig.symbol];
+        // 停牌 — no market today; defer like a 跌停 lock.
+        if (px === undefined) {
+          pendingSell[sig.symbol] = true;
+          continue;
+        }
         // 跌停 — no buyers, can't sell today; defer and retry on later bars.
         if (j !== undefined && atLimitDown(j, date, px)) {
           pendingSell[sig.symbol] = true;
@@ -242,6 +269,7 @@ export async function runBacktest(
       const buys = signals
         .filter((s) => {
           if (s.action !== "buy" || s.size <= 0) return false;
+          if (prices[s.symbol] === undefined) return false; // 停牌/未上市
           const j = symbolIndex.get(s.symbol);
           return !(j !== undefined && atLimitUp(j, date, prices[s.symbol]));
         })
@@ -262,15 +290,16 @@ export async function runBacktest(
         cash -= cost;
         shares[sig.symbol] = (shares[sig.symbol] ?? 0) + sh;
         trades.push({ date, symbol: sig.symbol, side: "buy", shares: sh, price: px });
+        pendingSell[sig.symbol] = false;
       }
     }
 
-    // Mark-to-market
+    // Mark-to-market (suspended names mark at last traded close)
     let equity = cash;
     const positions: PortfolioBar["positions"] = {};
     for (const sym of symbols) {
       if (shares[sym] > 0) {
-        const px = prices[sym];
+        const px = prices[sym] ?? lastPrice[sym];
         equity += shares[sym] * px;
         positions[sym] = { shares: shares[sym], price: px };
       }
@@ -283,8 +312,11 @@ export async function runBacktest(
   const start = equities[0];
   const end = equities[equities.length - 1];
   const totalReturnPct = (end / start - 1) * 100;
-  const years = equityCurve.length / 252;
-  const cagrPct = (Math.pow(end / start, 1 / Math.max(years, 1 / 252)) - 1) * 100;
+  // Calendar span, not bar count: bar count undercounts elapsed time whenever
+  // the union calendar has gaps (suspensions, holidays), overstating CAGR.
+  const spanMs = Date.parse(equityCurve.at(-1)!.date) - Date.parse(equityCurve[0].date);
+  const years = Math.max(spanMs / (365.25 * 24 * 3600 * 1000), 1 / 252);
+  const cagrPct = (Math.pow(end / start, 1 / years) - 1) * 100;
 
   let peak = start;
   let maxDD = 0;

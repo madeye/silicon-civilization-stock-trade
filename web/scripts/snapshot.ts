@@ -236,21 +236,15 @@ async function main() {
     const aksEnd = endDate.replaceAll("-", "");
 
     console.log(`[backtest] window ${startDate} → ${endDate} — loading bars…`);
+    // Klines only — backtests exclude fundamentals (today's snapshot would
+    // leak future data into historical rebalances; see lib/backtest.ts).
     const series = (
       await mapPool(u.entries, 6, async (entry): Promise<SymbolSeries | null> => {
-        const [klRes, fdRes] = await Promise.allSettled([
+        const [klRes] = await Promise.allSettled([
           fetchKlines(entry.symbol, aksStart, aksEnd),
-          fetchFundamental(entry.symbol),
         ]);
         if (klRes.status !== "fulfilled" || klRes.value.length < 20) return null;
-        const fd = fdRes.status === "fulfilled" ? fdRes.value : undefined;
-        return {
-          entry,
-          klines: klRes.value,
-          fundamental: fd
-            ? { pe_ttm: fd.pe_ttm ?? null, pb: fd.pb ?? null, market_cap: fd.market_cap ?? null }
-            : undefined,
-        };
+        return { entry, klines: klRes.value };
       })
     ).filter((s): s is SymbolSeries => s !== null);
     console.log(`[backtest] loaded ${series.length}/${u.entries.length}; running…`);
