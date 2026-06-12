@@ -539,11 +539,22 @@ def _ak_research_consensus(symbol: str) -> dict[str, Any]:
     return out
 
 
+# PE(TTM) above this is a sign of near-zero trailing earnings, not a real
+# valuation multiple; EPS_next * PE would imply absurd targets (e.g. 688047
+# 龙芯中科 at PE≈69,000 → target 6250 vs price 136, "+4500% upside").
+MAX_PE_FOR_IMPLIED_TARGET = 300.0
+# A target implying more than +200% upside is outside anything sell-side
+# research publishes; treat it as bad data rather than show it to the user.
+MAX_IMPLIED_UPSIDE_RATIO = 3.0
+
+
 def _implied_target_from_eps_pe(eps: Any, pe_ttm: Any) -> float | None:
     """Return an EPS * PE target only when both inputs are economically valid."""
     eps_value = _num_or_none(eps)
     pe_value = _num_or_none(pe_ttm)
     if eps_value is None or pe_value is None or eps_value <= 0 or pe_value <= 0:
+        return None
+    if pe_value > MAX_PE_FOR_IMPLIED_TARGET:
         return None
     return round(eps_value * pe_value, 3)
 
@@ -553,6 +564,16 @@ def _sanitize_analyst_payload(out: dict[str, Any]) -> dict[str, Any]:
     target = _num_or_none(out.get("implied_target"))
     current_price = _num_or_none(out.get("current_price"))
     if target is None or target <= 0:
+        out["implied_target"] = None
+        out["upside_pct"] = None
+        return out
+    if (
+        current_price is not None
+        and current_price > 0
+        and target / current_price > 1 + MAX_IMPLIED_UPSIDE_RATIO
+    ):
+        # Implausible target from bad inputs (e.g. EPS*PE on near-zero
+        # earnings); also cleans payloads cached before this guard existed.
         out["implied_target"] = None
         out["upside_pct"] = None
         return out
