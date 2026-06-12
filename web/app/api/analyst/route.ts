@@ -4,6 +4,7 @@ import { fetchAnalyst, fetchSpot } from "@/lib/pyserver";
 export const runtime = "nodejs";
 
 const ANALYST_TIMEOUT_MS = 25_000;
+const SPOT_FALLBACK_TIMEOUT_MS = 5_000;
 
 function timeout(ms: number): Promise<never> {
   return new Promise((_, reject) => {
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(data);
   } catch (e) {
     try {
-      const spot = await fetchSpot(symbol);
+      const spot = await Promise.race([fetchSpot(symbol), timeout(SPOT_FALLBACK_TIMEOUT_MS)]);
       return NextResponse.json({
         symbol,
         current_price: spot.price,

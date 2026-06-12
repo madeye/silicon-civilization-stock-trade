@@ -33,23 +33,34 @@ export default function RefreshUniverseButton() {
       const reader = r.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let nl: number;
-        while ((nl = buf.indexOf("\n")) >= 0) {
-          const line = buf.slice(0, nl);
-          buf = buf.slice(nl + 1);
-          if (!line) continue;
-          const evt = JSON.parse(line);
-          if (evt.type === "log") setLogs((p) => [...p, evt.message]);
-          else if (evt.type === "progress") setProgress({ done: evt.done, total: evt.total });
-          else if (evt.type === "result") setResult(evt.result);
-          else if (evt.type === "error") setError(evt.message);
+      let gotResult = false;
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          let nl: number;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, nl);
+            buf = buf.slice(nl + 1);
+            if (!line) continue;
+            let evt;
+            try {
+              evt = JSON.parse(line);
+            } catch {
+              continue;
+            }
+            if (evt.type === "log") setLogs((p) => [...p, evt.message]);
+            else if (evt.type === "progress") setProgress({ done: evt.done, total: evt.total });
+            else if (evt.type === "result") { setResult(evt.result); gotResult = true; }
+            else if (evt.type === "error") setError(evt.message);
+          }
         }
+      } finally {
+        reader.cancel().catch(() => {});
       }
-      router.refresh();
+      // Only re-render the page when the refresh actually applied changes.
+      if (gotResult) router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

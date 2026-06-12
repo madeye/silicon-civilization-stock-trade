@@ -40,6 +40,3 @@ export function writeUniverse(file: UniverseFile): void {
 export function loadEntries(): UniverseEntry[] {
   return readUniverse().entries;
 }
-
-// Backwards-compat name used across the app.
-export const DEFAULT_UNIVERSE: UniverseEntry[] = loadEntries();

@@ -82,30 +82,39 @@ export default function BacktestPage() {
       const reader = r.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let nl: number;
-        while ((nl = buf.indexOf("\n")) >= 0) {
-          const line = buf.slice(0, nl);
-          buf = buf.slice(nl + 1);
-          if (!line) continue;
-          const evt = JSON.parse(line) as
-            | { type: "progress"; phase: Phase; done: number; total: number }
-            | { type: "log"; message: string }
-            | { type: "result"; result: BacktestResult }
-            | { type: "error"; message: string };
-          if (evt.type === "progress") {
-            setProgress({ phase: evt.phase, done: evt.done, total: evt.total });
-          } else if (evt.type === "log") {
-            setLogs((prev) => [...prev, evt.message]);
-          } else if (evt.type === "result") {
-            setResult(evt.result);
-          } else if (evt.type === "error") {
-            setError(evt.message);
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          let nl: number;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, nl);
+            buf = buf.slice(nl + 1);
+            if (!line) continue;
+            let evt:
+              | { type: "progress"; phase: Phase; done: number; total: number }
+              | { type: "log"; message: string }
+              | { type: "result"; result: BacktestResult }
+              | { type: "error"; message: string };
+            try {
+              evt = JSON.parse(line);
+            } catch {
+              continue;
+            }
+            if (evt.type === "progress") {
+              setProgress({ phase: evt.phase, done: evt.done, total: evt.total });
+            } else if (evt.type === "log") {
+              setLogs((prev) => [...prev, evt.message]);
+            } else if (evt.type === "result") {
+              setResult(evt.result);
+            } else if (evt.type === "error") {
+              setError(evt.message);
+            }
           }
         }
+      } finally {
+        reader.cancel().catch(() => {});
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
