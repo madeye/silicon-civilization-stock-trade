@@ -1,9 +1,12 @@
 import { loadEntries } from "@/lib/universe";
 import { fetchKlines, fetchFundamental, fetchSpot } from "@/lib/pyserver";
 import { scoreSymbols, type SymbolSnapshot } from "@/lib/deepseek";
+import { mapPool } from "@/lib/concurrent";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+
+const LOAD_CONCURRENCY = Number(process.env.SIGNALS_LOAD_CONCURRENCY ?? 6);
 
 type LiveSnapshot = SymbolSnapshot & { spotPrice?: number };
 
@@ -22,8 +25,10 @@ async function loadSignals() {
     return d.toISOString().slice(0, 10).replaceAll("-", "");
   })();
 
-  const snapshots: LiveSnapshot[] = await Promise.all(
-    universe.map(async (e) => {
+  const snapshots: LiveSnapshot[] = await mapPool(
+    universe,
+    LOAD_CONCURRENCY,
+    async (e) => {
       const [klines, fund, spot] = await Promise.all([
         fetchKlines(e.symbol, start).catch(() => []),
         fetchFundamental(e.symbol).catch(() => undefined),
@@ -44,7 +49,7 @@ async function loadSignals() {
             }
           : undefined,
       };
-    }),
+    },
   );
 
   const usable = snapshots.filter((s) => s.closes.length >= 10);
