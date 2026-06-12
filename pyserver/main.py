@@ -875,8 +875,12 @@ def analyst(symbol: str):
         rc = _with_retries(_report_rc, ts_code=ts_code, start_date=start)
     except Exception as e:
         # Keep current_price usable; do not poison the cache for a full day
-        # because rate-limit errors are transient.
-        cache_put(key, out, 60)
+        # because rate-limit errors are transient. If the research consensus
+        # above already produced ratings, the payload is good — cache it for
+        # the full TTL instead of dropping it after 60s and re-rolling the
+        # rate-limit dice on the next request.
+        ttl = 24 * 3600 if out.get("buy_count") is not None else 60
+        cache_put(key, out, ttl)
         return out
 
     if rc is None or rc.empty:

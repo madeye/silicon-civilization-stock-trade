@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T03:34:51.048Z",
+  "generated_at": "2026-06-12T08:34:38.544Z",
   "config": {
     "startCash": 1000000,
     "rebalanceEveryNDays": 10,
@@ -9,10 +9,10 @@
     "maxPositions": 6
   },
   "stats": {
-    "totalReturnPct": 365.72863873080576,
-    "cagrPct": 366.21964551956313,
+    "totalReturnPct": 355.17641909719106,
+    "cagrPct": 355.64914840805005,
     "maxDrawdownPct": -20.05717131650031,
-    "sharpe": 2.9548537220160105,
+    "sharpe": 2.910651058082939,
     "trades": 103
   },
   "equityCurve": [
@@ -1233,7 +1233,7 @@
     },
     {
       "date": "2026-06-12",
-      "equity": 4652732.497335053,
+      "equity": 4547313.480496979,
       "cash": 83179.50279769932
     }
   ],
