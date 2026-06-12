@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { fallback } from "../app/api/analyst/batch/route";
+import { fallback } from "../lib/analyst-fallback";
 import type { Analyst } from "../lib/pyserver";
 
 function ok(symbol: string): Analyst {
