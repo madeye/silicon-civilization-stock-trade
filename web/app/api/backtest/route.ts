@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { loadEntries } from "@/lib/universe";
-import { fetchKlines, fetchFundamental } from "@/lib/pyserver";
+import { fetchKlines, type Kline } from "@/lib/pyserver";
 import { runBacktest, type BacktestConfig, type SymbolSeries } from "@/lib/backtest";
 import { mapPool } from "@/lib/concurrent";
 import { saveBacktestResult } from "@/lib/cache";
@@ -46,34 +46,28 @@ export async function POST(req: NextRequest) {
         send({ type: "progress", phase: "loading", done: 0, total: universe.length });
         let loaded = 0;
         let failed = 0;
+        // No fundamentals here: only today's snapshot exists, and feeding it
+        // to historical rebalances is look-ahead (see lib/backtest.ts header).
         const loadedSeries = await mapPool(universe, LOAD_CONCURRENCY, async (entry): Promise<SymbolSeries | null> => {
-          const [klinesRes, fundRes] = await Promise.allSettled([
-            fetchKlines(entry.symbol, aksStart, aksEnd),
-            fetchFundamental(entry.symbol),
-          ]);
+          let klines: Kline[] | null = null;
+          let why = "";
+          try {
+            klines = await fetchKlines(entry.symbol, aksStart, aksEnd);
+            if (klines.length < 20) {
+              why = `only ${klines.length} bars`;
+              klines = null;
+            }
+          } catch (e) {
+            why = e instanceof Error ? e.message : String(e);
+          }
           loaded++;
           send({ type: "progress", phase: "loading", done: loaded, total: universe.length });
-          if (klinesRes.status !== "fulfilled" || klinesRes.value.length < 20) {
+          if (!klines) {
             failed++;
-            const why = klinesRes.status === "rejected"
-              ? (klinesRes.reason instanceof Error ? klinesRes.reason.message : String(klinesRes.reason))
-              : `only ${klinesRes.value.length} bars`;
             send({ type: "log", message: `skip ${entry.symbol} ${entry.name}: ${why.slice(0, 120)}` });
             return null;
           }
-          const fund = fundRes.status === "fulfilled" ? fundRes.value : undefined;
-          return {
-            entry,
-            klines: klinesRes.value,
-            fundamental: fund
-              ? {
-                  pe_ttm: fund.pe_ttm ?? null,
-                  pb: fund.pb ?? null,
-                  market_cap: fund.market_cap ?? null,
-                  profit_yoy: fund.profit_yoy ?? null,
-                }
-              : undefined,
-          };
+          return { entry, klines };
         });
         const series: SymbolSeries[] = loadedSeries.filter((x): x is SymbolSeries => x !== null);
 
