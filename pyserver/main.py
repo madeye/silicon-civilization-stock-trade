@@ -94,6 +94,19 @@ def cache_put(key: str, value: Any, ttl_seconds: int) -> None:
         )
 
 
+def cache_update_keep_age(key: str, value: Any) -> None:
+    """Rewrite a cached payload without resetting its TTL clock.
+
+    Re-persisting via cache_put bumps fetched_at, so an entry that is read
+    at least once per TTL window would never expire.
+    """
+    with db() as conn:
+        conn.execute(
+            "UPDATE cache SET payload = ? WHERE key = ?",
+            (json.dumps(value, ensure_ascii=False), key),
+        )
+
+
 def seconds_until_next_trading_close() -> int:
     """TTL so daily klines refresh after the next 15:30 CN market close."""
     now = datetime.now()
@@ -228,6 +241,15 @@ def _tdx_klines(
     )
     if df is None or df.empty:
         return None
+    # get_stock_kline returns the most-recent `count` bars. If upstream filled
+    # the entire request and the earliest bar still lands well after `start`,
+    # older bars were cut off (e.g. the 2000-bar ceiling on a multi-year
+    # window) — return None so the Tushare fallback serves the full history
+    # instead of caching a silently truncated series.
+    if len(df) >= count:
+        earliest = pd.Timestamp(df["datetime"].min()).strftime("%Y%m%d")
+        if earliest > (start_d + timedelta(days=10)).strftime("%Y%m%d"):
+            return None
     rows: list[dict[str, Any]] = []
     for r in df.itertuples():
         d = pd.Timestamp(r.datetime).strftime("%Y-%m-%d")
@@ -350,6 +372,10 @@ def _to_ts_code(symbol: str) -> tuple[str, str]:
         code, mkt = s[2:], s[:2]
     elif s.startswith("hk"):
         code, mkt = s[2:].zfill(5), "hk"
+    elif s.startswith("920"):
+        # BSE listings issued since late 2024; must precede the "9" → SH
+        # branch (which is for 900xxx Shanghai B-shares).
+        code, mkt = s, "bj"
     elif s.startswith(("60", "68", "9")):
         code, mkt = s, "sh"
     elif s.startswith(("00", "30", "20")):
@@ -418,12 +444,15 @@ def _ak_a_spot_rows(ts_code: str, market: str) -> dict[str, Any] | None:
     key = f"ak:a:spot:em:{code}"
     cached = cache_get(key)
     if cached is not None:
-        return cached
+        # A cached miss marker means upstream failed moments ago; back off
+        # instead of re-stalling on the 3s request timeout. (Caching a bare
+        # None would be indistinguishable from a cache miss.)
+        return None if cached.get("__miss__") else cached
     url = "https://push2.eastmoney.com/api/qt/stock/get"
     params = {
         "fltt": "2",
         "invt": "2",
-        "fields": "f43,f57,f58,f116,f117,f162,f167,f168,f47,f48,f170",
+        "fields": "f43,f57,f58,f116,f117,f162,f163,f167,f168,f47,f48,f170",
         "secid": f"{_eastmoney_market_code(market)}.{code}",
     }
     try:
@@ -431,10 +460,10 @@ def _ak_a_spot_rows(ts_code: str, market: str) -> dict[str, Any] | None:
         response.raise_for_status()
         data = response.json().get("data")
     except Exception:
-        cache_put(key, None, 10)
+        cache_put(key, {"__miss__": True}, 10)
         return None
     if not data:
-        cache_put(key, None, 10)
+        cache_put(key, {"__miss__": True}, 10)
         return None
     row = {
         "代码": data.get("f57") or code,
@@ -446,6 +475,7 @@ def _ak_a_spot_rows(ts_code: str, market: str) -> dict[str, Any] | None:
         "总市值": data.get("f116"),
         "流通市值": data.get("f117"),
         "市盈率-动态": data.get("f162"),
+        "市盈率-TTM": data.get("f163"),
         "市净率": data.get("f167"),
         "换手率": data.get("f168"),
     }
@@ -586,7 +616,7 @@ _NAME_CACHE: dict[str, str] = {}
 
 def _resolve_name(ts_code: str, market: str) -> str | None:
     if ts_code in _NAME_CACHE:
-        return _NAME_CACHE[ts_code]
+        return _NAME_CACHE[ts_code] or None
     try:
         if market == "hk":
             df = _pro.hk_basic(fields="ts_code,name")
@@ -598,7 +628,10 @@ def _resolve_name(ts_code: str, market: str) -> str | None:
         return None
     for r in df.itertuples():
         _NAME_CACHE[r.ts_code] = r.name
-    return _NAME_CACHE.get(ts_code)
+    # Negative-cache codes absent from the listing (delisted, bogus), else
+    # every lookup for them re-downloads the entire multi-thousand-row table.
+    _NAME_CACHE.setdefault(ts_code, "")
+    return _NAME_CACHE.get(ts_code) or None
 
 
 # ---------- endpoints ------------------------------------------------------
@@ -692,7 +725,7 @@ def fundamental(symbol: str):
     ak_spot = _ak_a_spot(ts_code, market)
     if ak_spot is not None:
         out["name"] = str(ak_spot.get("名称") or out.get("name") or "")
-        pe_ttm = _num_or_none(_ak_col(pd.Series(ak_spot), "市盈率-动态", "市盈率", "PE"))
+        pe_ttm = _num_or_none(_ak_col(pd.Series(ak_spot), "市盈率-TTM", "市盈率-动态", "市盈率", "PE"))
         pb = _num_or_none(_ak_col(pd.Series(ak_spot), "市净率", "PB"))
         market_cap = _market_cap_to_yi(_num_or_none(_ak_col(pd.Series(ak_spot), "总市值")))
         if pe_ttm is not None:
@@ -749,7 +782,8 @@ def analyst(symbol: str):
     legacy_cached = cache_get(f"analyst:{symbol}")
     if cached is not None:
         out = _prefer_richer_analyst_payload(cached, legacy_cached)
-        cache_put(key, out, 24 * 3600)
+        if out != cached:
+            cache_update_keep_age(key, out)
         return out
     if legacy_cached is not None:
         out = _sanitize_analyst_payload(legacy_cached)
@@ -771,7 +805,7 @@ def analyst(symbol: str):
         price = _spot_price_from_ak(ak_spot)
         if price is not None:
             out["current_price"] = round(price, 3)
-        pe_ttm = _num_or_none(_ak_col(pd.Series(ak_spot), "市盈率-动态", "市盈率", "PE"))
+        pe_ttm = _num_or_none(_ak_col(pd.Series(ak_spot), "市盈率-TTM", "市盈率-动态", "市盈率", "PE"))
     try:
         if out.get("current_price") is None or pe_ttm is None:
             today = date.today().strftime("%Y%m%d")
