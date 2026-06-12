@@ -575,7 +575,8 @@ def _ak_research_consensus(symbol: str) -> dict[str, Any]:
 MAX_PE_FOR_IMPLIED_TARGET = 300.0
 # A target implying more than +200% upside is outside anything sell-side
 # research publishes; treat it as bad data rather than show it to the user.
-MAX_IMPLIED_UPSIDE_RATIO = 3.0
+# (target/price ratio: 3.0 == +200% upside.)
+MAX_IMPLIED_UPSIDE_RATIO = 2.0
 
 
 def _implied_target_from_eps_pe(eps: Any, pe_ttm: Any) -> float | None:
