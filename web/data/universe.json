@@ -103,7 +103,7 @@
     {
       "symbol": "600330",
       "name": "天通股份",
-      "theme": "半导体设备",
+      "theme": "半导体材料",
       "note": "铌酸锂单晶/晶圆，上游关键原材料",
       "global_supply": false
     },
@@ -209,56 +209,56 @@
     {
       "symbol": "002335",
       "name": "科华数据",
-      "theme": "IDC",
+      "theme": "电力设备",
       "note": "IDC + 数据中心电源",
       "global_supply": false
     },
     {
       "symbol": "603290",
       "name": "斯达半导",
-      "theme": "功率半导体",
+      "theme": "功率器件",
       "note": "IGBT 龙头",
       "global_supply": false
     },
     {
       "symbol": "688187",
       "name": "时代电气",
-      "theme": "功率半导体",
+      "theme": "功率器件",
       "note": "高压 IGBT/SiC",
       "global_supply": false
     },
     {
       "symbol": "688711",
       "name": "宏微科技",
-      "theme": "功率半导体",
+      "theme": "功率器件",
       "note": "IGBT/SiC 模块",
       "global_supply": false
     },
     {
       "symbol": "605111",
       "name": "新洁能",
-      "theme": "功率半导体",
+      "theme": "功率器件",
       "note": "MOSFET",
       "global_supply": false
     },
     {
       "symbol": "600460",
       "name": "士兰微",
-      "theme": "功率半导体",
+      "theme": "功率器件",
       "note": "IDM 功率器件",
       "global_supply": false
     },
     {
       "symbol": "688396",
       "name": "华润微",
-      "theme": "功率半导体",
+      "theme": "功率器件",
       "note": "IDM 功率/MEMS",
       "global_supply": false
     },
     {
       "symbol": "600745",
       "name": "闻泰科技",
-      "theme": "功率半导体",
+      "theme": "功率器件",
       "note": "安世 IGBT/MOSFET",
       "global_supply": true
     },
@@ -383,7 +383,7 @@
     {
       "symbol": "688261",
       "name": "东微半导",
-      "theme": "功率半导体",
+      "theme": "功率器件",
       "note": "高压超级结MOSFET龙头，AI服务器电源核心功率器件供应商",
       "global_supply": false
     },
@@ -504,6 +504,104 @@
       "name": "晶瑞电材",
       "theme": "半导体材料",
       "note": "高纯化学试剂和光刻胶，用于AI芯片制造",
+      "global_supply": false
+    },
+    {
+      "symbol": "002837",
+      "name": "英维克",
+      "theme": "液冷",
+      "note": "数据中心温控龙头，冷板式液冷解决方案领先，受益AI算力散热需求",
+      "global_supply": false
+    },
+    {
+      "symbol": "601985",
+      "name": "中国核电",
+      "theme": "电力",
+      "note": "核电运营商，受益于AI带来的稳定清洁电力需求",
+      "global_supply": false
+    },
+    {
+      "symbol": "688676",
+      "name": "金盘科技",
+      "theme": "电力设备",
+      "note": "干式变压器龙头，产品用于数据中心配电，出口全球",
+      "global_supply": true
+    },
+    {
+      "symbol": "300693",
+      "name": "盛弘股份",
+      "theme": "电力设备",
+      "note": "电能质量与UPS设备，AIDC基础设施核心供应商",
+      "global_supply": false
+    },
+    {
+      "symbol": "002364",
+      "name": "中恒电气",
+      "theme": "电力设备",
+      "note": "HVDC电源系统龙头，为数据中心提供高效直流供电",
+      "global_supply": false
+    },
+    {
+      "symbol": "002851",
+      "name": "麦格米特",
+      "theme": "电力设备",
+      "note": "服务器电源已进入英伟达供应链，AI算力核心供电器件",
+      "global_supply": true
+    },
+    {
+      "symbol": "300491",
+      "name": "通合科技",
+      "theme": "电力设备",
+      "note": "电源模块供应商，产品用于数据中心高压直流电源",
+      "global_supply": false
+    },
+    {
+      "symbol": "600563",
+      "name": "法拉电子",
+      "theme": "功率器件",
+      "note": "薄膜电容龙头，广泛应用于服务器电源及新能源，受益AI电源链",
+      "global_supply": false
+    },
+    {
+      "symbol": "002138",
+      "name": "顺络电子",
+      "theme": "功率器件",
+      "note": "电感龙头，全球消费电子及汽车核心供应商，可延伸至AI服务器",
+      "global_supply": true
+    },
+    {
+      "symbol": "603678",
+      "name": "火炬电子",
+      "theme": "功率器件",
+      "note": "MLCC及特种电容，受益于AI服务器对被动元件需求激增",
+      "global_supply": false
+    },
+    {
+      "symbol": "300475",
+      "name": "香农芯创",
+      "theme": "存储/HBM",
+      "note": "SK海力士HBM主要代理商，直接受益于AI存储需求爆发",
+      "global_supply": true
+    },
+    {
+      "symbol": "603228",
+      "name": "景旺电子",
+      "theme": "AI-PCB",
+      "note": "高端PCB制造商，产品可应用于AI服务器，补全PCB板块",
+      "global_supply": false
+    },
+    {
+      "symbol": "688205",
+      "name": "德科立",
+      "theme": "光模块",
+      "note": "光模块及光放大器供应商，AI数据中心光互联重要环节",
+      "global_supply": false
+    },
+    {
+      "symbol": "000063",
+      "name": "中兴通讯",
+      "theme": "AI服务器",
+      "note": "ICT龙头，AI服务器出货量国内前列，算力基础设施核心供应商",
       "global_supply": false
     }
   ]
