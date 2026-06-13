@@ -5,8 +5,8 @@
 This repository contains a Chinese-market “silicon civilization consumer stocks” trading system.
 
 - `web/`: Next.js 15 App Router frontend, API routes, TypeScript backtests, DeepSeek integration, SQLite cache, and tests.
-- `web/app/`: UI pages and route handlers. Key pages include `page.tsx`, `signals/page.tsx`, and `backtest/page.tsx`.
-- `web/lib/`: shared domain logic such as `universe.ts`, `pyserver.ts`, `deepseek.ts`, `backtest.ts`, and `cache.ts`.
+- `web/app/`: UI pages and route handlers. Key pages include `page.tsx`, `signals/page.tsx`, `backtest/page.tsx`, and `dashboard/page.tsx`.
+- `web/lib/`: shared domain logic such as `universe.ts`, `pyserver.ts`, `deepseek.ts`, `backtest.ts`, `dashboardBacktest.ts`, `dashboardData.ts`, and `cache.ts`.
 - `web/test/`: Node test-runner TypeScript tests named `*.test.ts`.
 - `web/data/universe.json`: editable stock universe data.
 - `pyserver/`: FastAPI sidecar for Tushare Pro access and SQLite market-data caching.
@@ -20,6 +20,7 @@ This repository contains a Chinese-market “silicon civilization consumer stock
 - `cd web && npm test`: run TypeScript unit tests via `node --test --import tsx`.
 - `cd web && ./node_modules/.bin/tsc --noEmit`: type-check the frontend.
 - `cd web && npm run build`: create a production Next.js build.
+- Dashboard data build (agent-only): use the MCP kimi-datasource plugin to fetch daily prices and financial-index CSVs into `web/.cache/datasource/prices/` and `web/.cache/datasource/financials/`, then run `cd web && npx tsx scripts/build-dashboard.ts` to generate `web/data/dashboard-backtest.json`.
 
 ## Coding Style & Naming Conventions
 

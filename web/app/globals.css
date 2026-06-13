@@ -82,6 +82,9 @@ input, select { background: var(--field); color: var(--fg); border: 1px solid va
 .signal-reason { max-width: 360px; line-height: 1.45; }
 .subheading { margin-top: 22px; margin-bottom: 10px; }
 .chart-card { height: 320px; }
+.dashboard-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+.dashboard-actions form { display: inline-flex; }
+.dashboard-actions .button { text-decoration: none; }
 
 @media (max-width: 860px) {
   .container { padding: 16px; }

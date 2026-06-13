@@ -24,6 +24,7 @@ export default function Home() {
         <div className="header-actions">
           <Link href="/signals" className="button secondary">实时信号</Link>
           <Link href="/backtest" className="button secondary">策略回测</Link>
+          <Link href="/dashboard" className="button secondary">Dashboard</Link>
         </div>
       </header>
 

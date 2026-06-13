@@ -18,6 +18,28 @@ export interface BacktestConfig {
   endDate: string;
   feeBps: number;            // round-trip in basis points
   maxPositions: number;
+  /** When true, any held position not selected by a buy signal at rebalance is sold.
+   *  Useful for ranking-based strategies where the portfolio should exactly mirror
+   *  the top-scoring names each period. Defaults to false. */
+  autoSellUnselected?: boolean;
+  /** Minimum number of bars a position must be held before it can be sold.
+   *  Helps reduce whipsaw turnover in ranking-based strategies. */
+  minHoldBars?: number;
+  /** Position-level drift threshold (in percent). If a held top-K position's
+   *  current weight is within this threshold of its target weight, no trade is
+   *  made for that symbol. Similarly, unselected positions below this weight
+   *  are kept as residuals instead of sold. */
+  rebalanceThresholdPct?: number;
+}
+
+export interface FundamentalSnapshot {
+  pe_ttm?: number | null;
+  pb?: number | null;
+  market_cap?: number | null;
+  revenue_yoy?: number | null;
+  profit_yoy?: number | null;
+  /** The date this fundamental snapshot becomes known (e.g. announcement date). */
+  effective_date?: string;
 }
 
 export interface PortfolioBar {
@@ -50,6 +72,10 @@ export interface BacktestResult {
 export interface SymbolSeries {
   entry: UniverseEntry;
   klines: Kline[];
+  /** Point-in-time fundamentals. The engine picks the latest entry whose
+   *  effective_date <= rebalance date, so no future financial reports leak
+   *  into historical decisions. */
+  fundamentals?: FundamentalSnapshot[];
 }
 
 // Union of all series' dates. An intersection would let a single suspended
@@ -66,6 +92,21 @@ function indexByDate(klines: Kline[]) {
   const m = new Map<string, Kline>();
   for (const k of klines) m.set(k.date, k);
   return m;
+}
+
+function latestFundamentalAsOf(
+  fundamentals: FundamentalSnapshot[] | undefined,
+  date: string,
+): Omit<FundamentalSnapshot, "effective_date"> | undefined {
+  if (!fundamentals || fundamentals.length === 0) return undefined;
+  const available = fundamentals.filter(
+    (f) => f.effective_date && f.effective_date <= date,
+  );
+  if (available.length === 0) return undefined;
+  available.sort((a, b) => (a.effective_date! < b.effective_date! ? -1 : 1));
+  const latest = available[available.length - 1];
+  const { effective_date: _, ...rest } = latest;
+  return rest;
 }
 
 // A-share daily price-limit (涨跌停) thresholds by board, as a fraction of the
@@ -157,13 +198,15 @@ export async function runBacktest(
         const snapshots: SymbolSnapshot[] = series
           .map((s) => {
             // Strictly before d: the decision is made knowing yesterday's
-            // close, then executed at today's. No fundamentals — see header.
+            // close, then executed at today's. Fundamentals are point-in-time:
+            // the latest snapshot whose effective_date <= d.
             const upto = s.klines.filter((k) => k.date < d);
             return {
               symbol: s.entry.symbol,
               name: s.entry.name,
               theme: s.entry.theme,
               closes: upto.map((k) => k.close),
+              fundamental: latestFundamentalAsOf(s.fundamentals, d),
             };
           })
           .filter((s) => s.closes.length > 0); // not yet listed as of d
@@ -185,6 +228,8 @@ export async function runBacktest(
   const shares: Record<string, number> = Object.fromEntries(symbols.map((s) => [s, 0]));
   // Sells blocked by a 跌停 lock or 停牌; retried each bar until tradable.
   const pendingSell: Record<string, boolean> = {};
+  // Track the bar index at which a position was opened, for minHoldBars.
+  const lastBuyBar: Record<string, number> = {};
   // Last traded close per symbol, for marking positions on days it has no bar.
   const lastPrice: Record<string, number> = {};
   const equityCurve: PortfolioBar[] = [];
@@ -233,6 +278,9 @@ export async function runBacktest(
       const px = prices[sym];
       if (px === undefined) continue; // 停牌 — keep waiting
       if (atLimitDown(j, date, px)) continue; // still 跌停 — keep waiting
+      if (cfg.minHoldBars && lastBuyBar[sym] !== undefined && i - lastBuyBar[sym] < cfg.minHoldBars) {
+        continue; // minimum holding period not met — keep waiting
+      }
       cash += held * px * (1 - fee);
       trades.push({ date, symbol: sym, side: "sell", shares: held, price: px });
       shares[sym] = 0;
@@ -240,6 +288,40 @@ export async function runBacktest(
     }
 
     if (isRebalance) {
+      // Positions still inside their minimum holding period cannot be sold and
+      // therefore occupy slots that would otherwise go to new top-scoring names.
+      const lockedCount = cfg.minHoldBars
+        ? symbols.filter(
+            (sym) =>
+              (shares[sym] ?? 0) > 0 &&
+              lastBuyBar[sym] !== undefined &&
+              i - lastBuyBar[sym] < (cfg.minHoldBars ?? 0),
+          ).length
+        : 0;
+
+      // Portfolio value before any rebalance trades. Used for weight-drift checks.
+      const preEquity =
+        cash +
+        symbols.reduce(
+          (sum, sym) => sum + (shares[sym] ?? 0) * (prices[sym] ?? lastPrice[sym] ?? 0),
+          0,
+        );
+      const driftThreshold = (cfg.rebalanceThresholdPct ?? 0) / 100;
+
+      // Rank buys first so we know which names to keep when autoSellUnselected
+      // is enabled. This does not leak future info — signals themselves are
+      // built from closes strictly before today.
+      const rankedBuys = signals
+        .filter((s) => {
+          if (s.action !== "buy" || s.size <= 0) return false;
+          if (prices[s.symbol] === undefined) return false; // 停牌/未上市
+          const j = symbolIndex.get(s.symbol);
+          return !(j !== undefined && atLimitUp(j, date, prices[s.symbol]));
+        })
+        .sort((a, b) => b.confidence * b.size - a.confidence * a.size);
+      const topBuys = rankedBuys.slice(0, Math.max(0, cfg.maxPositions - lockedCount));
+      const buySymbols = new Set(topBuys.map((s) => s.symbol));
+
       // Sells first to free cash
       for (const sig of signals) {
         if (sig.action !== "sell") continue;
@@ -257,29 +339,63 @@ export async function runBacktest(
           pendingSell[sig.symbol] = true;
           continue;
         }
+        if (cfg.minHoldBars && lastBuyBar[sig.symbol] !== undefined && i - lastBuyBar[sig.symbol] < cfg.minHoldBars) {
+          continue; // minimum holding period not met
+        }
         cash += held * px * (1 - fee);
         trades.push({ date, symbol: sig.symbol, side: "sell", shares: held, price: px });
         shares[sig.symbol] = 0;
         pendingSell[sig.symbol] = false;
       }
 
-      // Rank buys by confidence*size, cap at maxPositions. 涨停 names are
-      // unfillable (no sellers), so drop them here and let a tradable name
-      // take the slot rather than reserving cash for an order that can't fill.
-      const buys = signals
-        .filter((s) => {
-          if (s.action !== "buy" || s.size <= 0) return false;
-          if (prices[s.symbol] === undefined) return false; // 停牌/未上市
-          const j = symbolIndex.get(s.symbol);
-          return !(j !== undefined && atLimitUp(j, date, prices[s.symbol]));
-        })
-        .sort((a, b) => b.confidence * b.size - a.confidence * a.size)
-        .slice(0, cfg.maxPositions);
+      // Ranking-based strategies: liquidate any held name not in the top-K buy list.
+      if (cfg.autoSellUnselected) {
+        for (const sym of symbols) {
+          if (buySymbols.has(sym)) continue;
+          const held = shares[sym] ?? 0;
+          if (held <= 0) continue;
+          const j = symbolIndex.get(sym)!;
+          const px = prices[sym];
+          if (px === undefined) {
+            pendingSell[sym] = true;
+            continue;
+          }
+          if (atLimitDown(j, date, px)) {
+            pendingSell[sym] = true;
+            continue;
+          }
+          if (cfg.minHoldBars && lastBuyBar[sym] !== undefined && i - lastBuyBar[sym] < cfg.minHoldBars) {
+            continue; // minimum holding period not met
+          }
+          // Small residual positions below the drift threshold are kept to
+          // avoid churn from tiny rounding leftovers.
+          if (driftThreshold > 0 && (held * px) / preEquity <= driftThreshold) {
+            continue;
+          }
+          cash += held * px * (1 - fee);
+          trades.push({ date, symbol: sym, side: "sell", shares: held, price: px });
+          shares[sym] = 0;
+          pendingSell[sym] = false;
+        }
+      }
 
-      const totalWeight = buys.reduce((sum, s) => sum + s.size * s.confidence, 0) || 1;
+      // Filter out top-K names whose current weight is already close to target.
+      const activeBuys = topBuys.filter((sig) => {
+        const px = prices[sig.symbol] ?? lastPrice[sig.symbol];
+        if (!px) return true;
+        const held = shares[sig.symbol] ?? 0;
+        if (held === 0) return true; // new position — always trade
+        if (driftThreshold <= 0) return true;
+        const totalWeight = topBuys.reduce((sum, s) => sum + s.size * s.confidence, 0) || 1;
+        const targetWeight = (sig.size * sig.confidence) / totalWeight;
+        const currentWeight = (held * px) / preEquity;
+        return Math.abs(targetWeight - currentWeight) > driftThreshold;
+      });
+
+      const activeWeight = activeBuys.reduce((sum, s) => sum + s.size * s.confidence, 0) || 1;
       const budget = cash;
-      for (const sig of buys) {
-        const weight = (sig.size * sig.confidence) / totalWeight;
+      for (const sig of activeBuys) {
+        const weight = (sig.size * sig.confidence) / activeWeight;
         const alloc = budget * weight;
         const px = prices[sig.symbol];
         if (!px || alloc <= 0) continue;
@@ -288,7 +404,11 @@ export async function runBacktest(
         const cost = sh * px * (1 + fee);
         if (cost > cash) continue;
         cash -= cost;
+        const isNewPosition = (shares[sig.symbol] ?? 0) === 0;
         shares[sig.symbol] = (shares[sig.symbol] ?? 0) + sh;
+        if (isNewPosition) {
+          lastBuyBar[sig.symbol] = i;
+        }
         trades.push({ date, symbol: sig.symbol, side: "buy", shares: sh, price: px });
         pendingSell[sig.symbol] = false;
       }
