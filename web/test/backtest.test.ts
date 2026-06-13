@@ -299,3 +299,39 @@ test("priceLimitFraction reflects board tiers", () => {
   assert.equal(priceLimitFraction("600519", "贵州茅台"), 0.1); // 主板
   assert.equal(priceLimitFraction("600000", "ST浦发"), 0.05); // 主板 ST
 });
+
+// --- minHoldBars reduces churn without changing signals -----------------------
+
+test("minHoldBars defers sells until the holding period is met", async () => {
+  // A is bought at first rebalance, then drops out of top-K at the second rebalance,
+  // but minHoldBars=10 prevents the immediate sell.
+  const altCfg: BacktestConfig = { ...cfg, rebalanceEveryNDays: 5, minHoldBars: 10, autoSellUnselected: true };
+  const rotating: Scorer = async (snapshots) => {
+    if (snapshots.length === 0) return [];
+    // First eligible rebalance: buy A. Later rebalances: buy B, sell A.
+    const buyA = snapshots[0].closes.length < 10;
+    return snapshots.map((s) => ({
+      symbol: s.symbol,
+      action: s.symbol === (buyA ? "A" : "B") ? "buy" : "sell",
+      confidence: 1,
+      size: 1,
+      rationale: "t",
+    }));
+  };
+  const r = await runBacktest(makeSeries(), altCfg, { scorer: rotating });
+  const firstSell = r.trades.find((t) => t.side === "sell" && t.symbol === "A");
+  const firstBuyA = r.trades.find((t) => t.side === "buy" && t.symbol === "A");
+  assert.ok(firstBuyA, "expected to buy A");
+  assert.ok(firstSell, "expected a sell of A after it drops out of top-K");
+  const boughtDate = new Date(firstBuyA.date);
+  const soldDate = new Date(firstSell.date);
+  const barsDiff = (soldDate.getTime() - boughtDate.getTime()) / (24 * 3600 * 1000);
+  assert.ok(barsDiff >= 10, `expected A held at least 10 bars, got ${barsDiff}`);
+});
+
+test("rebalanceThresholdPct skips trades when current weight is close to target", async () => {
+  const altCfg: BacktestConfig = { ...cfg, rebalanceEveryNDays: 5, rebalanceThresholdPct: 10, autoSellUnselected: true };
+  const r = await runBacktest(makeSeries(), altCfg, { scorer });
+  const buysA = r.trades.filter((t) => t.side === "buy" && t.symbol === "A");
+  assert.ok(buysA.length <= 2, `expected at most 2 buys of A due to drift threshold, got ${buysA.length}`);
+});
