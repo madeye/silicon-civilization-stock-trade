@@ -2,6 +2,7 @@
 // No build step, no framework — just fetch + DOM.
 
 const $ = (sel) => document.querySelector(sel);
+const MEMO_HREF = "./research-memos/stock-pool-buy-side-memos-2026-06-13.html";
 const fmt = {
   num: (v, digits = 2) => (v == null || Number.isNaN(v) ? "无" : v.toFixed(digits)),
   pct: (v, digits = 1) => (v == null || Number.isNaN(v) ? "无" : `${v > 0 ? "+" : ""}${v.toFixed(digits)}%`),
@@ -99,7 +100,13 @@ function renderUniverse({ universe, analyst }) {
         tbody.appendChild(el("tr", {}, [
           el("td", { class: "mono" }, e.symbol),
           el("td", {}, [
-            el("div", { class: "stock-name" }, e.name),
+            el("a", {
+              class: "stock-name memo-link",
+              href: `${MEMO_HREF}#${e.symbol}-${e.name}`,
+              target: "_blank",
+              rel: "noopener",
+              title: `查看 ${e.name} 买方研报`,
+            }, e.name),
             e.note ? el("div", { class: "stock-note" }, e.note) : null,
           ]),
           el("td", {}, el("span", { class: e.global_supply ? "pill good" : "pill" }, e.global_supply ? "是" : "否")),
