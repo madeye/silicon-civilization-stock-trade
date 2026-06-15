@@ -42,6 +42,10 @@ if not TUSHARE_TOKEN:
     raise RuntimeError(
         "TUSHARE_TOKEN not set. Put it in pyserver/.env or export it.",
     )
+TUSHARE_API_URL = os.environ.get("TUSHARE_API_URL", "").strip()
+if TUSHARE_API_URL:
+    from tushare.pro import client as _client
+    _client.DataApi._DataApi__http_url = TUSHARE_API_URL
 ts.set_token(TUSHARE_TOKEN)
 _pro = ts.pro_api()
 
