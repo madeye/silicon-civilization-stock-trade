@@ -33,6 +33,19 @@ function hasResearchValue(analyst: Analyst): boolean {
     || analyst.upside_pct != null;
 }
 
+// Upside against the *live* price. Analyst payloads (target/ratings) are cached
+// for days, so their embedded upside_pct is stale; recompute from the cached
+// target and the fresh /spots price, falling back to the cached value only when
+// no live price is available.
+function upsideOf(analyst?: Analyst | null): number | null | undefined {
+  if (!analyst) return undefined;
+  const { implied_target: target, current_price: price } = analyst;
+  if (target != null && price != null && price > 0) {
+    return (target / price - 1) * 100;
+  }
+  return analyst.upside_pct;
+}
+
 async function fetchSpotsFor(symbols: string[]): Promise<Spot[]> {
   try {
     const r = await fetch("/api/spot/batch", {
@@ -198,7 +211,7 @@ export default function UniverseTable({
       if (theme !== "all" && r.theme !== theme) return false;
       if (q && !`${r.symbol} ${r.name} ${r.theme} ${r.note ?? ""}`.toLowerCase().includes(q)) return false;
       if (onlyUpside) {
-        const u = r.analyst?.upside_pct;
+        const u = upsideOf(r.analyst);
         if (u === undefined || u === null || u <= 0) return false;
       }
       return true;
@@ -207,7 +220,7 @@ export default function UniverseTable({
 
   const priceCount = rows.filter((r) => r.analyst?.current_price != null).length;
   const ratedCount = rows.filter((r) => r.analyst?.buy_count != null && r.analyst?.total_count).length;
-  const upsideCount = rows.filter((r) => (r.analyst?.upside_pct ?? 0) > 0).length;
+  const upsideCount = rows.filter((r) => (upsideOf(r.analyst) ?? 0) > 0).length;
   const progressTotal = Math.max(progress.total * 2, 1);
   const progressDone = Math.min(progress.spotDone + progress.analystDone, progressTotal);
   const progressPct = Math.round((progressDone / progressTotal) * 100);
@@ -283,7 +296,7 @@ export default function UniverseTable({
                 </thead>
                 <tbody>
                   {items.map((r) => {
-                    const u = r.analyst?.upside_pct;
+                    const u = upsideOf(r.analyst);
                     return (
                       <tr key={r.symbol}>
                         <td className="mono">{r.symbol}</td>
