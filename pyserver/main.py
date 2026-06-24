@@ -18,7 +18,9 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import sqlite3
+import subprocess
 import time
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta
@@ -569,6 +571,78 @@ def _ak_research_consensus(symbol: str) -> dict[str, Any]:
     return out
 
 
+# Eastmoney research-report API. A single token-free HTTP call returns every
+# recent broker report for a symbol with ratings, next-year EPS/PE forecasts and
+# — when the broker published one — an explicit target price. This subsumes
+# _ak_research_consensus + _ak_consensus_eps + the rate-limited Tushare report_rc
+# in one fast call, so it is the preferred analyst source for A-shares.
+_EM_REPORT_URL = "https://reportapi.eastmoney.com/report/list"
+# 东财-normalized ratings plus raw broker ratings that both read as bullish.
+_EM_BULLISH_RATINGS = {"买入", "增持", "推荐", "强烈推荐", "谨慎推荐", "优于大市"}
+_EM_REPORT_WINDOW_DAYS = 180
+
+
+def _em_research_consensus(compact_code: str) -> dict[str, Any]:
+    """Aggregate recent Eastmoney broker reports into a consensus payload.
+
+    Returns {} on any failure (network, empty, bad JSON) so callers fall back to
+    the akshare/Tushare path. Mirrors the field shape of _ak_research_consensus:
+    total_count / buy_count / buy_ratio / consensus_eps_next, plus implied_target
+    when at least one report carries an explicit target price.
+    """
+    begin = (date.today() - timedelta(days=_EM_REPORT_WINDOW_DAYS)).strftime("%Y-%m-%d")
+    end = (date.today() + timedelta(days=1)).strftime("%Y-%m-%d")
+    params = {
+        "industryCode": "*",
+        "pageSize": "100",
+        "pageNo": "1",
+        "qType": "0",
+        "code": compact_code,
+        "beginTime": begin,
+        "endTime": end,
+    }
+    try:
+        resp = requests.get(
+            _EM_REPORT_URL,
+            params=params,
+            headers={"Referer": "https://data.eastmoney.com/"},
+            timeout=6,
+        )
+        resp.raise_for_status()
+        data = resp.json().get("data") or []
+    except Exception:
+        return {}
+    if not data:
+        return {}
+
+    out: dict[str, Any] = {"total_count": len(data)}
+
+    ratings = [str(r.get("emRatingName") or r.get("sRatingName") or "").strip() for r in data]
+    if any(ratings):
+        out["buy_count"] = sum(1 for r in ratings if r in _EM_BULLISH_RATINGS)
+        out["buy_ratio"] = round(out["buy_count"] / out["total_count"], 3)
+
+    # predictNextYearEps is the sell-side forecast for the next fiscal year —
+    # exactly the "consensus next-year EPS" the implied target is built from.
+    eps_vals = [
+        v for v in (_num_or_none(r.get("predictNextYearEps")) for r in data)
+        if v is not None and v > 0
+    ]
+    if eps_vals:
+        out["consensus_eps_next"] = round(float(pd.Series(eps_vals).median()), 4)
+
+    # indvAimPriceT (target high) is blank on many A-share reports; use the
+    # median of whatever real targets are present rather than an EPS*PE estimate.
+    targets = [
+        v for v in (_num_or_none(r.get("indvAimPriceT")) for r in data)
+        if v is not None and v > 0
+    ]
+    if targets:
+        out["implied_target"] = round(float(pd.Series(targets).median()), 3)
+
+    return out
+
+
 # PE(TTM) above this is a sign of near-zero trailing earnings, not a real
 # valuation multiple; EPS_next * PE would imply absurd targets (e.g. 688047
 # 龙芯中科 at PE≈69,000 → target 6250 vs price 136, "+4500% upside").
@@ -577,6 +651,18 @@ MAX_PE_FOR_IMPLIED_TARGET = 300.0
 # research publishes; treat it as bad data rather than show it to the user.
 # (target/price ratio: 3.0 == +200% upside.)
 MAX_IMPLIED_UPSIDE_RATIO = 2.0
+
+# Sell-side consensus (target price, buy/total ratings, next-year EPS) moves on
+# the order of weeks, not days, and each refresh is an expensive multi-call
+# upstream hit (akshare research + rate-limited report_rc at 2/min). Cache it
+# for several days so a watchlist load is almost entirely served from SQLite and
+# upstream is touched rarely. The embedded current_price/upside_pct snapshot
+# goes stale over that window, so the frontend recomputes upside from the live
+# /spots price (30s TTL) instead of trusting the cached upside_pct.
+ANALYST_TTL = 7 * 24 * 3600
+# Symbols that genuinely return no research data: don't re-roll the slow/rate-
+# limited upstream on every load — back off for half a day rather than 60s.
+ANALYST_NEGATIVE_TTL = 12 * 3600
 
 
 def _implied_target_from_eps_pe(eps: Any, pe_ttm: Any) -> float | None:
@@ -809,14 +895,14 @@ def analyst(symbol: str):
         return out
     if legacy_cached is not None:
         out = _sanitize_analyst_payload(legacy_cached)
-        cache_put(key, out, 24 * 3600)
+        cache_put(key, out, ANALYST_TTL)
         return out
 
     ts_code, market = _to_ts_code(symbol)
     out: dict[str, Any] = {"symbol": symbol}
     if market == "hk":
         # report_rc covers A-share only.
-        cache_put(key, out, 24 * 3600)
+        cache_put(key, out, ANALYST_NEGATIVE_TTL)
         return out
 
     # Always fetch most-recent close first so the UI can show current price even
@@ -847,7 +933,11 @@ def analyst(symbol: str):
         pass
 
     compact_symbol = ts_code.split(".")[0]
-    research = _ak_research_consensus(compact_symbol)
+    # Eastmoney direct is the preferred source (one fast token-free call with
+    # ratings, EPS forecast and real target prices); akshare is the fallback.
+    research = _em_research_consensus(compact_symbol)
+    if not research:
+        research = _ak_research_consensus(compact_symbol)
     out.update(research)
 
     if out.get("consensus_eps_next") is None:
@@ -857,34 +947,42 @@ def analyst(symbol: str):
             if forecast_count is not None and out.get("total_count") is None:
                 out["total_count"] = forecast_count
 
-    implied_target = _implied_target_from_eps_pe(out.get("consensus_eps_next"), pe_ttm)
-    if implied_target is not None:
-        out["implied_target"] = implied_target
-        if out.get("current_price"):
-            out["upside_pct"] = round(
-                (out["implied_target"] / out["current_price"] - 1) * 100, 2
-            )
+    # Prefer a broker's explicit target (from Eastmoney) over the EPS*PE estimate;
+    # only fall back to the estimate when no real target was published.
+    if out.get("implied_target") is None:
+        implied_target = _implied_target_from_eps_pe(out.get("consensus_eps_next"), pe_ttm)
+        if implied_target is not None:
+            out["implied_target"] = implied_target
+    if out.get("implied_target") is not None and out.get("current_price"):
+        out["upside_pct"] = round(
+            (out["implied_target"] / out["current_price"] - 1) * 100, 2
+        )
 
-    if out.get("implied_target") is not None and out.get("buy_count") is not None:
-        cache_put(key, out, 24 * 3600)
+    # Eastmoney already gave us ratings (and usually a target). report_rc is the
+    # rate-limited (2/min) last resort that rarely adds an A-share target, so only
+    # consult it when we have no research signal at all — never make a covered
+    # symbol pay the token-bucket wait.
+    if out.get("buy_count") is not None:
+        cache_put(key, out, ANALYST_TTL)
         return out
 
-    # Pull last ~180 days of broker reports.
+    # Genuinely uncovered symbol: try report_rc once (no retry — it is rate-
+    # limited, so retrying only compounds the wait) for last ~180 days of reports.
     start = (date.today() - timedelta(days=180)).strftime("%Y%m%d")
     try:
-        rc = _with_retries(_report_rc, ts_code=ts_code, start_date=start)
+        rc = _with_retries(_report_rc, ts_code=ts_code, start_date=start, attempts=1)
     except Exception as e:
         # Keep current_price usable; do not poison the cache for a full day
         # because rate-limit errors are transient. If the research consensus
         # above already produced ratings, the payload is good — cache it for
-        # the full TTL instead of dropping it after 60s and re-rolling the
-        # rate-limit dice on the next request.
-        ttl = 24 * 3600 if out.get("buy_count") is not None else 60
+        # the full TTL instead of dropping it and re-rolling the rate-limit
+        # dice on the next request.
+        ttl = ANALYST_TTL if out.get("buy_count") is not None else ANALYST_NEGATIVE_TTL
         cache_put(key, out, ttl)
         return out
 
     if rc is None or rc.empty:
-        cache_put(key, out, 24 * 3600)
+        cache_put(key, out, ANALYST_TTL if out.get("buy_count") is not None else ANALYST_NEGATIVE_TTL)
         return out
 
     out["total_count"] = int(len(rc))
@@ -928,7 +1026,11 @@ def analyst(symbol: str):
             (out["implied_target"] / out["current_price"] - 1) * 100, 2
         )
 
-    cache_put(key, out, 24 * 3600)
+    # Cache for the full window only once we have real research signal; an empty
+    # payload means upstream gave us nothing this round, so back off briefly
+    # rather than locking in a blank for a week.
+    has_signal = out.get("implied_target") is not None or out.get("buy_count") is not None
+    cache_put(key, out, ANALYST_TTL if has_signal else ANALYST_NEGATIVE_TTL)
     return out
 
 
@@ -949,6 +1051,179 @@ def analysts(symbols: str = Query(..., description="comma-separated symbols")):
     return out
 
 
+# ---------- optional kimi-datasource realtime source -----------------------
+# When the Kimi Code CLI + its kimi-datasource plugin are installed, drive the
+# plugin's MCP server directly over stdio (JSON-RPC, no LLM) for fast realtime
+# quotes from 同花顺/iFinD. This is an *optional* accelerator: it is only used
+# as a fallback when easy-tdx misses an A-share, and as the primary realtime
+# source for HK (which otherwise only has slow akshare last-close). It never
+# becomes the primary A-share source (easy-tdx is local + quota-free and already
+# parallel), so Moonshot quota is touched rarely. Absent kimi → unchanged path.
+#
+# NB: we talk to the MCP server directly rather than shelling out to `kimi -p`,
+# whose LLM agent adds ~20s of fixed overhead per call — far slower than the
+# ~0.15s direct data call.
+
+_KIMI_HOME = Path(os.environ.get("KIMI_CODE_HOME") or (Path.home() / ".kimi-code"))
+_KIMI_PLUGIN = _KIMI_HOME / "plugins" / "managed" / "kimi-datasource" / "bin" / "kimi-datasource.mjs"
+_KIMI_CREDENTIALS = _KIMI_HOME / "credentials" / "kimi-code.json"
+_KIMI_DISABLED = os.environ.get("PYSERVER_DISABLE_KIMI", "").strip().lower() in {"1", "true", "yes"}
+_KIMI_CALL_TIMEOUT_S = 8.0
+_KIMI_TICKERS_PER_CALL = 3  # query_stock hard cap
+
+
+def _kimi_norm(ts_code: str) -> str:
+    """Match key tolerant of HK zero-padding (00700.HK vs the 0700.HK echo)."""
+    code, _, suffix = ts_code.partition(".")
+    return f"{code.lstrip('0') or '0'}.{suffix}".upper()
+
+
+class _KimiDatasource:
+    """Long-lived MCP stdio client for the kimi-datasource plugin.
+
+    Thread-safe (serialized on one subprocess) and fail-safe: any error returns
+    no data so callers fall back to the existing sources, and repeated failures
+    trip a cooldown so a broken/uninstalled plugin can't spawn node in a loop.
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._proc: subprocess.Popen | None = None
+        self._next_id = 0
+        self._available: bool | None = None
+        self._cooldown_until = 0.0
+
+    def available(self) -> bool:
+        if _KIMI_DISABLED:
+            return False
+        if self._available is None:
+            self._available = (
+                shutil.which("node") is not None
+                and _KIMI_PLUGIN.exists()
+                and _KIMI_CREDENTIALS.exists()
+            )
+        return self._available
+
+    def _kill(self) -> None:
+        if self._proc is not None:
+            try:
+                self._proc.kill()
+            except Exception:
+                pass
+            self._proc = None
+
+    def _ensure(self) -> None:
+        if self._proc is not None and self._proc.poll() is None:
+            return
+        self._proc = subprocess.Popen(
+            ["node", str(_KIMI_PLUGIN)],
+            cwd=str(_KIMI_PLUGIN.parent.parent),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            bufsize=1,
+        )
+        self._rpc({
+            "jsonrpc": "2.0", "id": self._id(), "method": "initialize",
+            "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                       "clientInfo": {"name": "pyserver", "version": "1"}},
+        })
+        self._write({"jsonrpc": "2.0", "method": "notifications/initialized"})
+
+    def _id(self) -> int:
+        self._next_id += 1
+        return self._next_id
+
+    def _write(self, obj: dict) -> None:
+        assert self._proc is not None and self._proc.stdin is not None
+        self._proc.stdin.write(json.dumps(obj) + "\n")
+        self._proc.stdin.flush()
+
+    def _rpc(self, req: dict) -> dict | None:
+        self._write(req)
+        assert self._proc is not None and self._proc.stdout is not None
+        deadline = time.monotonic() + _KIMI_CALL_TIMEOUT_S
+        while time.monotonic() < deadline:
+            line = self._proc.stdout.readline()
+            if not line:
+                return None
+            try:
+                msg = json.loads(line)
+            except ValueError:
+                continue
+            if msg.get("id") == req.get("id"):
+                return msg
+        return None
+
+    def _query_chunk(self, ts_codes: list[str]) -> dict[str, dict[str, Any]]:
+        resp = self._rpc({
+            "jsonrpc": "2.0", "id": self._id(), "method": "tools/call",
+            "params": {"name": "query_stock",
+                       "arguments": {"ticker": ",".join(ts_codes), "type": "realtime_price"}},
+        })
+        if not resp or "result" not in resp:
+            return {}
+        try:
+            text = resp["result"]["content"][0]["text"]
+            preview = json.loads(text).get("data_preview") or ""
+        except (KeyError, IndexError, ValueError, TypeError):
+            return {}
+        rows = [ln for ln in preview.splitlines() if ln.strip()]
+        if len(rows) < 2:
+            return {}
+        header = [h.strip() for h in rows[0].split(",")]
+        col = {name: header.index(name) for name in header}
+        out: dict[str, dict[str, Any]] = {}
+        for ln in rows[1:]:
+            cells = ln.split(",")
+            try:
+                code = cells[col["ts_code"]].strip()
+                price = _num_or_none(cells[col["close"]])
+            except (KeyError, IndexError):
+                continue
+            if price is None or price <= 0:
+                continue
+            out[_kimi_norm(code)] = {
+                "price": round(price, 3),
+                "change_pct": _num_or_none(cells[col["pct_change"]]) if "pct_change" in col else 0,
+                "volume": _num_or_none(cells[col["vol"]]) if "vol" in col else 0,
+                "turnover": _num_or_none(cells[col["amount"]]) if "amount" in col else 0,
+            }
+        return out
+
+    def quote(self, ts_code: str) -> dict[str, Any] | None:
+        """Realtime quote for one ts_code, or None on any failure/cooldown."""
+        if not self.available() or time.monotonic() < self._cooldown_until:
+            return None
+        with self._lock:
+            try:
+                self._ensure()
+                data = self._query_chunk([ts_code])
+            except Exception:
+                self._kill()
+                self._cooldown_until = time.monotonic() + 60
+                return None
+        return data.get(_kimi_norm(ts_code))
+
+
+_KIMI = _KimiDatasource()
+
+
+def _kimi_spot(symbol: str, ts_code: str, market: str) -> dict[str, Any] | None:
+    quote = _KIMI.quote(ts_code)
+    if quote is None:
+        return None
+    return {
+        "symbol": symbol,
+        "name": _resolve_name(ts_code, market) or "",
+        "price": quote["price"],
+        "change_pct": quote.get("change_pct") or 0,
+        "volume": quote.get("volume") or 0,
+        "turnover": quote.get("turnover") or 0,
+    }
+
+
 @app.get("/spot")
 def spot(symbol: str):
     """Most-recent close (Tushare Pro has no realtime quote). 30s cache."""
@@ -966,6 +1241,11 @@ def spot(symbol: str):
             if tdx_spot is not None:
                 cache_put(key, tdx_spot, 30)
                 return tdx_spot
+            # Optional fast fallback before the slow akshare/Tushare paths.
+            kimi_spot = _kimi_spot(symbol, ts_code, market)
+            if kimi_spot is not None:
+                cache_put(key, kimi_spot, 30)
+                return kimi_spot
             ak_spot = _ak_a_spot(ts_code, market)
             price = _spot_price_from_ak(ak_spot) if ak_spot is not None else None
             if ak_spot is not None and price is not None:
@@ -980,6 +1260,12 @@ def spot(symbol: str):
                 cache_put(key, out, 30)
                 return out
         if market == "hk":
+            # HK has no local realtime source; prefer kimi (realtime) when present,
+            # else fall back to akshare's daily history (last close).
+            kimi_spot = _kimi_spot(symbol, ts_code, market)
+            if kimi_spot is not None:
+                cache_put(key, kimi_spot, 30)
+                return kimi_spot
             ak_code = ts_code.split(".")[0]
             df = _with_retries(
                 ak.stock_hk_hist,
