@@ -890,7 +890,8 @@ def fundamental(symbol: str):
 
     ak_spot = _ak_a_spot(ts_code, market)
     if ak_spot is not None:
-        out["name"] = str(ak_spot.get("名称") or out.get("name") or "")
+        # Eastmoney names can carry padding spaces (e.g. "五 粮 液"); collapse.
+        out["name"] = "".join(str(ak_spot.get("名称") or "").split()) or out.get("name") or ""
         pe_ttm = _num_or_none(_ak_col(pd.Series(ak_spot), "市盈率-TTM", "市盈率-动态", "市盈率", "PE"))
         pb = _num_or_none(_ak_col(pd.Series(ak_spot), "市净率", "PB"))
         market_cap = _market_cap_to_yi(_num_or_none(_ak_col(pd.Series(ak_spot), "总市值")))
@@ -1317,7 +1318,8 @@ def spot(symbol: str):
             if ak_spot is not None and price is not None:
                 out = {
                     "symbol": symbol,
-                    "name": str(ak_spot.get("名称") or _resolve_name(ts_code, market) or ""),
+                    "name": "".join(str(ak_spot.get("名称") or "").split())
+                        or _resolve_name(ts_code, market) or "",
                     "price": price,
                     "change_pct": _spot_change_pct_from_ak(ak_spot) or 0,
                     "volume": _num_or_none(ak_spot.get("成交量")) or 0,
