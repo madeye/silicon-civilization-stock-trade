@@ -9,6 +9,11 @@ import type { BacktestConfig, BacktestResult } from "./backtest";
 const DIR = path.join(process.cwd(), ".cache");
 fs.mkdirSync(DIR, { recursive: true });
 const db = new Database(path.join(DIR, "web.db"));
+// Next.js can have several processes with this module loaded (dev server,
+// build workers); WAL lets them read/write concurrently instead of throwing
+// SQLITE_BUSY.
+db.pragma("journal_mode = WAL");
+db.pragma("busy_timeout = 15000");
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS cache (

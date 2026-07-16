@@ -10,19 +10,22 @@ WEB_PORT="${WEB_PORT:-3000}"
 
 free_port() {
   local port="$1" label="$2"
-  local pid
-  pid="$(lsof -ti tcp:"$port" -sTCP:LISTEN || true)"
-  if [[ -z "$pid" ]]; then
+  # lsof may report several PIDs (one per line); keep them word-splittable.
+  local pids
+  pids="$(lsof -ti tcp:"$port" -sTCP:LISTEN || true)"
+  if [[ -z "$pids" ]]; then
     return 0
   fi
-  echo "[start] port $port ($label) busy (pid $pid) — killing"
-  kill "$pid" 2>/dev/null || true
+  echo "[start] port $port ($label) busy (pid ${pids//$'\n'/ }) — killing"
+  # shellcheck disable=SC2086
+  kill $pids 2>/dev/null || true
   for _ in 1 2 3 4 5; do
     sleep 0.5
     lsof -ti tcp:"$port" -sTCP:LISTEN >/dev/null || return 0
   done
-  echo "[start] pid $pid did not exit, sending SIGKILL"
-  kill -9 "$pid" 2>/dev/null || true
+  echo "[start] listener did not exit, sending SIGKILL"
+  # shellcheck disable=SC2086
+  kill -9 $pids 2>/dev/null || true
   sleep 0.5
 }
 
