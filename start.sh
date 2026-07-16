@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Start pyserver (FastAPI on :8001) and web (Next.js on :3000) together.
-# If a port is already taken by our own process, reuse it; otherwise kill the
-# stale listener so the fresh server can bind.
+# Any existing listener on either port is killed first (assumed to be a stale
+# instance of these servers) so the fresh server can bind.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,8 +34,20 @@ free_port "$WEB_PORT" web
 
 cleanup() {
   echo "[start] shutting down"
-  [[ -n "${PY_PID:-}" ]] && kill "$PY_PID" 2>/dev/null || true
-  [[ -n "${WEB_PID:-}" ]] && kill "$WEB_PID" 2>/dev/null || true
+  # $! captured the wrapper subshells; the real servers are their children
+  # (uv → uvicorn, npm → next). Kill the trees, then whatever still holds the
+  # ports, or Ctrl+C leaves orphaned listeners behind.
+  for pid in "${PY_PID:-}" "${WEB_PID:-}"; do
+    [[ -n "$pid" ]] || continue
+    pkill -TERM -P "$pid" 2>/dev/null || true
+    kill "$pid" 2>/dev/null || true
+  done
+  sleep 1
+  for port in "$PY_PORT" "$WEB_PORT"; do
+    local_pids="$(lsof -ti tcp:"$port" -sTCP:LISTEN || true)"
+    # shellcheck disable=SC2086
+    [[ -n "$local_pids" ]] && kill $local_pids 2>/dev/null || true
+  done
   wait 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM

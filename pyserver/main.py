@@ -22,7 +22,7 @@ import shutil
 import sqlite3
 import subprocess
 import time
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -54,7 +54,25 @@ _pro = ts.pro_api()
 
 DB_PATH = Path(__file__).parent / "cache.db"
 
-app = FastAPI(title="silicon-civ pyserver", version="0.2.0")
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    yield
+    # Shutdown: release long-lived externals — the TDX TCP socket and the
+    # kimi node subprocess otherwise outlive reloads/restarts as orphans.
+    # (Names resolve at shutdown time; they are defined further down.)
+    global _tdx_client
+    with _TDX_LOCK:
+        if _tdx_client is not None:
+            try:
+                _tdx_client.close()
+            except Exception:
+                pass
+            _tdx_client = None
+    with _KIMI._lock:
+        _KIMI._kill()
+
+
+app = FastAPI(title="silicon-civ pyserver", version="0.2.0", lifespan=_lifespan)
 
 # ---------- cache ----------------------------------------------------------
 
@@ -132,6 +150,10 @@ def seconds_until_next_trading_close() -> int:
     now = datetime.now(_CN_TZ)
     target = now.replace(hour=15, minute=30, second=0, microsecond=0)
     if now >= target:
+        target += timedelta(days=1)
+    # No close on weekends: a Friday-evening TTL targeting Saturday 15:30 just
+    # forces pointless refetches against a closed market. Roll to Monday.
+    while target.weekday() >= 5:
         target += timedelta(days=1)
     return int((target - now).total_seconds())
 
@@ -338,15 +360,22 @@ def _latest_profit_yoy(ts_code: str) -> float | None:
     return None
 
 
-def _attach_profit_yoy(out: dict[str, Any], ts_code: str, market: str) -> None:
+def _attach_profit_yoy(out: dict[str, Any], ts_code: str, market: str) -> bool:
+    """Attach the latest profit growth when available.
+
+    Returns True when the upstream lookup completed (even if it had no data
+    for this symbol), False when it errored — callers use this to pick a
+    long vs retry-soon cache TTL.
+    """
     if market == "hk":
-        return
+        return True
     try:
         profit_yoy = _latest_profit_yoy(ts_code)
     except Exception:
-        return
+        return False
     if profit_yoy is not None:
         out["profit_yoy"] = profit_yoy
+    return True
 
 
 # ---------- models ---------------------------------------------------------
@@ -812,6 +841,9 @@ def klines(
         cache_put(key, [], 3600)
         return []
 
+    # NaN never survives into the payload: bare NaN serializes as invalid JSON
+    # (JSON.parse throws) and would then be cached. Rows without a usable close
+    # are dropped; missing open/high/low fall back to close, missing volume to 0.
     if market == "hk":
         # akshare HK schema: 日期 / 开盘 / 最高 / 最低 / 收盘 / 成交量 ...
         df = df.rename(columns={
@@ -819,21 +851,29 @@ def klines(
             "最低": "low", "收盘": "close", "成交量": "volume",
         })
         df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
+        for col in ("open", "high", "low", "close", "volume"):
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+        df = df.dropna(subset=["close"])
+        for col in ("open", "high", "low"):
+            df[col] = df[col].fillna(df["close"])
+        df["volume"] = df["volume"].fillna(0)
         rows = df[["date", "open", "high", "low", "close", "volume"]].to_dict(orient="records")
     else:
         df = df.sort_values("trade_date")
-        rows = [
-            {
+        rows = []
+        for r in df.itertuples():
+            d = str(r.trade_date)
+            close = _num_or_none(r.close)
+            if close is None:
+                continue
+            rows.append({
                 "date": f"{d[:4]}-{d[4:6]}-{d[6:]}",
-                "open": float(r.open),
-                "high": float(r.high),
-                "low": float(r.low),
-                "close": float(r.close),
-                "volume": float(r.vol),
-            }
-            for r in df.itertuples()
-            for d in [str(r.trade_date)]
-        ]
+                "open": _num_or_none(r.open) or close,
+                "high": _num_or_none(r.high) or close,
+                "low": _num_or_none(r.low) or close,
+                "close": close,
+                "volume": _num_or_none(r.vol) or 0.0,
+            })
     cache_put(key, rows, seconds_until_next_trading_close())
     return rows
 
@@ -860,9 +900,12 @@ def fundamental(symbol: str):
             out["pb"] = pb
         if market_cap is not None:
             out["market_cap"] = market_cap
-        _attach_profit_yoy(out, ts_code, market)
+        yoy_fetched = _attach_profit_yoy(out, ts_code, market)
         if out.get("pe_ttm") is not None and out.get("pb") is not None and out.get("market_cap") is not None:
-            cache_put(key, out, 24 * 3600 if out.get("profit_yoy") is not None else 30)
+            # Retry-soon TTL only when the profit_yoy lookup ERRORED. A symbol
+            # that genuinely has no growth data (recent IPO) must still settle
+            # into the daily cache, or every poll re-hits AkShare + Tushare.
+            cache_put(key, out, 24 * 3600 if yoy_fetched else 30)
             return out
 
     try:
@@ -1313,13 +1356,19 @@ def spot(symbol: str):
     except Exception as e:
         raise HTTPException(502, f"upstream error: {e}") from e
     r = df.iloc[-1]
+    # _num_or_none, not `or 0`: NaN is truthy, and a bare NaN in the payload
+    # serializes as invalid JSON that breaks the frontend's response.json().
+    # pct_chg is legitimately NaN on a symbol's first trading day.
+    price = _num_or_none(r.get("close"))
+    if price is None or price <= 0:
+        raise HTTPException(404, f"symbol {symbol} has no usable close")
     out = {
         "symbol": symbol,
         "name": _resolve_name(ts_code, market) or "",
-        "price": float(r.get("close", 0) or 0),
-        "change_pct": float(r.get("pct_chg", 0) or 0),
-        "volume": float(r.get("vol", 0) or 0),
-        "turnover": float(r.get("amount", 0) or 0),
+        "price": price,
+        "change_pct": _num_or_none(r.get("pct_chg")) or 0,
+        "volume": _num_or_none(r.get("vol")) or 0,
+        "turnover": _num_or_none(r.get("amount")) or 0,
     }
     cache_put(key, out, 30)
     return out

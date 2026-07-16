@@ -187,8 +187,17 @@ export async function scoreSymbols(
 
   try {
     const parsed = JSON.parse(raw) as { signals?: Signal[] };
-    return parsed.signals ?? [];
+    if (!Array.isArray(parsed.signals)) {
+      // Distinguish "model returned no signals field" from a legitimate
+      // all-hold answer — silence here reads as an empty market view.
+      console.warn(
+        `[deepseek] response missing signals array (asOf=${opts.asOf ?? "live"}, keys=${Object.keys(parsed).join(",")})`,
+      );
+      return [];
+    }
+    return parsed.signals;
   } catch {
+    console.warn(`[deepseek] unparseable scoring response (asOf=${opts.asOf ?? "live"})`);
     return [];
   }
 }

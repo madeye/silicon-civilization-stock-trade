@@ -26,7 +26,6 @@ export interface FinancialRow {
   reportDate: string; // YYYYMMDD
   eps?: number | null;
   profitYoy?: number | null;
-  revenueYoy?: number | null;
 }
 
 /** Convert project symbol (e.g. "300308") to data-source ticker ("300308.SZ"). */
@@ -177,7 +176,6 @@ export function buildFundamentals(
     bySymbol.get(sym)!.push({
       pe_ttm,
       profit_yoy: g.profitYoy,
-      revenue_yoy: g.revenueYoy,
       effective_date: effective,
     });
   }

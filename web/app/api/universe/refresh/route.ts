@@ -6,7 +6,22 @@ export const runtime = "nodejs";
 export const maxDuration = 180;
 
 // NDJSON: progress / log / result / error
-export async function POST(_req: NextRequest) {
+export async function POST(req: NextRequest) {
+  // This endpoint mutates data/universe.json and spends DeepSeek tokens
+  // (bypassCache) on every call. Outside local dev it must not be anonymous:
+  // require UNIVERSE_REFRESH_TOKEN via the x-refresh-token header. In dev the
+  // token is optional but still enforced when configured.
+  const token = process.env.UNIVERSE_REFRESH_TOKEN;
+  if (token) {
+    if (req.headers.get("x-refresh-token") !== token) {
+      return Response.json({ error: "unauthorized" }, { status: 401 });
+    }
+  } else if (process.env.NODE_ENV === "production") {
+    return Response.json(
+      { error: "universe refresh is disabled: set UNIVERSE_REFRESH_TOKEN to enable it in production" },
+      { status: 403 },
+    );
+  }
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
