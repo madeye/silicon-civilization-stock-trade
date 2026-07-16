@@ -1,6 +1,6 @@
 {
   "$schema_note": "硅基文明消费股 watchlist. Edit via UI or directly. Each entry: {symbol, name, theme, note?}.",
-  "updated_at": "2026-06-12",
+  "updated_at": "2026-07-16",
   "updated_by": "deepseek-refresh",
   "entries": [
     {
@@ -602,6 +602,69 @@
       "name": "中兴通讯",
       "theme": "AI服务器",
       "note": "ICT龙头，AI服务器出货量国内前列，算力基础设施核心供应商",
+      "global_supply": false
+    },
+    {
+      "symbol": "600905",
+      "name": "三峡能源",
+      "theme": "电力",
+      "note": "绿电龙头，主营风电、光伏发电，为AI数据中心提供清洁能源",
+      "global_supply": false
+    },
+    {
+      "symbol": "600845",
+      "name": "宝信软件",
+      "theme": "IDC",
+      "note": "IDC龙头，宝之云数据中心，为AI算力提供基础设施",
+      "global_supply": false
+    },
+    {
+      "symbol": "300442",
+      "name": "润泽科技",
+      "theme": "IDC",
+      "note": "第三方超大规模数据中心龙头，AI算力底座",
+      "global_supply": false
+    },
+    {
+      "symbol": "002518",
+      "name": "科士达",
+      "theme": "电力设备",
+      "note": "UPS、数据中心基础设施龙头，AIDC供电核心供应商",
+      "global_supply": false
+    },
+    {
+      "symbol": "300870",
+      "name": "欧陆通",
+      "theme": "电力设备",
+      "note": "服务器电源龙头，适配AI服务器高功率需求",
+      "global_supply": false
+    },
+    {
+      "symbol": "000636",
+      "name": "风华高科",
+      "theme": "功率器件",
+      "note": "MLCC被动元件龙头，电源链路核心电容供应商",
+      "global_supply": false
+    },
+    {
+      "symbol": "688525",
+      "name": "佰维存储",
+      "theme": "存储/HBM",
+      "note": "存储模组龙头，面向AI服务器提供大容量存储",
+      "global_supply": false
+    },
+    {
+      "symbol": "300666",
+      "name": "江丰电子",
+      "theme": "半导体材料",
+      "note": "溅射靶材龙头，已进入全球半导体制造供应链",
+      "global_supply": true
+    },
+    {
+      "symbol": "603912",
+      "name": "佳力图",
+      "theme": "液冷",
+      "note": "数据中心精密空调龙头，提供液冷解决方案",
       "global_supply": false
     }
   ]
