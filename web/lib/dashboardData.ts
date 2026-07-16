@@ -126,7 +126,9 @@ function effectiveDateForReport(reportDate: string): string {
   const year = Number(reportDate.slice(0, 4));
   const month = Number(reportDate.slice(4, 6));
   const day = Number(reportDate.slice(6, 8));
-  const d = new Date(year, month - 1, day);
+  // Construct in UTC: a local-time constructor plus UTC getters shifts the
+  // date one day earlier on UTC+ hosts, leaking each report a day early.
+  const d = new Date(Date.UTC(year, month - 1, day));
   // Approximate regulatory disclosure deadlines:
   // Annual (1231) -> end of April; H1 (0630) -> end of August;
   // Q1 (0331) -> end of April; Q3 (0930) -> end of October.

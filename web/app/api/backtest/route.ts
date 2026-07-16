@@ -16,18 +16,28 @@ export const maxDuration = 300;
 //   { type: "result", result, stored }    // terminal — full BacktestResult
 //   { type: "error", message }            // terminal
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as Partial<BacktestConfig> & {
-    startDate: string;
-    endDate: string;
+  const body = (await req.json().catch(() => ({}))) as Partial<BacktestConfig>;
+
+  const isDate = (s: unknown): s is string =>
+    typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s));
+  if (!isDate(body.startDate) || !isDate(body.endDate) || body.startDate >= body.endDate) {
+    return Response.json(
+      { error: "startDate and endDate are required as YYYY-MM-DD with startDate < endDate" },
+      { status: 400 },
+    );
+  }
+  const num = (v: unknown, fallback: number, min: number): number => {
+    const n = typeof v === "number" && Number.isFinite(v) ? v : fallback;
+    return Math.max(min, n);
   };
 
   const cfg: BacktestConfig = {
-    startCash: body.startCash ?? 1_000_000,
-    rebalanceEveryNDays: body.rebalanceEveryNDays ?? 10,
+    startCash: num(body.startCash, 1_000_000, 1),
+    rebalanceEveryNDays: Math.floor(num(body.rebalanceEveryNDays, 10, 1)),
     startDate: body.startDate,
     endDate: body.endDate,
-    feeBps: body.feeBps ?? 10,
-    maxPositions: body.maxPositions ?? 6,
+    feeBps: num(body.feeBps, 10, 0),
+    maxPositions: Math.floor(num(body.maxPositions, 6, 1)),
   };
 
   const padStart = new Date(cfg.startDate);

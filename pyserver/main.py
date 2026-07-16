@@ -26,6 +26,7 @@ from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import akshare as ak
 import pandas as pd
@@ -69,7 +70,12 @@ CREATE TABLE IF NOT EXISTS cache (
 
 @contextmanager
 def db():
-    conn = sqlite3.connect(DB_PATH)
+    # timeout + WAL: the /spots batch writes from up to 12 threads at once;
+    # with the default rollback journal a concurrent writer raises
+    # "database is locked" and the whole request 500s.
+    conn = sqlite3.connect(DB_PATH, timeout=15)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=15000")
     conn.execute(SCHEMA)
     try:
         yield conn
@@ -113,9 +119,17 @@ def cache_update_keep_age(key: str, value: Any) -> None:
         )
 
 
+_CN_TZ = ZoneInfo("Asia/Shanghai")
+
+
 def seconds_until_next_trading_close() -> int:
-    """TTL so daily klines refresh after the next 15:30 CN market close."""
-    now = datetime.now()
+    """TTL so daily klines refresh after the next 15:30 CN market close.
+
+    Computed in Asia/Shanghai regardless of the server's local timezone —
+    otherwise a non-CN host refreshes hours early or serves stale bars past
+    the close.
+    """
+    now = datetime.now(_CN_TZ)
     target = now.replace(hour=15, minute=30, second=0, microsecond=0)
     if now >= target:
         target += timedelta(days=1)
@@ -997,17 +1011,22 @@ def analyst(symbol: str):
         out["buy_ratio"] = round(out["buy_count"] / out["total_count"], 3)
 
     # Consensus next-year EPS: pick the median forecast for the soonest
-    # forward fiscal year present in the data.
+    # forward fiscal year present in the data. Guard on the column: indexing
+    # with a scalar comparison against a missing column raises KeyError and
+    # would turn the whole /analyst response into a 500.
     next_year = date.today().year + 1
     yr_str = f"{next_year}Q4"
-    pool = rc[rc.get("quarter") == yr_str]
-    if pool.empty:
-        # fall back to nearest available future year
-        future = rc[rc["quarter"].str.match(r"^\d{4}Q4$", na=False)]
-        future = future[future["quarter"].str[:4].astype(int) > date.today().year]
-        if not future.empty:
-            soonest = future["quarter"].min()
-            pool = future[future["quarter"] == soonest]
+    if "quarter" in rc.columns:
+        pool = rc[rc["quarter"] == yr_str]
+        if pool.empty:
+            # fall back to nearest available future year
+            future = rc[rc["quarter"].str.match(r"^\d{4}Q4$", na=False)]
+            future = future[future["quarter"].str[:4].astype(int) > date.today().year]
+            if not future.empty:
+                soonest = future["quarter"].min()
+                pool = future[future["quarter"] == soonest]
+    else:
+        pool = rc.iloc[0:0]
     eps_series = pd.to_numeric(pool.get("eps"), errors="coerce").dropna() if not pool.empty else pd.Series(dtype=float)
     if not eps_series.empty:
         out["consensus_eps_next"] = round(float(eps_series.median()), 4)
