@@ -27,11 +27,17 @@ export default function DashboardPage() {
   const nameMap = new Map(universe.map((e) => [e.symbol, e.name]));
   const themeMap = new Map(universe.map((e) => [e.symbol, e.theme]));
 
+  // Join by date, not index: the strategy curve runs on the union trading
+  // calendar of the whole universe while the benchmark has its own bar dates,
+  // so positional zipping shifts the benchmark line.
+  const benchmarkByDate = new Map(
+    (data?.benchmarkCurve ?? []).map((b) => [b.date, b.equity]),
+  );
   const equityData = data
-    ? data.equityCurve.map((b, i) => ({
+    ? data.equityCurve.map((b) => ({
         date: b.date,
         equity: b.equity,
-        benchmark: data.benchmarkCurve[i]?.equity ?? null,
+        benchmark: benchmarkByDate.get(b.date) ?? null,
       }))
     : [];
 

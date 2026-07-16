@@ -12,3 +12,8 @@ dependencies = [
     "tushare>=1.4.29",
     "uvicorn[standard]>=0.46.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
