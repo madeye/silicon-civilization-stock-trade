@@ -34,7 +34,7 @@ export function EquityChart({ data }: { data: EquityPoint[] }) {
           formatter={(v: number) => (v ? fmtMoney(v) : "—")}
         />
         <Line type="monotone" dataKey="equity" stroke="#7cf0a0" dot={false} strokeWidth={2} name="策略" />
-        <Line type="monotone" dataKey="benchmark" stroke="#f2b84b" dot={false} strokeWidth={2} name="沪深300" />
+        <Line type="monotone" dataKey="benchmark" stroke="#f2b84b" dot={false} strokeWidth={2} name="沪深300" connectNulls />
       </LineChart>
     </ResponsiveContainer>
   );

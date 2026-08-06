@@ -36,6 +36,9 @@ jobs:
       - name: Type-check
         run: ./node_modules/.bin/tsc --noEmit
 
+      - name: Lint
+        run: npm run lint
+
       - name: Unit tests
         run: npm test
 
@@ -47,11 +50,12 @@ jobs:
         run: npm run build
 
   # ----------------------------------------------------------------------
-  # Python sidecar: syntax + import check. We do NOT exercise akshare
-  # network calls in CI — they hit upstream and are flaky by design.
+  # Python sidecar: syntax + import check + offline unit tests. We do NOT
+  # exercise akshare network calls in CI — they hit upstream and are flaky
+  # by design; test_main.py only covers pure helpers.
   # ----------------------------------------------------------------------
   pyserver:
-    name: pyserver (syntax + import)
+    name: pyserver (syntax + import + unit tests)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -78,3 +82,8 @@ jobs:
         env:
           TUSHARE_TOKEN: dummy-ci-token
         run: uv run python -c "import importlib.util as u; spec = u.spec_from_file_location('m','main.py'); m = u.module_from_spec(spec); spec.loader.exec_module(m); print('main loaded, app =', m.app)"
+
+      - name: Unit tests (offline helpers)
+        env:
+          TUSHARE_TOKEN: dummy-ci-token
+        run: uv run pytest -q

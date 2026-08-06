@@ -15,6 +15,9 @@ const API_KEY = process.env.DEEPSEEK_API_KEY;
 const BASE_URL = process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
 const MODEL = process.env.DEEPSEEK_MODEL ?? "deepseek-v4-pro";
 const BACKTEST_MODEL = process.env.DEEPSEEK_MODEL_BACKTEST ?? "deepseek-v4-flash";
+// Scoring a 90+ symbol batch can legitimately take a few minutes of generation,
+// but a socket that produces nothing for this long is hung, not slow.
+const TIMEOUT_MS = Number(process.env.DEEPSEEK_TIMEOUT_MS ?? 300_000);
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -50,20 +53,33 @@ export async function chat(
     if (responseFormat === "json_object") {
       body.response_format = { type: "json_object" };
     }
-    const r = await fetch(`${BASE_URL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${API_KEY}`,
-      },
-      body: JSON.stringify(body),
-    });
-    if (!r.ok) {
-      throw new Error(`deepseek ${r.status}: ${await r.text()}`);
+    // The signal covers both the connection and the body read — a socket that
+    // stalls mid-stream aborts instead of pinning the render forever.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+    let j: { choices: { message: { content: string } }[] };
+    try {
+      const r = await fetch(`${BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${API_KEY}`,
+        },
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      });
+      if (!r.ok) {
+        throw new Error(`deepseek ${r.status}: ${await r.text()}`);
+      }
+      j = (await r.json()) as { choices: { message: { content: string } }[] };
+    } catch (e) {
+      if (ctrl.signal.aborted) {
+        throw new Error(`deepseek request timed out after ${TIMEOUT_MS}ms`);
+      }
+      throw e;
+    } finally {
+      clearTimeout(timer);
     }
-    const j = (await r.json()) as {
-      choices: { message: { content: string } }[];
-    };
     const content = j.choices[0]?.message?.content ?? "";
     // Validate BEFORE returning: cached() persists whatever doFetch resolves to,
     // so an empty or unparseable json_object response must throw here rather than
@@ -171,8 +187,17 @@ export async function scoreSymbols(
 
   try {
     const parsed = JSON.parse(raw) as { signals?: Signal[] };
-    return parsed.signals ?? [];
+    if (!Array.isArray(parsed.signals)) {
+      // Distinguish "model returned no signals field" from a legitimate
+      // all-hold answer — silence here reads as an empty market view.
+      console.warn(
+        `[deepseek] response missing signals array (asOf=${opts.asOf ?? "live"}, keys=${Object.keys(parsed).join(",")})`,
+      );
+      return [];
+    }
+    return parsed.signals;
   } catch {
+    console.warn(`[deepseek] unparseable scoring response (asOf=${opts.asOf ?? "live"})`);
     return [];
   }
 }
