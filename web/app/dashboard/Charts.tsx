@@ -24,7 +24,11 @@ function fmtMoney(v: number) {
   return `¥${Math.round(v).toLocaleString("en-US")}`;
 }
 
-export function EquityChart({ data }: { data: EquityPoint[] }) {
+export function EquityChart({ data, strategyLabel, candidateLabel }: {
+  data: EquityPoint[];
+  strategyLabel: string;
+  candidateLabel?: string;
+}) {
   return (
     <ResponsiveContainer>
       <LineChart data={data}>
@@ -35,9 +39,9 @@ export function EquityChart({ data }: { data: EquityPoint[] }) {
           contentStyle={{ background: "#131a26", border: "1px solid #1f2937" }}
           formatter={(v: number) => (v ? fmtMoney(v) : "—")}
         />
-        <Line type="monotone" dataKey="equity" stroke="#7cf0a0" dot={false} strokeWidth={2} name="原版" />
+        <Line type="monotone" dataKey="equity" stroke="#7cf0a0" dot={false} strokeWidth={2} name={strategyLabel} />
         <Legend />
-        <Line type="monotone" dataKey="candidate" stroke="#63a1ff" dot={false} strokeWidth={2} name="趋势持有候选" />
+        {candidateLabel && <Line type="monotone" dataKey="candidate" stroke="#63a1ff" dot={false} strokeWidth={2} name={candidateLabel} />}
         <Line type="monotone" dataKey="benchmark" stroke="#f2b84b" dot={false} strokeWidth={2} name="沪深300" />
       </LineChart>
     </ResponsiveContainer>

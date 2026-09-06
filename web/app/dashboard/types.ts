@@ -1,5 +1,6 @@
 export interface DashboardData {
   generated_at: string;
+  sourceInfo?: { name: string; fetchedAt: string; financialDates: string };
   config: {
     strategy?: string;
     exitProfile?: string;
