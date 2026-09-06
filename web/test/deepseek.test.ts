@@ -95,3 +95,22 @@ test("scoreSymbols enforces oversold gates and total-equity sizes on model outpu
   assert.ok(buys.every((s) => s.size <= 0.15));
   assert.ok(buys.reduce((sum, s) => sum + s.size, 0) <= 0.8);
 });
+
+test("trend120 live scoring retains healthy positions after a rebound and separates cached profiles", async () => {
+  const { scoreSymbols } = await import("../lib/deepseek");
+  const calls: Array<{messages: Array<{content: string}>}> = [];
+  globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
+    calls.push(JSON.parse(String(init?.body)));
+    return new Response(JSON.stringify({choices: [{message: {content: JSON.stringify({signals: [
+      {symbol: "REBOUND", action: "hold", confidence: 0.8, size: 0, rationale: "趋势持有"},
+    ]})}}]}));
+  }) as typeof fetch;
+  const snapshots = [{symbol: "REBOUND", closes: Array(60).fill(100), priceDate: "2026-09-04"}];
+  const original = await scoreSymbols(snapshots, {exitProfile: "rebound"});
+  const trend = await scoreSymbols(snapshots, {exitProfile: "trend120"});
+  assert.equal(original[0].action, "sell");
+  assert.equal(trend[0].action, "hold");
+  assert.equal(calls.length, 2);
+  assert.ok(calls[1].messages[0].content.includes("未提供真实持仓"));
+  assert.equal(JSON.parse(calls[1].messages[1].content).exit_profile, "trend120");
+});

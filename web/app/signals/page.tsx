@@ -55,7 +55,8 @@ async function loadSignals() {
   );
 
   const usable = snapshots;
-  const signals = await scoreSymbols(usable);
+  const asOf = snapshots.map((s) => s.priceDate).filter((d): d is string => !!d).sort().at(-1);
+  const signals = await scoreSymbols(usable, { exitProfile: "trend120", asOf });
   const byId = new Map(signals.map((s) => [s.symbol, s]));
 
   return universe.map((e) => ({
@@ -73,15 +74,19 @@ export default async function SignalsPage() {
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
+  const priceDate = rows.map((r) => r.snapshot?.priceDate).filter((d): d is string => !!d).sort().at(-1);
+  const freshCount = rows.filter((r) => priceDate && r.snapshot?.priceDate === priceDate && r.snapshot.closes.length >= 60).length;
 
   return (
     <div className="container">
       <Link href="/" className="back-link">返回股票池</Link>
       <header className="page-header compact">
         <div>
-          <div className="eyebrow">Live scoring</div>
-          <h1>实时信号</h1>
+          <div className="eyebrow">trend120</div>
+          <h1>交易信号 · 趋势持有</h1>
           <p>{STRATEGY_SUMMARY} 目标权重以总资产计算；已有持仓也占用组合额度。</p>
+          <p className="muted">行情截至 {priceDate ?? "暂无数据"} · 有效日线覆盖 {freshCount}/{rows.length}。
+            未接入真实持仓成本、持有期和历史最高价，止损与跟踪退出需结合持仓判断；不再因回到均线直接退出。</p>
         </div>
       </header>
       {error && (
@@ -108,6 +113,7 @@ export default async function SignalsPage() {
                   <th>主题</th>
                   <th>动作</th>
                   <th className="num">现价</th>
+                  <th>行情日期</th>
                   <th className="num">置信度</th>
                   <th className="num">目标权重</th>
                   <th className="num">PE(TTM)</th>
@@ -130,6 +136,7 @@ export default async function SignalsPage() {
                       )}
                     </td>
                     <td className="num">{snapshot?.spotPrice?.toFixed(2) ?? snapshot?.closes.at(-1)?.toFixed(2) ?? "—"}</td>
+                    <td>{snapshot?.priceDate ?? "—"}</td>
                     <td className="num">{signal ? (signal.confidence * 100).toFixed(0) + "%" : "—"}</td>
                     <td className="num">{signal ? (signal.size * 100).toFixed(0) + "%" : "—"}</td>
                     <td className="num">{snapshot?.fundamental?.pe_ttm?.toFixed(1) ?? "—"}</td>

@@ -10,7 +10,7 @@
 //   5. `DEEPSEEK_MODEL_BACKTEST` overrides the model for backtest sweeps —
 //      default to v4-flash there to halve token spend on large windows.
 import { cached } from "./cache";
-import { oversoldSignals, oversoldMetrics, STRATEGY_SUMMARY, STRATEGY_VERSION } from "./oversoldStrategy";
+import { oversoldSignals, oversoldMetrics, STRATEGY_SUMMARY, STRATEGY_VERSION, type ExitProfile } from "./oversoldStrategy";
 
 const API_KEY = process.env.DEEPSEEK_API_KEY;
 const BASE_URL = process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
@@ -142,14 +142,21 @@ size表示总资产目标权重，不是可用现金比例。组合上限由代�
 /** Score a batch of symbols in ONE DeepSeek call (token-efficient). */
 export async function scoreSymbols(
   snapshots: SymbolSnapshot[],
-  opts: { asOf?: string; bypassCache?: boolean; mode?: "live" | "backtest" } = {},
+  opts: { asOf?: string; bypassCache?: boolean; mode?: "live" | "backtest"; exitProfile?: ExitProfile } = {},
 ): Promise<Signal[]> {
   if (snapshots.length === 0) return [];
+  const exitProfile = opts.exitProfile ?? "rebound";
+  const system = exitProfile === "rebound" ? STRATEGY_SYSTEM : STRATEGY_SYSTEM.replace(
+    "反弹至MA20或RSI恢复到50时退出，其他非超跌情况观望，不追涨。",
+    `采用${exitProfile}趋势持有规则，不因反弹至MA20或RSI恢复50而退出。非超跌时不追涨。\n` +
+    "此处未提供真实持仓、成本和持有期，不得臆测止损或跟踪退出是否触发；这些退出由持仓执行层判断。",
+  );
   const latestDate = snapshots.map((s) => s.priceDate).filter((d): d is string => !!d).sort().at(-1);
   snapshots = snapshots.map((s) => ({ ...s, stale: s.stale || (!!latestDate && s.priceDate !== latestDate) }));
   const userPayload = {
     as_of: opts.asOf ?? new Date().toISOString().slice(0, 10),
     strategy_version: STRATEGY_VERSION,
+    exit_profile: exitProfile,
     scoring_rule: STRATEGY_SUMMARY,
     symbols: snapshots.map((s) => ({
       symbol: s.symbol,
@@ -168,7 +175,7 @@ export async function scoreSymbols(
 
   const raw = await chat(
     [
-      { role: "system", content: STRATEGY_SYSTEM },
+      { role: "system", content: system },
       { role: "user", content: JSON.stringify(userPayload) },
     ],
     {
@@ -181,8 +188,8 @@ export async function scoreSymbols(
 
   try {
     const parsed = JSON.parse(raw) as { signals?: Signal[] };
-    return oversoldSignals(snapshots, parsed.signals ?? []);
+    return oversoldSignals(snapshots, parsed.signals ?? [], exitProfile);
   } catch {
-    return oversoldSignals(snapshots, []);
+    return oversoldSignals(snapshots, [], exitProfile);
   }
 }
