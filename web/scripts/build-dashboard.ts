@@ -19,6 +19,7 @@ import path from "node:path";
 import { loadEntries } from "../lib/universe";
 import { runBacktest, type BacktestConfig, type BacktestResult } from "../lib/backtest";
 import { validateFreshDataset, type FreshDataset } from "../lib/freshValidation";
+import { compareCalendarYears } from "../lib/benchmarkComparison";
 import type { ExitProfile } from "../lib/oversoldStrategy";
 import { ruleBasedScorer } from "../lib/dashboardBacktest";
 import { buildSymbolSeries, type PriceRow } from "../lib/dashboardData";
@@ -37,6 +38,7 @@ interface DashboardOutput {
   sourceInfo?: { name: string; fetchedAt: string; financialDates: string };
   config: BacktestConfig;
   stats: BacktestResult["stats"];
+  annualComparison?: ReturnType<typeof compareCalendarYears>;
   equityCurve: BacktestResult["equityCurve"];
   benchmarkCurve: Array<{ date: string; equity: number }>;
   trades: BacktestResult["trades"];
@@ -180,6 +182,7 @@ async function main() {
 
   const result = await runBacktest(series, cfg, { scorer: ruleBasedScorer(exitProfile) });
   const benchmarkCurve = computeBenchmarkCurve(benchmark, cfg);
+  const benchmarkDates = new Set(benchmarkCurve.map((b) => b.date));
 
   const lastBar = result.equityCurve[result.equityCurve.length - 1];
   const output: DashboardOutput = {
@@ -187,6 +190,8 @@ async function main() {
     sourceInfo: fresh ? {name:fresh.source,fetchedAt:fresh.fetchedAt,financialDates:"actual-announcement"} : undefined,
     config: result.config,
     stats: result.stats,
+    annualComparison: result.equityCurve.every((b) => benchmarkDates.has(b.date))
+      ? compareCalendarYears(result.equityCurve, benchmarkCurve, cfg.startCash) : undefined,
     equityCurve: result.equityCurve,
     benchmarkCurve,
     trades: result.trades,

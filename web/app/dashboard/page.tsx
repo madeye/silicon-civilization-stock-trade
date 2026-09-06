@@ -98,6 +98,22 @@ export default function DashboardPage() {
               <div className="card chart-card" style={{ marginTop: 16 }}>
                 <EquityChart data={activeComparison.curve} strategyLabel={activeLabel} />
               </div>
+              {holdingsData.annualComparison && (
+                <section className="card" style={{ marginTop: 16 }}>
+                  <h2>逐年表现</h2>
+                  <p className="muted">同一组合连续运行，按年分段统计；首尾年份仅覆盖回测区间内的交易日。</p>
+                  <div className="table-wrap"><table>
+                    <thead><tr><th>年份</th><th>实际区间</th><th className="num">策略收益</th><th className="num">沪深300</th><th className="num">超额（百分点）</th><th className="num">年内最大回撤</th></tr></thead>
+                    <tbody>{holdingsData.annualComparison.map((row) => (
+                      <tr key={row.year}>
+                        <td>{row.year}</td><td>{row.startDate} → {row.endDate}</td>
+                        <td className="num">{pct(row.strategyReturnPct)}</td><td className="num">{pct(row.benchmarkReturnPct)}</td>
+                        <td className="num">{row.excessReturnPp.toFixed(2)}</td><td className="num">{pct(row.strategyDrawdownPct)}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table></div>
+                </section>
+              )}
             </>
           ) : <p className="muted">缺少足够同期指数数据，无法计算超额收益。</p>}
         </section>
@@ -105,7 +121,8 @@ export default function DashboardPage() {
 
       {fresh && (
         <section className="card" style={{marginTop:16}}>
-          <h2>新数据验证：锁定 trend120</h2>
+          <h2>独立保留的短期验证：trend120</h2>
+          <p className="muted">此项承接2024年起算的历史持仓，与上方四年连续回测的起始持仓路径不同。</p>
           <p>{fresh.newDataStart} → {fresh.newDataEnd}，共{fresh.continuous.observations}个交易日；
             {fresh.quality.symbols}只股票和沪深300已更新，未重新选参数。</p>
           <div className="table-wrap"><table>

@@ -1,6 +1,30 @@
 type EquityPoint = { date: string; equity: number };
 type PortfolioPoint = EquityPoint & { cash: number };
 
+/** Attribute a continuous portfolio to calendar years, retaining the previous
+ * year-end mark so the first trading day's return is not dropped. */
+export function compareCalendarYears(portfolio: PortfolioPoint[], benchmark: EquityPoint[], startCash: number) {
+  const sorted = [...portfolio].sort((a, b) => a.date.localeCompare(b.date));
+  const years = [...new Set(sorted.map((b) => b.date.slice(0, 4)))];
+  return years.map((year) => {
+    const period = sorted.filter((b) => b.date.startsWith(year));
+    const anchor = sorted.filter((b) => b.date < period[0].date).at(-1);
+    const curve = anchor ? [anchor, ...period] : period;
+    const comparison = compareBenchmark(curve, benchmark, anchor?.equity ?? startCash);
+    if (!comparison || comparison.observations !== curve.length) {
+      throw new Error(`Incomplete calendar-year benchmark coverage: ${year}`);
+    }
+    return {
+      year, startDate: period[0].date, endDate: period.at(-1)!.date,
+      observations: period.length,
+      strategyReturnPct: comparison.strategyReturnPct,
+      benchmarkReturnPct: comparison.benchmarkReturnPct,
+      excessReturnPp: comparison.excessReturnPp,
+      strategyDrawdownPct: comparison.strategyDrawdownPct,
+    };
+  });
+}
+
 function drawdown(equities: number[]) {
   let peak = equities[0];
   let worst = 0;
