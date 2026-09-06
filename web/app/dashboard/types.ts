@@ -2,6 +2,7 @@ export interface DashboardData {
   generated_at: string;
   config: {
     strategy?: string;
+    exitProfile?: string;
     startCash: number;
     rebalanceEveryNDays: number;
     startDate: string;

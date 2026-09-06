@@ -1,18 +1,21 @@
 import type { BacktestResult } from "./backtest";
 import type { Signal, SymbolSnapshot } from "./deepseek";
-import { marketRegime, oversoldSignals, POSITION_RULES } from "./oversoldStrategy";
+import { marketRegime, oversoldSignals, POSITION_RULES, EXIT_PROFILES, type ExitProfile } from "./oversoldStrategy";
 
 export interface OversoldState {
   cash: number;
   shares: Record<string, number>;
   cost: Record<string, number>;
   opened: Record<string, number>;
+  highWater?: Record<string, number>;
+  trailingArmed?: Record<string, boolean>;
   pendingExit: Set<string>;
 }
 
 /** One close-execution simulation step. Decisions see only previous closes;
  * today's quotes are used solely for fills and portfolio valuation. */
 export function executeOversoldDay(state: OversoldState, args: {
+  exitProfile?: ExitProfile;
   date: string;
   bar: number;
   snapshots: SymbolSnapshot[];
@@ -27,7 +30,10 @@ export function executeOversoldDay(state: OversoldState, args: {
 }) {
   const { date, bar, snapshots, proposals, prices, marks, fee, trades } = args;
   const { cap, extreme } = marketRegime(snapshots);
-  const signals = oversoldSignals(snapshots, proposals);
+  const profile = EXIT_PROFILES[args.exitProfile ?? "rebound"];
+  const signals = oversoldSignals(snapshots, proposals, args.exitProfile);
+  const highWater = state.highWater ??= {};
+  const trailingArmed = state.trailingArmed ??= {};
   const sold = new Set<string>();
   const value = (sym: string) => (state.shares[sym] ?? 0) * (marks[sym] ?? 0);
   const exposure = () => Object.keys(state.shares).reduce((sum, sym) => sum + value(sym), 0);
@@ -52,10 +58,14 @@ export function executeOversoldDay(state: OversoldState, args: {
     if (!held) continue;
     const prev = s.closes.at(-1);
     const avgCost = state.cost[s.symbol] / held;
+    highWater[s.symbol] = Math.max(highWater[s.symbol] ?? avgCost, prev ?? avgCost);
+    trailingArmed[s.symbol] ||= highWater[s.symbol] >= avgCost * 1.1;
+    const trailingExit = profile.trailingStop !== null && prev !== undefined &&
+      trailingArmed[s.symbol] && prev <= highWater[s.symbol] * (1 - profile.trailingStop);
     const ruleSignal = signals.find((sig) => sig.symbol === s.symbol);
     if (ruleSignal?.action === "sell" ||
       (prev !== undefined && prev <= avgCost * (1 - POSITION_RULES.stopLoss)) ||
-      bar - state.opened[s.symbol] >= POSITION_RULES.maxHoldBars) {
+      trailingExit || bar - state.opened[s.symbol] >= profile.maxHoldBars) {
       state.pendingExit.add(s.symbol);
     }
   }
@@ -99,7 +109,11 @@ export function executeOversoldDay(state: OversoldState, args: {
       state.cash -= cost;
       state.cost[sig.symbol] = (state.cost[sig.symbol] ?? 0) + cost;
       state.shares[sig.symbol] = held + sh;
-      if (!held) state.opened[sig.symbol] = bar;
+      if (!held) {
+        state.opened[sig.symbol] = bar;
+        highWater[sig.symbol] = px;
+        trailingArmed[sig.symbol] = false;
+      }
       trades.push({ date, symbol: sig.symbol, side: "buy", shares: sh, price: px, reason: sig.rationale });
     }
   }

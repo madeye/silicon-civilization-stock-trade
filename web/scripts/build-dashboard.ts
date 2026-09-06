@@ -18,6 +18,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { loadEntries } from "../lib/universe";
 import { runBacktest, type BacktestConfig, type BacktestResult } from "../lib/backtest";
+import type { ExitProfile } from "../lib/oversoldStrategy";
 import { ruleBasedScorer } from "../lib/dashboardBacktest";
 import { buildSymbolSeries, type PriceRow } from "../lib/dashboardData";
 
@@ -27,7 +28,8 @@ const endDate = process.env.DASHBOARD_END ?? today;
 const rebalanceEveryNDays = Number(process.env.DASHBOARD_REBALANCE ?? 1);
 const maxPositions = Number(process.env.DASHBOARD_MAX_POSITIONS ?? 6);
 const cacheDir = path.resolve(process.cwd(), process.env.DASHBOARD_CACHE ?? ".cache/datasource");
-const outFile = path.resolve(process.cwd(), "data", "dashboard-backtest.json");
+const outFile = path.resolve(process.cwd(), "data", process.env.DASHBOARD_OUTPUT ?? "dashboard-backtest.json");
+const exitProfile = (process.env.DASHBOARD_EXIT_PROFILE ?? "rebound") as ExitProfile;
 
 interface DashboardOutput {
   generated_at: string;
@@ -166,9 +168,10 @@ async function main() {
     feeBps: 10,
     maxPositions,
     strategy: "oversold-v1",
+    exitProfile,
   };
 
-  const result = await runBacktest(series, cfg, { scorer: ruleBasedScorer() });
+  const result = await runBacktest(series, cfg, { scorer: ruleBasedScorer(exitProfile) });
   const benchmarkCurve = computeBenchmarkCurve(benchmark, cfg);
 
   const lastBar = result.equityCurve[result.equityCurve.length - 1];

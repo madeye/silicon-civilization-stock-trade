@@ -1,0 +1,732 @@
+{
+  "generatedAt": "2026-09-06T00:57:49.574Z",
+  "methodology": "Three fixed exit profiles; select highest 2024 excess return, lock before 2025 validation and 2026 historical holdout. Each window starts in cash. Zero cash interest; diagnostic index allocations exclude fees. Current universe and previously inspected historical data limit evidence.",
+  "selected": "trend120",
+  "profiles": [
+    "rebound",
+    "trend60",
+    "trend120"
+  ],
+  "development": [
+    {
+      "profile": "rebound",
+      "window": "development",
+      "feeBps": 10,
+      "startDate": "2024-01-02",
+      "endDate": "2024-12-31",
+      "observations": 242,
+      "strategyReturnPct": 3.872981490223193,
+      "benchmarkReturnPct": 16.199103566368557,
+      "excessReturnPp": -12.326122076145364,
+      "fixed45ReturnPct": 7.560449703131078,
+      "matchedExposureReturnPct": 5.742133521898851,
+      "strategyDrawdownPct": -7.019376137247524,
+      "benchmarkDrawdownPct": -14.405871877911093,
+      "averageExposurePct": 14.552215724202078,
+      "cashDays": 129,
+      "trades": 142,
+      "riskBreachDays": 0
+    },
+    {
+      "profile": "trend60",
+      "window": "development",
+      "feeBps": 10,
+      "startDate": "2024-01-02",
+      "endDate": "2024-12-31",
+      "observations": 242,
+      "strategyReturnPct": 14.637361119930903,
+      "benchmarkReturnPct": 16.199103566368557,
+      "excessReturnPp": -1.5617424464376537,
+      "fixed45ReturnPct": 7.560449703131078,
+      "matchedExposureReturnPct": 4.722424756266941,
+      "strategyDrawdownPct": -10.749253212263088,
+      "benchmarkDrawdownPct": -14.405871877911093,
+      "averageExposurePct": 22.130642256816166,
+      "cashDays": 69,
+      "trades": 105,
+      "riskBreachDays": 0
+    },
+    {
+      "profile": "trend120",
+      "window": "development",
+      "feeBps": 10,
+      "startDate": "2024-01-02",
+      "endDate": "2024-12-31",
+      "observations": 242,
+      "strategyReturnPct": 15.353699619583638,
+      "benchmarkReturnPct": 16.199103566368557,
+      "excessReturnPp": -0.8454039467849181,
+      "fixed45ReturnPct": 7.560449703131078,
+      "matchedExposureReturnPct": 4.1359620165362765,
+      "strategyDrawdownPct": -7.45428521567697,
+      "benchmarkDrawdownPct": -14.405871877911093,
+      "averageExposurePct": 23.15399703967616,
+      "cashDays": 60,
+      "trades": 85,
+      "riskBreachDays": 0
+    }
+  ],
+  "evaluation": [
+    {
+      "profile": "rebound",
+      "window": "validation",
+      "feeBps": 10,
+      "startDate": "2025-01-02",
+      "endDate": "2025-12-31",
+      "observations": 243,
+      "strategyReturnPct": 3.727682459482806,
+      "benchmarkReturnPct": 21.190066933389517,
+      "excessReturnPp": -17.46238447390671,
+      "fixed45ReturnPct": 9.330248167588294,
+      "matchedExposureReturnPct": 1.855832406215585,
+      "strategyDrawdownPct": -2.626385121727559,
+      "benchmarkDrawdownPct": -10.491515567427612,
+      "averageExposurePct": 6.585057171261577,
+      "cashDays": 137,
+      "trades": 66,
+      "riskBreachDays": 0
+    },
+    {
+      "profile": "trend120",
+      "window": "validation",
+      "feeBps": 10,
+      "startDate": "2025-01-02",
+      "endDate": "2025-12-31",
+      "observations": 243,
+      "strategyReturnPct": 41.96422305411582,
+      "benchmarkReturnPct": 21.190066933389517,
+      "excessReturnPp": 20.774156120726303,
+      "fixed45ReturnPct": 9.330248167588294,
+      "matchedExposureReturnPct": 5.716167818362128,
+      "strategyDrawdownPct": -5.411204814977932,
+      "benchmarkDrawdownPct": -10.491515567427612,
+      "averageExposurePct": 26.811540135881206,
+      "cashDays": 25,
+      "trades": 69,
+      "riskBreachDays": 0
+    },
+    {
+      "profile": "rebound",
+      "window": "holdout",
+      "feeBps": 10,
+      "startDate": "2026-01-05",
+      "endDate": "2026-06-12",
+      "observations": 105,
+      "strategyReturnPct": 2.8420225047122383,
+      "benchmarkReturnPct": 1.2627831974919568,
+      "excessReturnPp": 1.5792393072202815,
+      "fixed45ReturnPct": 0.7024817805932448,
+      "matchedExposureReturnPct": 1.3600568378945965,
+      "strategyDrawdownPct": -1.1844087055759123,
+      "benchmarkDrawdownPct": -7.779597602334764,
+      "averageExposurePct": 5.068528436601135,
+      "cashDays": 80,
+      "trades": 31,
+      "riskBreachDays": 0
+    },
+    {
+      "profile": "trend120",
+      "window": "holdout",
+      "feeBps": 10,
+      "startDate": "2026-01-05",
+      "endDate": "2026-06-12",
+      "observations": 105,
+      "strategyReturnPct": 7.2990550107916885,
+      "benchmarkReturnPct": 1.2627831974919568,
+      "excessReturnPp": 6.036271813299732,
+      "fixed45ReturnPct": 0.7024817805932448,
+      "matchedExposureReturnPct": 2.84013448018412,
+      "strategyDrawdownPct": -5.315818977080145,
+      "benchmarkDrawdownPct": -7.779597602334764,
+      "averageExposurePct": 20.552679255648314,
+      "cashDays": 37,
+      "trades": 26,
+      "riskBreachDays": 0
+    }
+  ],
+  "feeStress": {
+    "profile": "trend120",
+    "window": "holdout",
+    "feeBps": 20,
+    "startDate": "2026-01-05",
+    "endDate": "2026-06-12",
+    "observations": 105,
+    "strategyReturnPct": 7.200782687137974,
+    "benchmarkReturnPct": 1.2627831974919568,
+    "excessReturnPp": 5.9379994896460175,
+    "fixed45ReturnPct": 0.7024817805932448,
+    "matchedExposureReturnPct": 2.84231141599105,
+    "strategyDrawdownPct": -5.353988885727268,
+    "benchmarkDrawdownPct": -7.779597602334764,
+    "averageExposurePct": 20.557151339791865,
+    "cashDays": 37,
+    "trades": 26,
+    "riskBreachDays": 0
+  },
+  "sources": [
+    {
+      "file": "prices/batch1.csv",
+      "sha256": "b09ed4afd4b93e95ed43957f42796f528c476ce8b8e59ddc29f21acf7eb521c5"
+    },
+    {
+      "file": "prices/batch2.csv",
+      "sha256": "a058bf4a06020e878dc0b4fd862f19a7aee88a6de49d1d43979b0bd209e89ad8"
+    },
+    {
+      "file": "prices/batch3.csv",
+      "sha256": "f08a23d545f920f7daaca5908128af97d41d0effc421fc509bfc50f07955d724"
+    },
+    {
+      "file": "prices/batch4.csv",
+      "sha256": "a4ffba9341291ae596c40832fc07aaa8a3d04aec7b2e7e85f73757542b6b951a"
+    },
+    {
+      "file": "prices/batch5.csv",
+      "sha256": "18f882543b2d6ad57d87b4a10e4a4a39cadf2896b6c70b71a34c5a2fc87446f5"
+    },
+    {
+      "file": "prices/batch6.csv",
+      "sha256": "73ab784ec6e8ce89134d8f3a803b2761e89b969ad74819146b0354cd73d1e419"
+    },
+    {
+      "file": "prices/batch7.csv",
+      "sha256": "b223c61ec0a71925ada4e2d29ee583f21c22e5479a6eb023acbfbbd3bb26d116"
+    },
+    {
+      "file": "prices/batch8.csv",
+      "sha256": "3fc69a0a9c5fbea88615194c0427f5663a3df44f50f9cf5ee7776cb626e87fed"
+    },
+    {
+      "file": "prices/batch9.csv",
+      "sha256": "e54cab8e74788eed140051b46bf4e876680f9050ad75bb2bc1f81b3ca017bba5"
+    },
+    {
+      "file": "prices/new_20260806_batch1.csv",
+      "sha256": "3b73abaec2446a9ad8fcce720f4109c4b9cf6d9f672e6c2e74b48928ea9d17b6"
+    },
+    {
+      "file": "prices/new_20260806_batch2.csv",
+      "sha256": "c2e52c44f72ffc7126f6be2a8524ae6786c6a30e32ec2f897ab9418c6324df57"
+    },
+    {
+      "file": "prices/new_20260806_batch3.csv",
+      "sha256": "16a16744c2831f82e79a868a32a4a12a80bef203ff00a7650e914ed400d6afa3"
+    },
+    {
+      "file": "prices/update_20260806_batch01.csv",
+      "sha256": "638cd07165de4eb37ab08966086fd152323d7295e0d31a17b31ec2247c0d893f"
+    },
+    {
+      "file": "prices/update_20260806_batch02.csv",
+      "sha256": "587ba4cf44dc116af7bcf79e4b9f1ecfe90ecb9149591ba6a2fb500a42d82537"
+    },
+    {
+      "file": "prices/update_20260806_batch03.csv",
+      "sha256": "ca70cc6d725e71468a870c9e81167c2fd3cb1eb7b698a787eec33ed52f69abab"
+    },
+    {
+      "file": "prices/update_20260806_batch04.csv",
+      "sha256": "c9640c8aa8ca6740770864f54464611f7fa74360b91ccca019369f706b06f9b7"
+    },
+    {
+      "file": "prices/update_20260806_batch05.csv",
+      "sha256": "8f829d2f8eeeb92e4fac826ddbb447c59c131329d726233caaef66b5ce35876a"
+    },
+    {
+      "file": "prices/update_20260806_batch06.csv",
+      "sha256": "f59b77b84c8e5077d982c911d916a499cf045b45c4536fb7078287e7f6848298"
+    },
+    {
+      "file": "prices/update_20260806_batch07.csv",
+      "sha256": "80f44620c68f022dd4df8d67b5ee855ae2617e27788d2921da33074bb3419780"
+    },
+    {
+      "file": "prices/update_20260806_batch08.csv",
+      "sha256": "1b0ba99d3a4def3cc0b523d65ddf1a5615ec85b1fbfd81a4cf9716999e4cb212"
+    },
+    {
+      "file": "prices/update_20260806_batch09.csv",
+      "sha256": "735729b3fa1ab58c108d4822c6483b0d62a95a66c4ce3f1a9a2e9442b33382d4"
+    },
+    {
+      "file": "prices/update_20260806_batch10.csv",
+      "sha256": "097c9e48d4973af036a1afea5f51e396197766aedd00120b6c4132bcabf6a528"
+    },
+    {
+      "file": "prices/update_20260806_batch11.csv",
+      "sha256": "d706528f1d857e2582de8274cc28bc68899b90b00caa7910aa74b024c4a76e9d"
+    },
+    {
+      "file": "prices/update_20260806_batch12.csv",
+      "sha256": "8158267cc070974c3a0e5c2a8380e49b7b02d8707e146b3e210c3b2f14e53c22"
+    },
+    {
+      "file": "prices/update_20260806_batch13.csv",
+      "sha256": "86a0238b5738ba81c69121da0068cda6ef9fbe31b427c345cb5989953fbd6f13"
+    },
+    {
+      "file": "prices/update_20260806_batch14.csv",
+      "sha256": "9fbf47d57ab28a0987da965b722f149d57548f140778d1fe8716b454644364bc"
+    },
+    {
+      "file": "prices/update_20260806_batch15.csv",
+      "sha256": "9fa2530a26e53fbb8af0d727c5a2ec192f6a389f37833057bef66f247f2b72dc"
+    },
+    {
+      "file": "prices/update_20260806_batch16.csv",
+      "sha256": "5e15e5f028afa57c032fd6bba4fdec0df68b75a051e88fbab23dfd302720c5e2"
+    },
+    {
+      "file": "prices/update_20260806_batch17.csv",
+      "sha256": "dd340ff72387a50955d5668bb0f1254a8d1c995af5731fb78ef51994ebb61201"
+    },
+    {
+      "file": "prices/update_20260806_batch18.csv",
+      "sha256": "5e241fd2065ab01944a4b4a70505a907b3c54b3aaae54024023dad2aaab78916"
+    },
+    {
+      "file": "prices/update_20260806_batch19.csv",
+      "sha256": "1bebb8f2d8fb0d32a42dbeecaa06739bacd268b26009b43dcc5cf8d17ef842f8"
+    },
+    {
+      "file": "prices/update_20260806_batch20.csv",
+      "sha256": "30c115827d4835b6744a1677f67e650a78f9cd73acfa9f2091a2fe0a96f9166e"
+    },
+    {
+      "file": "prices/update_20260806_batch21.csv",
+      "sha256": "ef5b67cb55fe1153757fd5d0be02a010ef75b4f2fe83c2fa47905efd52053423"
+    },
+    {
+      "file": "prices/update_20260806_batch22.csv",
+      "sha256": "8971282fc938bddb3fff4fcf98a5170f568270363e06b37d637417a8168ed735"
+    },
+    {
+      "file": "prices/update_20260806_batch23.csv",
+      "sha256": "8d0e10beccdd5b33ab7af432e6de475fcf429b64afbd1bf776335f4f35e027c1"
+    },
+    {
+      "file": "prices/update_20260806_batch24.csv",
+      "sha256": "13dc7febe61520f2852a050d59ef7e14a1dd41026d29c482570f982f40540ad7"
+    },
+    {
+      "file": "prices/update_20260806_batch25.csv",
+      "sha256": "98dfe6439a95550d89e196458ec733cce43f81feae40fb70b49cab4b37127988"
+    },
+    {
+      "file": "prices/update_20260806_batch26.csv",
+      "sha256": "71ff715df89d58de2cdaaecdd137c19bded30717553c6cb00f5563b26813368d"
+    },
+    {
+      "file": "prices/update_20260806_batch27.csv",
+      "sha256": "6778437b95d3a67b7533228b6aab67a354585fb28797263649187f40d8ea8eb3"
+    },
+    {
+      "file": "prices/update_20260806_batch28.csv",
+      "sha256": "2cb7d72d1f47649e93c842024b46e2a55897bc7bc390db2931a67d0227de8060"
+    },
+    {
+      "file": "prices/update_20260806_batch29.csv",
+      "sha256": "0c83bdda1e881c419dfd2bd7ffade09910017fbacd8fcbfc01fa07c0d13c1cee"
+    },
+    {
+      "file": "financials/growth_2023_batch1.csv",
+      "sha256": "d5ab1851582cd72996cbe12c82e49df528257c3bf4dce7163a3749a505c16566"
+    },
+    {
+      "file": "financials/growth_2023_batch2.csv",
+      "sha256": "5fb710495250a63865d9fda9c9ddb22e4b9c0e309d388a1608004d64e8b6169e"
+    },
+    {
+      "file": "financials/growth_2023_batch3.csv",
+      "sha256": "c13c89a0fc1a665632525af3c9f6a1e4e83049f8d21636af3804c9dd0e00e720"
+    },
+    {
+      "file": "financials/growth_2023_batch4.csv",
+      "sha256": "77792e91d00191d21ece6c3ce8f59aed50ab60327fbf585ddad15b628a715a37"
+    },
+    {
+      "file": "financials/growth_2023_batch5.csv",
+      "sha256": "c3486cfba22e88ff2f3f09029829e4e02e2a7c34f4b881d9b966273cd4417d0d"
+    },
+    {
+      "file": "financials/growth_2023_batch6.csv",
+      "sha256": "0a00cda95624cde0d8771c5d56a74f02c9d9e998f1b78c8b783df4dc8cee6cee"
+    },
+    {
+      "file": "financials/growth_2023_batch7.csv",
+      "sha256": "be5514eb64354cedea26f6e8415a6b526718a023e0f47fb476aac23f186c922d"
+    },
+    {
+      "file": "financials/growth_2023_batch8.csv",
+      "sha256": "03be0ae1f369acbf7f3057f5872713a6b37787eff32d8a8790f6142c9ca7d8e8"
+    },
+    {
+      "file": "financials/growth_2023_batch9.csv",
+      "sha256": "3045ba06607ea3cce705c87be5c4872491cc7dff71ecd1d38b6286d6b63a11f0"
+    },
+    {
+      "file": "financials/growth_2024_batch1.csv",
+      "sha256": "70acf3ed4d848513932cda1329ff0f10b22d9779917bdcdb5f068d9f16074eb5"
+    },
+    {
+      "file": "financials/growth_2024_batch2.csv",
+      "sha256": "8dc56a89e314489eca3374625a4c3d8030448588f13ff13077b68a3fd960c6d9"
+    },
+    {
+      "file": "financials/growth_2024_batch3.csv",
+      "sha256": "011f44899db2116aaa460821112a1c0fca85d538280088e616de43ae8c9e54e2"
+    },
+    {
+      "file": "financials/growth_2024_batch4.csv",
+      "sha256": "181a5784b797470976919e91a3e95990d83a6401ddec6e58cf1e2ce30accb301"
+    },
+    {
+      "file": "financials/growth_2024_batch5.csv",
+      "sha256": "bb7df0d5900aba4ef8107dc33a9a90fdd1510871c978ed72524b7d437e75ee3a"
+    },
+    {
+      "file": "financials/growth_2024_batch6.csv",
+      "sha256": "b41b610c6371e99c76a97be5e1151b22940a3735040095781fb2ea3ad94bb573"
+    },
+    {
+      "file": "financials/growth_2024_batch7.csv",
+      "sha256": "3634a131f14f1f73ceb21c59b7b12113e1a8c82057111fd183ccde3ad836c1e0"
+    },
+    {
+      "file": "financials/growth_2024_batch8.csv",
+      "sha256": "1eefd7f2941b218de7fc12a6502644a9429abd43c354dd72b64cdea7e4a1a81b"
+    },
+    {
+      "file": "financials/growth_2024_batch9.csv",
+      "sha256": "d99d93801288a5010363dcc32c99885ca2a4de491c3d0645c155db8eb88fde33"
+    },
+    {
+      "file": "financials/growth_2025_batch01.csv",
+      "sha256": "49276e85bf807dcf61a32b8861dd5b7b40f49cec9362f73fecfe6bb4b04a2fd3"
+    },
+    {
+      "file": "financials/growth_2025_batch02.csv",
+      "sha256": "c59183384f1d09778c9b1082571892bbd444da34f37e9904063f90029266582e"
+    },
+    {
+      "file": "financials/growth_2025_batch03.csv",
+      "sha256": "8e60f846732940fcecdd1478a3fea6716cf039c0e5e54b054ec7062df7d6e5bd"
+    },
+    {
+      "file": "financials/growth_2025_batch04.csv",
+      "sha256": "8c0634b57c1c350cce25270a6875144c444211a950e0446b5d1c7c1d1f2e4e76"
+    },
+    {
+      "file": "financials/growth_2025_batch05.csv",
+      "sha256": "71e2ea6e3fbaa0e1c2a9e04dd437b05df057f0770010145f4dfa0cba0992fd07"
+    },
+    {
+      "file": "financials/growth_2025_batch06.csv",
+      "sha256": "b7ccd795fe0330c70441519ca8d1960151f16097a698f312ed0db98130627f09"
+    },
+    {
+      "file": "financials/growth_2025_batch07.csv",
+      "sha256": "09d872a3998d96b7421099523c5b55af1029d64c7ae973ce317461805fc074b5"
+    },
+    {
+      "file": "financials/growth_2025_batch08.csv",
+      "sha256": "c6a3925dd52ffdf59adf45d6026787c878363870dbe4341c71a3eace7c5a946f"
+    },
+    {
+      "file": "financials/growth_2025_batch09.csv",
+      "sha256": "b79b4edae10c9128b734e31fa960d974d609083c97c57b504653feefad2bf863"
+    },
+    {
+      "file": "financials/growth_2025_batch10.csv",
+      "sha256": "6e30ab215d26f32e83d37f95cffc96eaf1bb71e6d0dfcbf99233d7491a8efa55"
+    },
+    {
+      "file": "financials/growth_2025_batch11.csv",
+      "sha256": "c8cce948f8e08e372c7b17d89f3cda571ffee6d1cbfc5462934a57a4e8aec725"
+    },
+    {
+      "file": "financials/growth_2025_batch12.csv",
+      "sha256": "871f470812cbd77644d8c54cb79aef4aadafc43e20c47ae3c888617222dee488"
+    },
+    {
+      "file": "financials/growth_2025_batch13.csv",
+      "sha256": "11e17d834c12c28568eb89d5e9e6f593c382116512865938f022e3cbc7ac8e74"
+    },
+    {
+      "file": "financials/growth_2025_batch14.csv",
+      "sha256": "e3be67799c9e763dde355942acc11d65c5f10ea46c7fd3ab6012ed0769b60f66"
+    },
+    {
+      "file": "financials/growth_2025_batch15.csv",
+      "sha256": "b27466f37e49ae3b514acd8d900ca387d16b8ffa877d5647cf9c2527f6720c52"
+    },
+    {
+      "file": "financials/growth_2025_batch16.csv",
+      "sha256": "4a2edbca08306a70addb7910b884d94c7ed188824f1209a329d2c2dacae69e55"
+    },
+    {
+      "file": "financials/growth_2025_batch17.csv",
+      "sha256": "cad8678dfd651d136443fc189594ca572fd9e90e6a2a4e1480eac350e82facbe"
+    },
+    {
+      "file": "financials/growth_2025_batch18.csv",
+      "sha256": "2dcaeb80414418f8b938c0afeda2069bb4a70eded45c262a38f6f53056ef64af"
+    },
+    {
+      "file": "financials/growth_2025_batch19.csv",
+      "sha256": "297faf58f7dabe99c857437efd93518c0fa8d3f69e9b1005b676c025b521f2b7"
+    },
+    {
+      "file": "financials/growth_2025_batch20.csv",
+      "sha256": "5c4a0d7eb4db43adedf69cb99ae4e9fc275e97a7d7e969b6792faefcbb0cd09c"
+    },
+    {
+      "file": "financials/growth_2025_batch21.csv",
+      "sha256": "12cef9c7d1521fd6a0cff040e5d5d929b9740ee0b8556a955556f1aec298f772"
+    },
+    {
+      "file": "financials/growth_2025_batch22.csv",
+      "sha256": "24b09bc17ea74c75bae722df6aa61e2f7ac2dc03ea395b882dc9b60539642d64"
+    },
+    {
+      "file": "financials/growth_2025_batch23.csv",
+      "sha256": "e40e95a01ba0710477052e3ebcaa6985cdc6056b8a2e62ca8243c02f48d40792"
+    },
+    {
+      "file": "financials/growth_2025_batch24.csv",
+      "sha256": "7687e2ccaab094ad74c424bd520e00205b72c2668af5ec781ef37fa8bc3c37e5"
+    },
+    {
+      "file": "financials/growth_2025_batch25.csv",
+      "sha256": "8526d4ede81d3ac9972aca5a1f6c90def0deb5b00bbe8d14d4fa2d6f441f0921"
+    },
+    {
+      "file": "financials/growth_2025_batch26.csv",
+      "sha256": "7595e39f56064417773c76c98dc339edc80e94b81b0d255c84678854792c58c5"
+    },
+    {
+      "file": "financials/growth_2025_batch27.csv",
+      "sha256": "6a0c8f69632bab561bc91052e216e5a28f91fa1f6d426e79a6d22d429acbc635"
+    },
+    {
+      "file": "financials/growth_2025_batch28.csv",
+      "sha256": "4bc54d94ea003f08172847d7fb2658d903770ac399d08465f6da4113ed0c6812"
+    },
+    {
+      "file": "financials/growth_2025_batch29.csv",
+      "sha256": "308e54201bea5336e51f0ee5d3445d5bcabc4f51a1a71ab4ef3e7bbb4bd64e3d"
+    },
+    {
+      "file": "financials/growth_2025_batch30.csv",
+      "sha256": "3b646e11b80dc9f87d1c49fd90c887aab116dbcb99c2956d1d92ff201d603e89"
+    },
+    {
+      "file": "financials/growth_2025_batch31.csv",
+      "sha256": "5fca6c11a94745a67c0bb3b35c5342752bcdb0888e6fea7d5659b5c455964ced"
+    },
+    {
+      "file": "financials/growth_2025_batch32.csv",
+      "sha256": "94c343a06a34e775703dcbac88d573978e5dd7da3083c53050c42be4d9da1090"
+    },
+    {
+      "file": "financials/profit_2023_batch1.csv",
+      "sha256": "673f87687651f8e1fae1a499138b2cbfbf700cd5f68f37f9b455b96f10e7fabf"
+    },
+    {
+      "file": "financials/profit_2023_batch2.csv",
+      "sha256": "3e1e41e6ec35b2b2426a124cebcc6dc74332f3c2a79caa07d5b741956beed0bd"
+    },
+    {
+      "file": "financials/profit_2023_batch3.csv",
+      "sha256": "f2fa7846692b540e486dde738d32f104e98c2d98eaf29be90ea9bad50bbbf9a6"
+    },
+    {
+      "file": "financials/profit_2023_batch4.csv",
+      "sha256": "b55f9512d3be9f5da4b377ae1b41b4f5a444e1c0f89baa6b8f7892e7e92cbd90"
+    },
+    {
+      "file": "financials/profit_2023_batch5.csv",
+      "sha256": "caa7784c277b952c62a95a6498799bdb34af2dc8acdfcc58672be28f4b95c6a3"
+    },
+    {
+      "file": "financials/profit_2023_batch6.csv",
+      "sha256": "8c3fb989d7af307d0459b8993249cce8453b82786ca1d155dca4f5735c288e19"
+    },
+    {
+      "file": "financials/profit_2023_batch7.csv",
+      "sha256": "8858b0b73a445ec603f2c0e52ca6b9193c08011e5f4ab5a95278c2f031fe6ab1"
+    },
+    {
+      "file": "financials/profit_2023_batch8.csv",
+      "sha256": "2ffeb31995430564a9863c0ca37859ddf10120c57187c5f9da36fe52cc528a46"
+    },
+    {
+      "file": "financials/profit_2023_batch9.csv",
+      "sha256": "5c33a5e830773de1480741ee362033ac21fab83178021f2bb3a4dc1a305c0981"
+    },
+    {
+      "file": "financials/profit_2024_batch1.csv",
+      "sha256": "ea90b9a4054dfd7fd191dd16c88cce3aa23de8ac719eb9cd8505c774de63b66c"
+    },
+    {
+      "file": "financials/profit_2024_batch2.csv",
+      "sha256": "7d0da88caf7e19925f386de582f6372162dbf7cc3a1485d5bec7d35215e27367"
+    },
+    {
+      "file": "financials/profit_2024_batch3.csv",
+      "sha256": "9b3d36aad4b8e019f31045feab60193ac4c17ff59644621ca35d0b2817a1d7e2"
+    },
+    {
+      "file": "financials/profit_2024_batch4.csv",
+      "sha256": "2f61a84300c9d2d075f7c28bb79d8b7fc9e2db4d10854517bf441a34442e2894"
+    },
+    {
+      "file": "financials/profit_2024_batch5.csv",
+      "sha256": "d2beb409dff878ea67a5772c97c79db3935438101bc2fd864eedc26c56c2d3d5"
+    },
+    {
+      "file": "financials/profit_2024_batch6.csv",
+      "sha256": "e9e793c451312454a9f37838f465c616d22c59b1ca52f048716844f1a55e603f"
+    },
+    {
+      "file": "financials/profit_2024_batch7.csv",
+      "sha256": "660486196c2512a7616cd9ba6ba15cc7b0df64ac9f53d2a6eec9e4006f9a86c8"
+    },
+    {
+      "file": "financials/profit_2024_batch8.csv",
+      "sha256": "3df9f6bff050c48d2dd0f011fdf9a8e23661084de8394a64d417d68f40f80e97"
+    },
+    {
+      "file": "financials/profit_2024_batch9.csv",
+      "sha256": "c616e8dca2089b47e16a81e4243f931bd64f117668a348f3bb6c006fb1b07a7e"
+    },
+    {
+      "file": "financials/profit_2025_batch01.csv",
+      "sha256": "21c6f638b50f7c0ada00313c915836891711996a4738d3b0f03cd2edc24e0ca8"
+    },
+    {
+      "file": "financials/profit_2025_batch02.csv",
+      "sha256": "780e690d4c6041bde1fa39dcc9bef1865c4339e3ee79043c7508a24d1f909c8e"
+    },
+    {
+      "file": "financials/profit_2025_batch03.csv",
+      "sha256": "9467a14a27cf984fd2cca917b3d4f85001e13f39c92b6b3f10f163c75b0aa9de"
+    },
+    {
+      "file": "financials/profit_2025_batch04.csv",
+      "sha256": "a3cc7a3d1e8816b93cc3173c1b65ed4f80d12bbd47cb33ac5e71d8ccc7417f8a"
+    },
+    {
+      "file": "financials/profit_2025_batch05.csv",
+      "sha256": "b1c2d38f66b8cacd886a81dbbfb2eed935c0a8a92064fa2b6683c4d36d4d1798"
+    },
+    {
+      "file": "financials/profit_2025_batch06.csv",
+      "sha256": "6ca8e666ffaf502a9aec9d746b1b03259f575328e16ae0139089a0bad60d8295"
+    },
+    {
+      "file": "financials/profit_2025_batch07.csv",
+      "sha256": "67a358244fd963cce6db7aa7f6eaf5e169aa4195ebf6b4d200e270456b73960d"
+    },
+    {
+      "file": "financials/profit_2025_batch08.csv",
+      "sha256": "ea84cd4e80694cc00447098f0ad9ef154e89a392da4c5a3b4437270e9c8526ee"
+    },
+    {
+      "file": "financials/profit_2025_batch09.csv",
+      "sha256": "8e6257f4b826758e9e52ca4178865f5fb4a6ce65a5ed574d06e45d6b0a4e21c2"
+    },
+    {
+      "file": "financials/profit_2025_batch10.csv",
+      "sha256": "db15370272ae09a7055cc3eb7efde33f720c6d73a0d437985e71b5c12e46096e"
+    },
+    {
+      "file": "financials/profit_2025_batch11.csv",
+      "sha256": "4ff91e6804cea7a1f2504bebab9864a2731eb2c1b8cc8a0dbf780a5f4a244f10"
+    },
+    {
+      "file": "financials/profit_2025_batch12.csv",
+      "sha256": "81c44ddda7261034872751ba99788530cd866718bae06095e9d76812204d70f9"
+    },
+    {
+      "file": "financials/profit_2025_batch13.csv",
+      "sha256": "b1b61076d3cfd55729cb0cd89d0293f328e5e4a7cb1928998ab0638837d7d09a"
+    },
+    {
+      "file": "financials/profit_2025_batch14.csv",
+      "sha256": "299c76403ccfefdf57499c0426229ba89a1d0360e6c3dca4ee866d0758fa5b90"
+    },
+    {
+      "file": "financials/profit_2025_batch15.csv",
+      "sha256": "703e617f78b696ba741f776e4864f06187d05da8de1d8c66d07c92e5e8607cbe"
+    },
+    {
+      "file": "financials/profit_2025_batch16.csv",
+      "sha256": "103a38cc06c967735942b4ae5162b9183d9b61b62edd620544994754f447bfac"
+    },
+    {
+      "file": "financials/profit_2025_batch17.csv",
+      "sha256": "eca3ef6230c1ebf31759555641e51047ce81b18e57c10af36eec3614b5a07dea"
+    },
+    {
+      "file": "financials/profit_2025_batch18.csv",
+      "sha256": "4b481d9d1eac804f781a6b4cf882310c9a83b70e1113ac583b3887463784f760"
+    },
+    {
+      "file": "financials/profit_2025_batch19.csv",
+      "sha256": "a1adb095dda429df2699fd42b730d73ad19349d3f60afb7ae05f3dd1ae3baec8"
+    },
+    {
+      "file": "financials/profit_2025_batch20.csv",
+      "sha256": "361cc11861003590a364d4820484bc7039e393e705e787636c37697e46126cd8"
+    },
+    {
+      "file": "financials/profit_2025_batch21.csv",
+      "sha256": "a2b5c95b209bf79f8028184de528435b070be8a5721f27dcdab5ebce225b02f2"
+    },
+    {
+      "file": "financials/profit_2025_batch22.csv",
+      "sha256": "2b901ea03184a1fcf24da702cbf172d77b737b6ab741477d15a0d4994fe06ef5"
+    },
+    {
+      "file": "financials/profit_2025_batch23.csv",
+      "sha256": "77a7278838e2eb6811877267c09273e288c33b7fdc23f867c866d19738c820c7"
+    },
+    {
+      "file": "financials/profit_2025_batch24.csv",
+      "sha256": "7363d679e8f12c6ed781c1f1a26d56602276d0c17465086ce6234617bdddbd11"
+    },
+    {
+      "file": "financials/profit_2025_batch25.csv",
+      "sha256": "daea460cdeb8948190a2aae6dda09ddae8e49d9ac9595e8983d41681e60c5e18"
+    },
+    {
+      "file": "financials/profit_2025_batch26.csv",
+      "sha256": "8f358d53b77717d66993827a3e01595e1654f3ab395ccbbf52c3367cd51441ac"
+    },
+    {
+      "file": "financials/profit_2025_batch27.csv",
+      "sha256": "1ea0dcb29bf656aaae631fa178b0494c8055ce6436dc3631b48fc1011afe905d"
+    },
+    {
+      "file": "financials/profit_2025_batch28.csv",
+      "sha256": "126ee1e1f631bf7a2a73dc1f97953e7eaf91f492b3d90a9ca1e08bfe14f09455"
+    },
+    {
+      "file": "financials/profit_2025_batch29.csv",
+      "sha256": "f23417b851077f40b049c2597e9bfe538a6e4666c10f427fc2bcd52318c6565b"
+    },
+    {
+      "file": "financials/profit_2025_batch30.csv",
+      "sha256": "e9649ffb4fca4ff5a63e2bbbdbe14ac92718b23baeee5e0eebd84d2c74489056"
+    },
+    {
+      "file": "financials/profit_2025_batch31.csv",
+      "sha256": "e09d2b44d03db79610003f895fdff47d79bc4c39cf7d5f7d9065eda909d202b2"
+    },
+    {
+      "file": "financials/profit_2025_batch32.csv",
+      "sha256": "a9af1b25a64d02336d017a828481e6572f4ec18aeed38f448f2df7017f7a5315"
+    }
+  ]
+}

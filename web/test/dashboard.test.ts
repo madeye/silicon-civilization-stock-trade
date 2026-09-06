@@ -149,3 +149,25 @@ test("stale severe prices cannot activate the 80% regime", () => {
   assert.equal(marketRegime(snaps).cap, 0.45);
   assert.equal(oversoldSignals(snaps).find((s) => s.symbol === "C")!.action, "hold");
 });
+
+test("exit-only experiments retain oversold entries and all portfolio caps", async () => {
+  for (const exitProfile of ["trend60", "trend120"] as const) {
+    const data = series([...Array(5).fill(70), ...Array(8).fill(84)]);
+    const r = await runBacktest(data, { ...config, exitProfile }, {scorer: ruleBasedScorer(exitProfile)});
+    assertCaps(r);
+    assert.ok(r.equityCurve.at(-1)!.exposurePct! > 0, "trend exits allow recovery holdings to continue");
+    for (const t of r.trades.filter((t) => t.side === "buy")) {
+      const s = data.find((s) => s.entry.symbol === t.symbol)!;
+      assert.ok(oversoldMetrics({symbol:t.symbol,closes:s.klines.filter((k)=>k.date<t.date).map((k)=>k.close)})!.oversold);
+    }
+    assert.ok(Math.abs(r.stats.totalReturnPct - (r.equityCurve.at(-1)!.equity/config.startCash-1)*100)<1e-8);
+  }
+});
+
+test("experimental trailing exits use prior closes and preserve the 8% stop", async () => {
+  const data = series([70,70,70,80,90,80,75,75,75,75],1);
+  const r = await runBacktest(data, {...config,exitProfile:"trend120"}, {scorer:ruleBasedScorer("trend120")});
+  assert.ok(r.trades.some((t)=>t.side==="sell" && t.date==="2025-03-09"));
+  const loss = await runBacktest(series([70,70,70,60,60,60,60,60],1), {...config,exitProfile:"trend120"}, {scorer:ruleBasedScorer("trend120")});
+  assert.ok(loss.trades.some((t)=>t.side==="sell" && t.date==="2025-03-06"));
+});

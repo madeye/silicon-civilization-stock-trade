@@ -8,7 +8,7 @@
 // Signals are cached by (model, messages) hash, so re-running the same
 // backtest is free in tokens — only adding new bars or symbols pays cost.
 import { executeOversoldDay, type OversoldState } from "./oversoldExecution";
-import { oversoldSignals, STRATEGY_VERSION } from "./oversoldStrategy";
+import { oversoldSignals, STRATEGY_VERSION, EXIT_PROFILES, type ExitProfile } from "./oversoldStrategy";
 import type { Kline } from "./pyserver";
 import { scoreSymbols, type SymbolSnapshot, type Signal } from "./deepseek";
 import type { UniverseEntry } from "./universe";
@@ -16,6 +16,8 @@ import type { UniverseEntry } from "./universe";
 export interface BacktestConfig {
   /** Legacy mode is retained only for historical comparisons and engine tests. */
   strategy?: "oversold-v1" | "legacy-ranking";
+  /** Exit-only experimental profile; live/API defaults remain rebound. */
+  exitProfile?: ExitProfile;
   startCash: number;
   rebalanceEveryNDays: number;
   startDate: string;         // YYYY-MM-DD
@@ -159,6 +161,7 @@ export async function runBacktest(
     !Number.isFinite(cfg.feeBps) || cfg.feeBps < 0 || cfg.feeBps >= 10000) {
     throw new Error("Invalid backtest cash, rebalance period, position count or fees");
   }
+  if (!Object.hasOwn(EXIT_PROFILES, cfg.exitProfile ?? "rebound")) throw new Error("Invalid exit profile");
   const useOversold = cfg.strategy === STRATEGY_VERSION;
   // Sort once: indicators and prior-close decisions must be chronological.
   series = series.map((s) => ({ ...s, klines: [...s.klines].sort((a, b) => a.date.localeCompare(b.date)) }));
@@ -243,7 +246,7 @@ export async function runBacktest(
           })
           .filter((s) => s.closes.length > 0); // not yet listed as of d
         const proposals = await scorer(useOversold ? snapshotsAt(d) : snapshots, { asOf: d, mode: "backtest" });
-        const sigs = useOversold ? oversoldSignals(snapshotsAt(d), proposals) : proposals;
+        const sigs = useOversold ? oversoldSignals(snapshotsAt(d), proposals, cfg.exitProfile) : proposals;
         signalsDone++;
         onProgress?.({ phase: "signals", done: signalsDone, total: rebalanceDates.length });
         return [d, sigs] as const;
@@ -295,7 +298,7 @@ export async function runBacktest(
     if (useOversold) {
       riskState.cash = cash;
       riskMark = executeOversoldDay(riskState, {
-        date, bar: i, snapshots: snapshotsAt(date),
+        date, bar: i, exitProfile: cfg.exitProfile, snapshots: snapshotsAt(date),
         proposals: isRebalance ? signals : undefined, prices, marks: lastPrice,
         fee, maxPositions: cfg.maxPositions, trades,
         canBuy: (sym) => prices[sym] > 0 && !atLimitUp(symbolIndex.get(sym)!, date, prices[sym]),
@@ -477,7 +480,7 @@ export async function runBacktest(
 
   // Stats
   const equities = equityCurve.map((b) => b.equity);
-  const start = equities[0];
+  const start = cfg.startCash; // Include entry fees on the first execution day.
   const end = equities[equities.length - 1];
   const totalReturnPct = (end / start - 1) * 100;
   // Calendar span, not bar count: bar count undercounts elapsed time whenever

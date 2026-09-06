@@ -1,6 +1,13 @@
 import type { Signal, SymbolSnapshot } from "./deepseek";
 
 export const STRATEGY_VERSION = "oversold-v1" as const;
+// Exit-only research profiles. Entry thresholds and portfolio limits stay fixed.
+export type ExitProfile = "rebound" | "trend60" | "trend120";
+export const EXIT_PROFILES = Object.freeze({
+  rebound: { maxHoldBars: 20, trailingStop: null },
+  trend60: { maxHoldBars: 60, trailingStop: 0.12 },
+  trend120: { maxHoldBars: 120, trailingStop: 0.15 },
+});
 export const POSITION_RULES = Object.freeze({
   normalCap: 0.45,
   extremeCap: 0.8,
@@ -60,7 +67,7 @@ export function marketRegime(snapshots: SymbolSnapshot[]) {
 }
 
 /** Absolute target weights of total equity, never fractions of free cash. */
-export function oversoldSignals(snapshots: SymbolSnapshot[], proposals?: Signal[]): Signal[] {
+export function oversoldSignals(snapshots: SymbolSnapshot[], proposals?: Signal[], exitProfile: ExitProfile = "rebound"): Signal[] {
   const cap = marketRegime(snapshots).cap;
   const proposed = new Map((Array.isArray(proposals) ? proposals : [])
     .filter((s) => s && typeof s.symbol === "string")
@@ -71,7 +78,7 @@ export function oversoldSignals(snapshots: SymbolSnapshot[], proposals?: Signal[
     const base = { symbol: s.symbol, confidence: 0, size: 0 };
     if (!qualityAllowed(s)) return { ...base, action: "sell", rationale: "风险标记或已知基本面不合格" };
     if (!m) return { ...base, action: "hold", rationale: "日线不足60根、无效或停更，禁止新买入" };
-    if (p?.action === "sell" || m.close >= m.ma20 || m.rsi >= 50) {
+    if (p?.action === "sell" || (exitProfile === "rebound" && (m.close >= m.ma20 || m.rsi >= 50))) {
       return { ...base, action: "sell", rationale: p?.action === "sell" ? "模型建议退出" : "反弹至MA20或RSI恢复至50，退出" };
     }
     if (!m.oversold) return { ...base, action: "hold", rationale: "未同时满足RSI≤30、MA20偏离≤-8%、60日回撤≥15%" };
