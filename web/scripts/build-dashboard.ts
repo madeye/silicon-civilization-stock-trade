@@ -11,8 +11,8 @@
 //
 // Env overrides:
 //   DASHBOARD_START=2024-01-01  DASHBOARD_END=2026-06-12
-//   DASHBOARD_REBALANCE=30      DASHBOARD_MAX_POSITIONS=6
-//   DASHBOARD_MIN_HOLD_BARS=45  DASHBOARD_REBALANCE_THRESHOLD_PCT=5
+//   DASHBOARD_REBALANCE=1      DASHBOARD_MAX_POSITIONS=6
+//   Daily risk checks, 20-bar maximum holding period, 8% stop loss
 //   DASHBOARD_CACHE=.cache/datasource
 import fs from "node:fs";
 import path from "node:path";
@@ -24,10 +24,8 @@ import { buildSymbolSeries, type PriceRow } from "../lib/dashboardData";
 const today = new Date().toISOString().slice(0, 10);
 const startDate = process.env.DASHBOARD_START ?? "2024-01-01";
 const endDate = process.env.DASHBOARD_END ?? today;
-const rebalanceEveryNDays = Number(process.env.DASHBOARD_REBALANCE ?? 30);
+const rebalanceEveryNDays = Number(process.env.DASHBOARD_REBALANCE ?? 1);
 const maxPositions = Number(process.env.DASHBOARD_MAX_POSITIONS ?? 6);
-const minHoldBars = Number(process.env.DASHBOARD_MIN_HOLD_BARS ?? 45);
-const rebalanceThresholdPct = Number(process.env.DASHBOARD_REBALANCE_THRESHOLD_PCT ?? 5);
 const cacheDir = path.resolve(process.cwd(), process.env.DASHBOARD_CACHE ?? ".cache/datasource");
 const outFile = path.resolve(process.cwd(), "data", "dashboard-backtest.json");
 
@@ -148,10 +146,14 @@ async function main() {
   const universe = loadEntries();
   console.log(`Loaded ${universe.length} universe entries`);
 
-  const { series, benchmark } = buildSymbolSeries(universe, cacheDir);
+  const { series: loadedSeries, benchmark } = buildSymbolSeries(universe, cacheDir);
+  // Preserve missing constituents in the breadth denominator. No data means no
+  // trading, rather than silently shrinking the universe to surviving downloads.
+  const bySymbol = new Map(loadedSeries.map((s) => [s.entry.symbol, s]));
+  const series = universe.map((entry) => bySymbol.get(entry.symbol) ?? { entry, klines: [] });
   console.log(`Built ${series.length} price series, benchmark ${benchmark.length} bars`);
 
-  if (series.length === 0) {
+  if (loadedSeries.length === 0) {
     console.error("No usable price series found. Check cached CSVs in", cacheDir);
     process.exit(1);
   }
@@ -163,9 +165,7 @@ async function main() {
     endDate,
     feeBps: 10,
     maxPositions,
-    autoSellUnselected: true,
-    minHoldBars,
-    rebalanceThresholdPct,
+    strategy: "oversold-v1",
   };
 
   const result = await runBacktest(series, cfg, { scorer: ruleBasedScorer() });
@@ -174,13 +174,17 @@ async function main() {
   const lastBar = result.equityCurve[result.equityCurve.length - 1];
   const output: DashboardOutput = {
     generated_at: new Date().toISOString(),
-    config: cfg,
+    config: result.config,
     stats: result.stats,
     equityCurve: result.equityCurve,
     benchmarkCurve,
     trades: result.trades,
     themePerformance: computeThemePerformance(result, series),
-    signalsByDate: result.signalsByDate,
+    // Keep entry decisions for auditing; routine hold/exit signals are omitted.
+    // Executed exits retain their reasons in trades.
+    signalsByDate: Object.fromEntries(Object.entries(result.signalsByDate)
+      .map(([date, signals]) => [date, signals.filter((s) => s.action === "buy")] as const)
+      .filter(([, signals]) => signals.length > 0)),
     latestHoldings: lastBar.positions,
     latestDate: lastBar.date,
   };

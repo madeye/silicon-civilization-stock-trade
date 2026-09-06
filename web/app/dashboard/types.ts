@@ -1,6 +1,7 @@
 export interface DashboardData {
   generated_at: string;
   config: {
+    strategy?: string;
     startCash: number;
     rebalanceEveryNDays: number;
     startDate: string;
@@ -19,6 +20,9 @@ export interface DashboardData {
     date: string;
     equity: number;
     cash: number;
+    exposurePct?: number;
+    exposureLimitPct?: number;
+    riskBreach?: boolean;
     positions: Record<string, { shares: number; price: number }>;
   }>;
   benchmarkCurve: Array<{ date: string; equity: number }>;

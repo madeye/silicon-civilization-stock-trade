@@ -10,6 +10,7 @@
 //   5. `DEEPSEEK_MODEL_BACKTEST` overrides the model for backtest sweeps —
 //      default to v4-flash there to halve token spend on large windows.
 import { cached } from "./cache";
+import { oversoldSignals, oversoldMetrics, STRATEGY_SUMMARY, STRATEGY_VERSION } from "./oversoldStrategy";
 
 const API_KEY = process.env.DEEPSEEK_API_KEY;
 const BASE_URL = process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
@@ -89,6 +90,8 @@ export interface SymbolSnapshot {
   symbol: string;
   name?: string | null;
   theme?: string;
+  priceDate?: string;   // latest completed daily bar, YYYY-MM-DD
+  stale?: boolean;      // missing the latest market session
   closes: number[];      // last ~60 daily closes, oldest first
   fundamental?: {
     pe_ttm?: number | null;
@@ -102,7 +105,7 @@ export interface Signal {
   symbol: string;
   action: "buy" | "hold" | "sell";
   confidence: number;    // 0..1
-  size: number;          // 0..1 fraction of available capital
+  size: number;          // target fraction of total portfolio equity after risk gating
   rationale: string;
 }
 
@@ -125,10 +128,13 @@ const STRATEGY_SYSTEM = `你是一名专注于"硅基文明消费"主题的中�
 （算力需求边际变化、订单/出货传导、市值位置）、价格动量（趋势、均线、动量与
 拥挤度）。
 
-决策权重：基本面估值约 40%，主题景气度约 30%，价格动量与择时约 30%。三者中
-任意一项强势均可成为买入理由；高 PE 但利润增速与主题景气度同时强、且价格处于
-有效突破的标的可以买入；PEG 偏低但主题/动量同时走弱的标的不必强买。卖出条件：
-PEG 显著恶化、或主题景气度反转、或价格跌破关键均线且伴随成交萎缩。
+硬性规则：只有超跌信号才能买入：RSI14≤30、收盘价低于MA20至少8%、
+距60日最高收盘价回撤至少15%，三项必须同时满足。突破、强动量、低PEG本身不能触发买入。
+不足60根有效日线禁止买入，风险警示/ST/退市或已知PE、利润增速非正禁止买入。
+基本面与主题用于否决风险；不得编造未提供的订单、财报或景气数据。
+反弹至MA20或RSI恢复到50时退出，其他非超跌情况观望，不追涨。
+${STRATEGY_SUMMARY}
+size表示总资产目标权重，不是可用现金比例。组合上限由代码决定，模型不能放宽。
 
 严格输出 JSON：{"signals":[{"symbol":"...","action":"buy|hold|sell","confidence":0..1,"size":0..1,"rationale":"中文,<=60字"}]}
 不要输出任何其他文本。`;
@@ -139,13 +145,17 @@ export async function scoreSymbols(
   opts: { asOf?: string; bypassCache?: boolean; mode?: "live" | "backtest" } = {},
 ): Promise<Signal[]> {
   if (snapshots.length === 0) return [];
+  const latestDate = snapshots.map((s) => s.priceDate).filter((d): d is string => !!d).sort().at(-1);
+  snapshots = snapshots.map((s) => ({ ...s, stale: s.stale || (!!latestDate && s.priceDate !== latestDate) }));
   const userPayload = {
     as_of: opts.asOf ?? new Date().toISOString().slice(0, 10),
-    scoring_rule: "40/30/30 三维平衡：基本面(PEG=pe_ttm/profit_yoy_pct,越低越优)40%、主题景气30%、价格动量30%。任一维度强势可作买入触发。",
+    strategy_version: STRATEGY_VERSION,
+    scoring_rule: STRATEGY_SUMMARY,
     symbols: snapshots.map((s) => ({
       symbol: s.symbol,
       name: s.name ?? undefined,
       theme: s.theme,
+      oversold_metrics: oversoldMetrics(s),
       // truncate to last 30 closes to keep prompt small while preserving trend
       closes_tail30: s.closes.slice(-30).map((x) => Number(x.toFixed(3))),
       pe_ttm: s.fundamental?.pe_ttm ?? null,
@@ -171,8 +181,8 @@ export async function scoreSymbols(
 
   try {
     const parsed = JSON.parse(raw) as { signals?: Signal[] };
-    return parsed.signals ?? [];
+    return oversoldSignals(snapshots, parsed.signals ?? []);
   } catch {
-    return [];
+    return oversoldSignals(snapshots, []);
   }
 }

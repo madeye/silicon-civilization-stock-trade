@@ -1,6 +1,7 @@
 import { loadEntries } from "@/lib/universe";
 import { fetchKlines, fetchFundamental, fetchSpot } from "@/lib/pyserver";
 import { scoreSymbols, type SymbolSnapshot } from "@/lib/deepseek";
+import { STRATEGY_SUMMARY } from "@/lib/oversoldStrategy";
 import { mapPool } from "@/lib/concurrent";
 import Link from "next/link";
 
@@ -21,7 +22,7 @@ async function loadSignals() {
   const universe = loadEntries();
   const start = (() => {
     const d = new Date();
-    d.setDate(d.getDate() - 90);
+    d.setDate(d.getDate() - 180);
     return d.toISOString().slice(0, 10).replaceAll("-", "");
   })();
 
@@ -39,6 +40,7 @@ async function loadSignals() {
         name: e.name,
         theme: e.theme,
         spotPrice: spot?.price,
+        priceDate: klines.at(-1)?.date,
         closes: klines.map((k) => k.close),
         fundamental: fund
           ? {
@@ -52,7 +54,7 @@ async function loadSignals() {
     },
   );
 
-  const usable = snapshots.filter((s) => s.closes.length >= 10);
+  const usable = snapshots;
   const signals = await scoreSymbols(usable);
   const byId = new Map(signals.map((s) => [s.symbol, s]));
 
@@ -79,7 +81,7 @@ export default async function SignalsPage() {
         <div>
           <div className="eyebrow">Live scoring</div>
           <h1>实时信号</h1>
-          <p>以 PEG 和利润增速/估值匹配为主，短期价格指标降权，生成 5-20 个交易日动作建议。</p>
+          <p>{STRATEGY_SUMMARY} 目标权重以总资产计算；已有持仓也占用组合额度。</p>
         </div>
       </header>
       {error && (
@@ -107,7 +109,7 @@ export default async function SignalsPage() {
                   <th>动作</th>
                   <th className="num">现价</th>
                   <th className="num">置信度</th>
-                  <th className="num">仓位</th>
+                  <th className="num">目标权重</th>
                   <th className="num">PE(TTM)</th>
                   <th className="num">利润同比</th>
                   <th className="num">PEG</th>

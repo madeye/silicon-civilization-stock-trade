@@ -46,6 +46,7 @@ function makeSeries(): SymbolSeries[] {
 }
 
 const cfg: BacktestConfig = {
+  strategy: "legacy-ranking",
   startCash: 1_000_000,
   rebalanceEveryNDays: 5,
   // dates from makeSeries start at 2025-01-01 (UTC); first business day is 01-01.

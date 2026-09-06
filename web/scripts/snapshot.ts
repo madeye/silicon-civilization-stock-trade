@@ -12,6 +12,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { STRATEGY_VERSION } from "../lib/oversoldStrategy";
 import type { BacktestConfig, BacktestResult } from "../lib/backtest";
 
 type SnapshotBacktest = {
@@ -187,7 +188,7 @@ async function main() {
     console.log(`[signals] fetching klines + fundamentals for ${u.entries.length} symbols…`);
     const start90 = (() => {
       const d = new Date();
-      d.setDate(d.getDate() - 90);
+      d.setDate(d.getDate() - 180);
       return d.toISOString().slice(0, 10).replaceAll("-", "");
     })();
     const snapshots = await mapPool(u.entries, 4, async (e): Promise<SymbolSnapshot> => {
@@ -199,16 +200,18 @@ async function main() {
         symbol: e.symbol,
         name: e.name,
         theme: e.theme,
+        priceDate: klines.at(-1)?.date,
         closes: klines.map((k) => k.close),
         fundamental: fund
           ? { pe_ttm: fund.pe_ttm, pb: fund.pb, market_cap: fund.market_cap }
           : undefined,
       };
     });
-    const usable = snapshots.filter((s) => s.closes.length >= 10);
+    const usable = snapshots;
     console.log(`[signals] scoring ${usable.length} symbols with DeepSeek…`);
     const signals = await scoreSymbols(usable);
     write("signals.json", {
+      strategy_version: STRATEGY_VERSION,
       generated_at: new Date().toISOString(),
       fundamentals: snapshots.map((s) => ({
         symbol: s.symbol,
@@ -252,13 +255,15 @@ async function main() {
 
     const cfg = {
       startCash: 1_000_000,
-      rebalanceEveryNDays: 10,
+      rebalanceEveryNDays: 1,
       startDate,
       endDate,
       feeBps: 10,
       maxPositions: 6,
     };
-    const result = await runBacktest(series, cfg, (p) => {
+    const bySymbol = new Map(series.map((s) => [s.entry.symbol, s]));
+    const completeUniverse = u.entries.map((entry) => bySymbol.get(entry.symbol) ?? { entry, klines: [] });
+    const result = await runBacktest(completeUniverse, cfg, (p) => {
       if (p.done === p.total || p.done % 5 === 0) {
         process.stdout.write(`  ${p.phase}: ${p.done}/${p.total}\n`);
       }

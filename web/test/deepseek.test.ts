@@ -81,3 +81,17 @@ test("chat() caches valid json_object content (fetcher runs once)", async () => 
   assert.equal(b, '{"signals":[]}');
   assert.equal(state.calls, 1);
 });
+
+test("scoreSymbols enforces oversold gates and total-equity sizes on model output", async () => {
+  const { scoreSymbols } = await import("../lib/deepseek");
+  const symbols = ["FLAT", "A", "B", "C"];
+  stubContent(JSON.stringify({signals: symbols.map((symbol) => ({symbol, action: "buy", size: 1, confidence: 1, rationale: "追涨"}))}));
+  const result = await scoreSymbols(symbols.map((symbol) => ({
+    symbol, closes: [...Array(59).fill(100), symbol === "FLAT" ? 100 : 70],
+  })), {bypassCache: true});
+  assert.notEqual(result.find((s) => s.symbol === "FLAT")!.action, "buy");
+  const buys = result.filter((s) => s.action === "buy");
+  assert.equal(buys.length, 3);
+  assert.ok(buys.every((s) => s.size <= 0.15));
+  assert.ok(buys.reduce((sum, s) => sum + s.size, 0) <= 0.8);
+});

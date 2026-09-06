@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
+import { STRATEGY_SUMMARY, STRATEGY_VERSION } from "@/lib/oversoldStrategy";
 import { loadEntries } from "@/lib/universe";
 import { EquityChart, ThemeChart } from "./Charts";
 import type { DashboardData } from "./types";
@@ -10,7 +11,8 @@ export const dynamic = "force-dynamic";
 function loadDashboardData(): DashboardData | null {
   const file = path.join(process.cwd(), "data", "dashboard-backtest.json");
   if (!fs.existsSync(file)) return null;
-  return JSON.parse(fs.readFileSync(file, "utf-8")) as DashboardData;
+  const data = JSON.parse(fs.readFileSync(file, "utf-8")) as DashboardData;
+  return data.config.strategy === STRATEGY_VERSION ? data : null;
 }
 
 function pct(v: number, digits = 2) {
@@ -58,15 +60,14 @@ export default function DashboardPage() {
           <div className="eyebrow">Dashboard</div>
           <h1>策略 Dashboard</h1>
           <p>
-            基于项目股票池与 40/30/30 选股逻辑的规则化回测。数据来自 stock_finance_data，
-            前复权价格、财报披露延迟处理，避免未来信息泄露。
+            {STRATEGY_SUMMARY} 基于历史价格的规则回测；财报可用日期为估算值。
           </p>
         </div>
       </header>
 
       {!data && (
         <div className="card" style={{ borderColor: "var(--warn)" }}>
-          <strong>尚未生成回测数据</strong>
+          <strong>尚未生成当前超跌策略的回测数据</strong>
           <p style={{ color: "var(--muted)" }}>
             请先由 agent 通过 kimi-datasource 拉取行情与财报 CSV 到{" "}
             <code>web/.cache/datasource/</code>，然后运行{" "}
@@ -83,12 +84,14 @@ export default function DashboardPage() {
             <Kpi label="年化" value={pct(data.stats.cagrPct)} pos={data.stats.cagrPct >= 0} />
             <Kpi label="最大回撤" value={pct(data.stats.maxDrawdownPct)} pos={false} />
             <Kpi label="夏普" value={data.stats.sharpe.toFixed(2)} pos={data.stats.sharpe >= 0} />
+            <Kpi label="最新总仓位" value={`${(data.equityCurve.at(-1)?.exposurePct ?? 0).toFixed(1)}%`} />
+            <Kpi label="仓位超限天数" value={String(data.equityCurve.filter((b) => b.riskBreach).length)} />
             <Kpi label="交易次数" value={data.stats.trades.toString()} />
             <Kpi label="沪深300基准" value={pct(benchmarkReturnPct)} pos={benchmarkReturnPct >= 0} />
           </div>
 
           <div className="row" style={{ marginTop: 8, fontSize: 12, color: "var(--muted)" }}>
-            <span>回测区间 {data.config.startDate} → {data.config.endDate}</span>
+            <span>回测区间 {data.config.startDate} → {data.latestDate}（实际行情截止日）</span>
             <span>·</span>
             <span>每 {data.config.rebalanceEveryNDays} 个交易日调仓</span>
             <span>·</span>
