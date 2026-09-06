@@ -141,8 +141,8 @@ function renderUniverse({ universe, analyst }) {
 function renderSignals({ universe, signals }) {
   const tbody = $("#signals-table tbody");
   tbody.innerHTML = "";
-  if (!signals) {
-    tbody.appendChild(el("tr", {}, el("td", { colspan: 8, class: "muted" }, "无信号快照")));
+  if (!signals || signals.strategy_version !== "oversold-v1") {
+    tbody.appendChild(el("tr", {}, el("td", { colspan: 8, class: "muted" }, "超跌策略信号待刷新（旧策略信号已停用）")));
     return;
   }
   const sigBySym = new Map((signals.signals ?? []).map((s) => [s.symbol, s]));
@@ -177,9 +177,10 @@ function renderSignals({ universe, signals }) {
 // ---------- Backtest ----------
 function renderBacktest(bt) {
   if (!bt) return;
+  const strategyLabel = bt.config.strategy === "oversold-v1" ? "超跌策略" : "旧策略历史回测（不代表当前45%/80%规则）";
   const { config, stats, equityCurve, trades } = bt;
   $("#backtest-window").textContent =
-    `${config.startDate} → ${config.endDate} · 起始资金 ¥${config.startCash.toLocaleString()}` +
+    `${strategyLabel} · ${config.startDate} → ${config.endDate} · 起始资金 ¥${config.startCash.toLocaleString()}` +
     ` · 每 ${config.rebalanceEveryNDays} 日调仓 · 最多 ${config.maxPositions} 持仓 · 手续费 ${config.feeBps}bps`;
 
   const kpi = $("#backtest-kpi");

@@ -1,7 +1,7 @@
 {
   "$schema_note": "硅基文明消费股 watchlist. Edit via UI or directly. Each entry: {symbol, name, theme, note?}.",
-  "updated_at": "2026-09-06",
-  "updated_by": "deepseek-refresh-reviewed",
+  "updated_at": "2026-07-16",
+  "updated_by": "deepseek-refresh",
   "entries": [
     {
       "symbol": "688256",
@@ -103,7 +103,7 @@
     {
       "symbol": "600330",
       "name": "天通股份",
-      "theme": "功率器件",
+      "theme": "半导体材料",
       "note": "铌酸锂单晶/晶圆，上游关键原材料",
       "global_supply": false
     },
@@ -209,7 +209,7 @@
     {
       "symbol": "002335",
       "name": "科华数据",
-      "theme": "IDC",
+      "theme": "电力设备",
       "note": "IDC + 数据中心电源",
       "global_supply": false
     },
@@ -256,6 +256,13 @@
       "global_supply": false
     },
     {
+      "symbol": "600745",
+      "name": "闻泰科技",
+      "theme": "功率器件",
+      "note": "安世 IGBT/MOSFET",
+      "global_supply": true
+    },
+    {
       "symbol": "603986",
       "name": "兆易创新",
       "theme": "存储/HBM",
@@ -271,7 +278,7 @@
     },
     {
       "symbol": "300223",
-      "name": "君正股份",
+      "name": "北京君正",
       "theme": "存储/HBM",
       "note": "车规存储+处理器",
       "global_supply": false
@@ -473,7 +480,7 @@
     },
     {
       "symbol": "688347",
-      "name": "华虹宏力",
+      "name": "华虹公司",
       "theme": "晶圆代工",
       "note": "国内第二大晶圆代工厂，特色工艺助力AI功率和存储",
       "global_supply": false
@@ -659,83 +666,6 @@
       "theme": "液冷",
       "note": "数据中心精密空调龙头，提供液冷解决方案",
       "global_supply": false
-    },
-    {
-      "symbol": "600089",
-      "name": "特变电工",
-      "theme": "电力设备",
-      "note": "变压器/输变电龙头，AIDC高压供电系统核心设备商",
-      "global_supply": false
-    },
-    {
-      "symbol": "000400",
-      "name": "许继电气",
-      "theme": "电力设备",
-      "note": "直流输电、换流阀及电网设备供应商",
-      "global_supply": false
-    },
-    {
-      "symbol": "600703",
-      "name": "三安光电",
-      "theme": "功率器件",
-      "note": "化合物半导体及SiC功率器件供应商，跟踪服务器电源应用",
-      "global_supply": false
-    },
-    {
-      "symbol": "688183",
-      "name": "生益电子",
-      "theme": "AI-PCB",
-      "note": "高速PCB主力供应商，AI服务器/交换机板进入全球算力供应链",
-      "global_supply": true
-    },
-    {
-      "symbol": "600667",
-      "name": "太极实业",
-      "theme": "存储/HBM",
-      "note": "海太半导体提供DRAM后工序封测服务；公司披露不涉及HBM产品",
-      "global_supply": true
-    },
-    {
-      "symbol": "300054",
-      "name": "鼎龙股份",
-      "theme": "半导体材料",
-      "note": "CMP抛光垫国产龙头，进入晶圆制造核心耗材链",
-      "global_supply": false
-    },
-    {
-      "symbol": "688361",
-      "name": "中科飞测",
-      "theme": "半导体设备",
-      "note": "半导体质量控制设备供应商，覆盖晶圆检测与量测",
-      "global_supply": false
-    },
-    {
-      "symbol": "300990",
-      "name": "同飞股份",
-      "theme": "液冷",
-      "note": "工业温控/液冷设备龙头，数据中心液冷温控重要供应商",
-      "global_supply": false
-    },
-    {
-      "symbol": "002261",
-      "name": "拓维信息",
-      "theme": "AI服务器",
-      "note": "昇腾AI服务器整机主力，国产算力自主可控核心标的",
-      "global_supply": false
-    },
-    {
-      "symbol": "002484",
-      "name": "江海股份",
-      "theme": "功率器件",
-      "note": "铝电解电容龙头，AI服务器电源用高可靠电容器",
-      "global_supply": false
-    },
-    {
-      "symbol": "300570",
-      "name": "太辰光",
-      "theme": "光模块",
-      "note": "MPO/光纤连接器龙头，数据中心光互连关键器件",
-      "global_supply": true
     }
   ]
 }

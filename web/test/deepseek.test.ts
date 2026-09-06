@@ -81,3 +81,36 @@ test("chat() caches valid json_object content (fetcher runs once)", async () => 
   assert.equal(b, '{"signals":[]}');
   assert.equal(state.calls, 1);
 });
+
+test("scoreSymbols enforces oversold gates and total-equity sizes on model output", async () => {
+  const { scoreSymbols } = await import("../lib/deepseek");
+  const symbols = ["FLAT", "A", "B", "C"];
+  stubContent(JSON.stringify({signals: symbols.map((symbol) => ({symbol, action: "buy", size: 1, confidence: 1, rationale: "追涨"}))}));
+  const result = await scoreSymbols(symbols.map((symbol) => ({
+    symbol, closes: [...Array(59).fill(100), symbol === "FLAT" ? 100 : 70],
+  })), {bypassCache: true});
+  assert.notEqual(result.find((s) => s.symbol === "FLAT")!.action, "buy");
+  const buys = result.filter((s) => s.action === "buy");
+  assert.equal(buys.length, 3);
+  assert.ok(buys.every((s) => s.size <= 0.15));
+  assert.ok(buys.reduce((sum, s) => sum + s.size, 0) <= 0.8);
+});
+
+test("trend120 live scoring retains healthy positions after a rebound and separates cached profiles", async () => {
+  const { scoreSymbols } = await import("../lib/deepseek");
+  const calls: Array<{messages: Array<{content: string}>}> = [];
+  globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
+    calls.push(JSON.parse(String(init?.body)));
+    return new Response(JSON.stringify({choices: [{message: {content: JSON.stringify({signals: [
+      {symbol: "REBOUND", action: "hold", confidence: 0.8, size: 0, rationale: "趋势持有"},
+    ]})}}]}));
+  }) as typeof fetch;
+  const snapshots = [{symbol: "REBOUND", closes: Array(60).fill(100), priceDate: "2026-09-04"}];
+  const original = await scoreSymbols(snapshots, {exitProfile: "rebound"});
+  const trend = await scoreSymbols(snapshots, {exitProfile: "trend120"});
+  assert.equal(original[0].action, "sell");
+  assert.equal(trend[0].action, "hold");
+  assert.equal(calls.length, 2);
+  assert.ok(calls[1].messages[0].content.includes("未提供真实持仓"));
+  assert.equal(JSON.parse(calls[1].messages[1].content).exit_profile, "trend120");
+});

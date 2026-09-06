@@ -1,0 +1,184 @@
+{
+  "date": "2026-09-06",
+  "beforeCount": 96,
+  "afterCount": 106,
+  "added": [
+    {
+      "symbol": "000400",
+      "name": "许继电气",
+      "theme": "电力设备",
+      "note": "直流输电、换流阀及电网设备供应商",
+      "global_supply": false
+    },
+    {
+      "symbol": "002261",
+      "name": "拓维信息",
+      "theme": "AI服务器",
+      "note": "昇腾AI服务器整机主力，国产算力自主可控核心标的",
+      "global_supply": false
+    },
+    {
+      "symbol": "002484",
+      "name": "江海股份",
+      "theme": "功率器件",
+      "note": "铝电解电容龙头，AI服务器电源用高可靠电容器",
+      "global_supply": false
+    },
+    {
+      "symbol": "300054",
+      "name": "鼎龙股份",
+      "theme": "半导体材料",
+      "note": "CMP抛光垫国产龙头，进入晶圆制造核心耗材链",
+      "global_supply": false
+    },
+    {
+      "symbol": "300570",
+      "name": "太辰光",
+      "theme": "光模块",
+      "note": "MPO/光纤连接器龙头，数据中心光互连关键器件",
+      "global_supply": true
+    },
+    {
+      "symbol": "300990",
+      "name": "同飞股份",
+      "theme": "液冷",
+      "note": "工业温控/液冷设备龙头，数据中心液冷温控重要供应商",
+      "global_supply": false
+    },
+    {
+      "symbol": "600089",
+      "name": "特变电工",
+      "theme": "电力设备",
+      "note": "变压器/输变电龙头，AIDC高压供电系统核心设备商",
+      "global_supply": false
+    },
+    {
+      "symbol": "600667",
+      "name": "太极实业",
+      "theme": "存储/HBM",
+      "note": "海太半导体提供DRAM后工序封测服务；公司披露不涉及HBM产品",
+      "global_supply": true
+    },
+    {
+      "symbol": "600703",
+      "name": "三安光电",
+      "theme": "功率器件",
+      "note": "化合物半导体及SiC功率器件供应商，跟踪服务器电源应用",
+      "global_supply": false
+    },
+    {
+      "symbol": "688183",
+      "name": "生益电子",
+      "theme": "AI-PCB",
+      "note": "高速PCB主力供应商，AI服务器/交换机板进入全球算力供应链",
+      "global_supply": true
+    },
+    {
+      "symbol": "688361",
+      "name": "中科飞测",
+      "theme": "半导体设备",
+      "note": "半导体质量控制设备供应商，覆盖晶圆检测与量测",
+      "global_supply": false
+    }
+  ],
+  "removed": [
+    {
+      "symbol": "600745",
+      "name": "闻泰科技",
+      "theme": "功率器件",
+      "note": "安世 IGBT/MOSFET",
+      "global_supply": true
+    }
+  ],
+  "changed": [
+    {
+      "symbol": "002335",
+      "before": {
+        "symbol": "002335",
+        "name": "科华数据",
+        "theme": "电力设备",
+        "note": "IDC + 数据中心电源",
+        "global_supply": false
+      },
+      "after": {
+        "symbol": "002335",
+        "name": "科华数据",
+        "theme": "IDC",
+        "note": "IDC + 数据中心电源",
+        "global_supply": false
+      }
+    },
+    {
+      "symbol": "300223",
+      "before": {
+        "symbol": "300223",
+        "name": "北京君正",
+        "theme": "存储/HBM",
+        "note": "车规存储+处理器",
+        "global_supply": false
+      },
+      "after": {
+        "symbol": "300223",
+        "name": "君正股份",
+        "theme": "存储/HBM",
+        "note": "车规存储+处理器",
+        "global_supply": false
+      }
+    },
+    {
+      "symbol": "600330",
+      "before": {
+        "symbol": "600330",
+        "name": "天通股份",
+        "theme": "半导体材料",
+        "note": "铌酸锂单晶/晶圆，上游关键原材料",
+        "global_supply": false
+      },
+      "after": {
+        "symbol": "600330",
+        "name": "天通股份",
+        "theme": "功率器件",
+        "note": "铌酸锂单晶/晶圆，上游关键原材料",
+        "global_supply": false
+      }
+    },
+    {
+      "symbol": "688347",
+      "before": {
+        "symbol": "688347",
+        "name": "华虹公司",
+        "theme": "晶圆代工",
+        "note": "国内第二大晶圆代工厂，特色工艺助力AI功率和存储",
+        "global_supply": false
+      },
+      "after": {
+        "symbol": "688347",
+        "name": "华虹宏力",
+        "theme": "晶圆代工",
+        "note": "国内第二大晶圆代工厂，特色工艺助力AI功率和存储",
+        "global_supply": false
+      }
+    }
+  ],
+  "validation": {
+    "listed": 106,
+    "validPrices": 106,
+    "duplicateCodes": 0,
+    "stNames": 0
+  },
+  "historicalUniverseSha256": "dfba116582981db0bd5de5c5e46acf67f7e4f9e3c13d827a9c3848382e56c5c9",
+  "currentUniverseSha256": "03a0699ea2c52dc428e9633b921c32984d3f472f572fc8d146b1ecd48f8923d4",
+  "sources": {
+    "listingStatus": "Tushare Pro stock_basic list_status=L, fetched 2026-09-06",
+    "quotes": "Local /api/spot/batch, 2026-09-06",
+    "taijiDisclosure": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12412362&stockid=600667",
+    "wingtechDisclosure": "https://paper.cnstock.com/html/2026-04/30/content_2211853.htm",
+    "ingenicRename": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-08-10/e09b62ca-1886-4eee-8b1e-a87e0e3c93ad.PDF",
+    "huahongRename": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12372669&stockid=688347"
+  },
+  "reviewNotes": [
+    "Corrected Taiji HBM claim using company disclosure.",
+    "Removed unsupported definite HVDC customer and global AI supply claims from new entries where evidence was not established.",
+    "Existing historical strategy results retain their original universe snapshot."
+  ]
+}

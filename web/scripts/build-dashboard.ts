@@ -11,30 +11,34 @@
 //
 // Env overrides:
 //   DASHBOARD_START=2024-01-01  DASHBOARD_END=2026-06-12
-//   DASHBOARD_REBALANCE=30      DASHBOARD_MAX_POSITIONS=6
-//   DASHBOARD_MIN_HOLD_BARS=45  DASHBOARD_REBALANCE_THRESHOLD_PCT=5
+//   DASHBOARD_REBALANCE=1      DASHBOARD_MAX_POSITIONS=6
+//   Daily risk checks, 20-bar maximum holding period, 8% stop loss
 //   DASHBOARD_CACHE=.cache/datasource
 import fs from "node:fs";
 import path from "node:path";
-import { loadEntries } from "../lib/universe";
+import { readUniverse } from "../lib/universe";
 import { runBacktest, type BacktestConfig, type BacktestResult } from "../lib/backtest";
+import { validateFreshDataset, type FreshDataset } from "../lib/freshValidation";
+import { compareCalendarYears } from "../lib/benchmarkComparison";
+import type { ExitProfile } from "../lib/oversoldStrategy";
 import { ruleBasedScorer } from "../lib/dashboardBacktest";
 import { buildSymbolSeries, type PriceRow } from "../lib/dashboardData";
 
 const today = new Date().toISOString().slice(0, 10);
 const startDate = process.env.DASHBOARD_START ?? "2024-01-01";
 const endDate = process.env.DASHBOARD_END ?? today;
-const rebalanceEveryNDays = Number(process.env.DASHBOARD_REBALANCE ?? 30);
+const rebalanceEveryNDays = Number(process.env.DASHBOARD_REBALANCE ?? 1);
 const maxPositions = Number(process.env.DASHBOARD_MAX_POSITIONS ?? 6);
-const minHoldBars = Number(process.env.DASHBOARD_MIN_HOLD_BARS ?? 45);
-const rebalanceThresholdPct = Number(process.env.DASHBOARD_REBALANCE_THRESHOLD_PCT ?? 5);
 const cacheDir = path.resolve(process.cwd(), process.env.DASHBOARD_CACHE ?? ".cache/datasource");
-const outFile = path.resolve(process.cwd(), "data", "dashboard-backtest.json");
+const outFile = path.resolve(process.cwd(), "data", process.env.DASHBOARD_OUTPUT ?? "dashboard-backtest.json");
+const exitProfile = (process.env.DASHBOARD_EXIT_PROFILE ?? "rebound") as ExitProfile;
 
 interface DashboardOutput {
   generated_at: string;
+  sourceInfo?: { name: string; fetchedAt: string; financialDates: string };
   config: BacktestConfig;
   stats: BacktestResult["stats"];
+  annualComparison?: ReturnType<typeof compareCalendarYears>;
   equityCurve: BacktestResult["equityCurve"];
   benchmarkCurve: Array<{ date: string; equity: number }>;
   trades: BacktestResult["trades"];
@@ -51,7 +55,7 @@ interface DashboardOutput {
   latestDate: string;
 }
 
-function computeBenchmarkCurve(benchmark: PriceRow[], cfg: BacktestConfig) {
+function computeBenchmarkCurve(benchmark: Pick<PriceRow, "date" | "close">[], cfg: BacktestConfig) {
   const sorted = [...benchmark].sort((a, b) => (a.date < b.date ? -1 : 1));
   const inWindow = sorted.filter((r) => r.date >= cfg.startDate && r.date <= cfg.endDate);
   if (inWindow.length === 0) return [];
@@ -137,7 +141,7 @@ function computeThemePerformance(
 }
 
 async function main() {
-  if (!fs.existsSync(cacheDir)) {
+  if (!process.env.FRESH_DATASET && !fs.existsSync(cacheDir)) {
     console.error(`Cache directory not found: ${cacheDir}`);
     console.error(
       "Please fetch data-source CSVs first. See AGENTS.md for the dashboard data-fetching steps.",
@@ -145,13 +149,23 @@ async function main() {
     process.exit(1);
   }
 
-  const universe = loadEntries();
+  const universeSnapshot = readUniverse();
+  const universe = universeSnapshot.entries;
   console.log(`Loaded ${universe.length} universe entries`);
 
-  const { series, benchmark } = buildSymbolSeries(universe, cacheDir);
+  const fresh: FreshDataset | undefined = process.env.FRESH_DATASET
+    ? JSON.parse(fs.readFileSync(process.env.FRESH_DATASET,"utf8")) : undefined;
+  if (fresh) validateFreshDataset(fresh, universe.map((e)=>e.symbol), fresh.requestedEnd);
+  const { series: loadedSeries, benchmark } = fresh
+    ? {series:fresh.series,benchmark:fresh.benchmark.map((b)=>({date:b.date,close:b.equity}))}
+    : buildSymbolSeries(universe, cacheDir);
+  // Preserve missing constituents in the breadth denominator. No data means no
+  // trading, rather than silently shrinking the universe to surviving downloads.
+  const bySymbol = new Map(loadedSeries.map((s) => [s.entry.symbol, s]));
+  const series = universe.map((entry) => bySymbol.get(entry.symbol) ?? { entry, klines: [] });
   console.log(`Built ${series.length} price series, benchmark ${benchmark.length} bars`);
 
-  if (series.length === 0) {
+  if (loadedSeries.length === 0) {
     console.error("No usable price series found. Check cached CSVs in", cacheDir);
     process.exit(1);
   }
@@ -160,33 +174,43 @@ async function main() {
     startCash: 1_000_000,
     rebalanceEveryNDays,
     startDate,
-    endDate,
+    endDate: fresh && fresh.requestedEnd < endDate ? fresh.requestedEnd : endDate,
     feeBps: 10,
     maxPositions,
-    autoSellUnselected: true,
-    minHoldBars,
-    rebalanceThresholdPct,
+    strategy: "oversold-v1",
+    exitProfile,
   };
 
-  const result = await runBacktest(series, cfg, { scorer: ruleBasedScorer() });
+  const result = await runBacktest(series, cfg, { scorer: ruleBasedScorer(exitProfile) });
   const benchmarkCurve = computeBenchmarkCurve(benchmark, cfg);
+  const benchmarkDates = new Set(benchmarkCurve.map((b) => b.date));
 
   const lastBar = result.equityCurve[result.equityCurve.length - 1];
   const output: DashboardOutput = {
     generated_at: new Date().toISOString(),
-    config: cfg,
+    sourceInfo: fresh ? {name:fresh.source,fetchedAt:fresh.fetchedAt,financialDates:"actual-announcement"} : undefined,
+    config: result.config,
     stats: result.stats,
+    annualComparison: result.equityCurve.every((b) => benchmarkDates.has(b.date))
+      ? compareCalendarYears(result.equityCurve, benchmarkCurve, cfg.startCash) : undefined,
     equityCurve: result.equityCurve,
     benchmarkCurve,
     trades: result.trades,
     themePerformance: computeThemePerformance(result, series),
-    signalsByDate: result.signalsByDate,
+    // Keep entry decisions for auditing; routine hold/exit signals are omitted.
+    // Executed exits retain their reasons in trades.
+    signalsByDate: Object.fromEntries(Object.entries(result.signalsByDate)
+      .map(([date, signals]) => [date, signals.filter((s) => s.action === "buy")] as const)
+      .filter(([, signals]) => signals.length > 0)),
     latestHoldings: lastBar.positions,
     latestDate: lastBar.date,
   };
 
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(output, null, 2) + "\n", "utf-8");
+  if (path.basename(outFile) === "dashboard-latest.json") {
+    fs.writeFileSync(path.join(process.cwd(), "data", "dashboard-universe.json"), JSON.stringify(universeSnapshot, null, 2) + "\n");
+  }
   console.log(`Wrote dashboard backtest to ${outFile}`);
   console.log(
     `Return: ${result.stats.totalReturnPct.toFixed(2)}%  ` +

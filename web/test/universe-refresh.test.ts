@@ -33,6 +33,8 @@ const origFetch = globalThis.fetch;
 const REAL = new Map<string, string>([
   ["300476", "胜宏科技"],
   ["601138", "工业富联"],
+  ["600745", "*ST闻泰"],
+  ["300223", "君正股份"],
 ]);
 
 before(async () => {
@@ -83,6 +85,24 @@ test("applyRefresh rejects a code with a null name (hallucinated)", async () => 
   assert.equal(result.applied.added.length, 0);
   assert.equal(result.applied.rejected.length, 1);
   assert.equal(result.applied.rejected[0].symbol, "999999");
+});
+
+test("applyRefresh rejects an ST stock even when the model uses its old name", async () => {
+  const result = await applyRefresh(readUniverse(), {
+    ...emptyProposal,
+    adds: [{ symbol: "600745", name: "闻泰科技", theme: "功率器件" }],
+  });
+  assert.equal(result.applied.added.length, 0);
+  assert.match(result.applied.rejected[0].reason, /ST/);
+});
+
+test("applyRefresh uses the resolved current name instead of the model's stale name", async () => {
+  const result = await applyRefresh(readUniverse(), {
+    ...emptyProposal,
+    adds: [{ symbol: "300223", name: "北京君正", theme: "存储/HBM" }],
+  });
+  assert.equal(result.applied.added[0].name, "君正股份");
+  assert.equal(readUniverse().entries.find((e) => e.symbol === "300223")?.name, "君正股份");
 });
 
 test("applyRefresh validates each unique code only once even when duplicated", async () => {

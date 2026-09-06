@@ -1,6 +1,12 @@
+import type { compareCalendarYears } from "@/lib/benchmarkComparison";
+
 export interface DashboardData {
+  annualComparison?: ReturnType<typeof compareCalendarYears>;
   generated_at: string;
+  sourceInfo?: { name: string; fetchedAt: string; financialDates: string };
   config: {
+    strategy?: string;
+    exitProfile?: string;
     startCash: number;
     rebalanceEveryNDays: number;
     startDate: string;
@@ -19,6 +25,9 @@ export interface DashboardData {
     date: string;
     equity: number;
     cash: number;
+    exposurePct?: number;
+    exposureLimitPct?: number;
+    riskBreach?: boolean;
     positions: Record<string, { shares: number; price: number }>;
   }>;
   benchmarkCurve: Array<{ date: string; equity: number }>;

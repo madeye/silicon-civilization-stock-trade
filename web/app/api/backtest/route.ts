@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
   const cfg: BacktestConfig = {
     startCash: body.startCash ?? 1_000_000,
-    rebalanceEveryNDays: body.rebalanceEveryNDays ?? 10,
+    rebalanceEveryNDays: body.rebalanceEveryNDays ?? 1,
     startDate: body.startDate,
     endDate: body.endDate,
     feeBps: body.feeBps ?? 10,
@@ -79,7 +79,9 @@ export async function POST(req: NextRequest) {
           return;
         }
 
-        const result = await runBacktest(series, cfg, (p) => {
+        const bySymbol = new Map(series.map((s) => [s.entry.symbol, s]));
+        const completeUniverse = universe.map((entry) => bySymbol.get(entry.symbol) ?? { entry, klines: [] });
+        const result = await runBacktest(completeUniverse, cfg, (p) => {
           send({ type: "progress", ...p });
         });
         const stored = saveBacktestResult(result);

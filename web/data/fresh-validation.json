@@ -1,0 +1,2021 @@
+{
+  "generatedAt": "2026-09-06T01:16:22.131Z",
+  "profile": "trend120",
+  "source": "Tushare Pro",
+  "fetchedAt": "2026-09-06T01:13:30.324540+00:00",
+  "newDataStart": "2026-08-06",
+  "newDataEnd": "2026-09-04",
+  "lock": {
+    "locked_at": "2026-09-06",
+    "strategy_commit": "51cab87f39deceab7f2f332213d52ec7c411c692",
+    "exitProfile": "trend120",
+    "rules_sha256": {
+      "web/lib/oversoldStrategy.ts": "2e1f3f716bfbcf1fff8728d39baf3b738fc6f2350de9bb91b387b04634ec3ead",
+      "web/lib/oversoldExecution.ts": "bd0c211a7b7e2fefdd20144a4e1d124ae0b62a9e1851a42d1af0bf57568cddc6",
+      "web/lib/backtest.ts": "34be2750e5e49220c30f4e0b753b51bb8bb63d369aa5111142ae372a5cba81f5",
+      "web/lib/dashboardBacktest.ts": "20401f082c5cae482be6dd8a04417a77975d4766f0ab84af0ea3db2c9c382d66"
+    },
+    "universe_sha256": "dfba116582981db0bd5de5c5e46acf67f7e4f9e3c13d827a9c3848382e56c5c9",
+    "prior_stock_end": "2026-08-05",
+    "prior_benchmark_end": "2026-06-12",
+    "new_data_start": "2026-08-06",
+    "requested_end": "2026-09-04",
+    "startCash": 1000000,
+    "feeBps": 10,
+    "maxPositions": 6,
+    "rebalanceEveryNDays": 1,
+    "selection": "Frozen before download. No new profile selection or threshold tuning."
+  },
+  "quality": {
+    "symbols": 96,
+    "stale": [],
+    "benchmarkEnd": "2026-09-04"
+  },
+  "datasetSha256": "a31bb5d32349ecedc37ba871e407ebd07bcc89fd04dcede5f3ab2c89bd7fc63d",
+  "sourceFiles": [
+    {
+      "file": "raw/000021.SZ/adj_factor.json",
+      "sha256": "679e34f94a7485c08c3deff732d0947f050ff763da5d4c008f321088a962645c"
+    },
+    {
+      "file": "raw/000021.SZ/daily.json",
+      "sha256": "0a70b546dc410b445010ae0f9a3aeb8f7bc04d5dfd9e1def548b04be368fdd20"
+    },
+    {
+      "file": "raw/000021.SZ/daily_basic.json",
+      "sha256": "30e7f7adfaa69f3d99ac39fb8a1372af6d01774353a8fbb8029aa2a0bd2bcde9"
+    },
+    {
+      "file": "raw/000021.SZ/fina_indicator.json",
+      "sha256": "438f81532440b9bee3a4f47f9013c0a2996cbd9039ca9a66218354239fec21dd"
+    },
+    {
+      "file": "raw/000063.SZ/adj_factor.json",
+      "sha256": "6a739755245fa2abc8a283bcaf4fb0f3f186616e0747035d34ea793b66140464"
+    },
+    {
+      "file": "raw/000063.SZ/daily.json",
+      "sha256": "063283ebf4043028b96cfe52eadcac8c2da69a9ea507bf4f90f631c882727edc"
+    },
+    {
+      "file": "raw/000063.SZ/daily_basic.json",
+      "sha256": "fd17fa8284cec2c42cc46eca683f5c5b3bbdb7db9c58f9c9b8f027ab59bd6ae7"
+    },
+    {
+      "file": "raw/000063.SZ/fina_indicator.json",
+      "sha256": "14d335681c34dc5f4ad2cbc2e6b5df31a06a7bc10c3f341aa309ca00b659a29c"
+    },
+    {
+      "file": "raw/000300.SH/index_daily.json",
+      "sha256": "c1d376eb6497a960798edc103f3808285a32008fced87417d52fed0585cf30e0"
+    },
+    {
+      "file": "raw/000636.SZ/adj_factor.json",
+      "sha256": "2ecd5af18bc0f886701eb286db271c0eafc823c9303040184d1dede84fd43087"
+    },
+    {
+      "file": "raw/000636.SZ/daily.json",
+      "sha256": "ad3dbd120a85c4a98a652c3fd47b87197ae98fb7eab7bb95fc15779bc1aa71e2"
+    },
+    {
+      "file": "raw/000636.SZ/daily_basic.json",
+      "sha256": "e7912ce98d29e8b994926fd13f544254c29437032edfb555117ebebded86678d"
+    },
+    {
+      "file": "raw/000636.SZ/fina_indicator.json",
+      "sha256": "3c9a0c84089c90144082acbd3c5de9887a665b7ae801cc115489b191791ad4af"
+    },
+    {
+      "file": "raw/000938.SZ/adj_factor.json",
+      "sha256": "0f27fb7008f98cf46975302a2825ea8d1a588b7d6d34353cea71d82130cc82c5"
+    },
+    {
+      "file": "raw/000938.SZ/daily.json",
+      "sha256": "1c3fb71e9a5a2f8fe2cb1572c1bf98db4abcb5b11db53a78b9bf0d43fecde1c4"
+    },
+    {
+      "file": "raw/000938.SZ/daily_basic.json",
+      "sha256": "d43e704500b820725b8cf8bc2d044c2278b1c22d1cd6ce399531385404af0c71"
+    },
+    {
+      "file": "raw/000938.SZ/fina_indicator.json",
+      "sha256": "a54966321e0c596d097f3b651f0296aee3f99cc48e32af6da25678376aa17a37"
+    },
+    {
+      "file": "raw/000977.SZ/adj_factor.json",
+      "sha256": "35d121dca91b0304f280b727322c0c55dcd94502522e5c67ab293acb599856b0"
+    },
+    {
+      "file": "raw/000977.SZ/daily.json",
+      "sha256": "6ba5fd012a96c6b1004bd5ee555fa316c62738f8739d0ee831aac47d358d155b"
+    },
+    {
+      "file": "raw/000977.SZ/daily_basic.json",
+      "sha256": "7990a7064ffd1c04c1bf44bf303ff397f704a7f9b1698a5b8f7682e78bcf7d17"
+    },
+    {
+      "file": "raw/000977.SZ/fina_indicator.json",
+      "sha256": "0f8b84876ca574fa3304448871367c233fe3adac99bcf268e24bbf546d01c6ea"
+    },
+    {
+      "file": "raw/000988.SZ/adj_factor.json",
+      "sha256": "533c738f8d2ab44ab336e0652ed5f6e13b0b7d36de5e7b87333cf18f080187ff"
+    },
+    {
+      "file": "raw/000988.SZ/daily.json",
+      "sha256": "3c936605d7408b952dbd022ce58d3e470d9d8a71ee22142770e08bd37b702034"
+    },
+    {
+      "file": "raw/000988.SZ/daily_basic.json",
+      "sha256": "e2faa0422b80c92b6d41dffdb517b9d6f8f7dea389a1ce725b68b0f96badec19"
+    },
+    {
+      "file": "raw/000988.SZ/fina_indicator.json",
+      "sha256": "bfd9a6089674f26310ec5bebd46efffb3f699edb481e00a22fe903a5e1d5d6a4"
+    },
+    {
+      "file": "raw/002049.SZ/adj_factor.json",
+      "sha256": "63d04931d19d11596d781a82c1039f39e8a0d9be582c3ef1ce38b44ecb6cc6e3"
+    },
+    {
+      "file": "raw/002049.SZ/daily.json",
+      "sha256": "58328402f93bdc56940c801216bff5b0dde0014150cb9f19d25a29a8a02cc40d"
+    },
+    {
+      "file": "raw/002049.SZ/daily_basic.json",
+      "sha256": "26e342a1715967cb6dc0b3005dd12e807c165e6a6bbc86aca5365ef192fb46ac"
+    },
+    {
+      "file": "raw/002049.SZ/fina_indicator.json",
+      "sha256": "5eda099e9bf8f1347d64a7bbd52a15e069b80e4496272bd4d0ec5f90d94842e2"
+    },
+    {
+      "file": "raw/002138.SZ/adj_factor.json",
+      "sha256": "2995b71e5ae4bec869675b7836045fe2de055be497804be18f3a1d1b64f9ff75"
+    },
+    {
+      "file": "raw/002138.SZ/daily.json",
+      "sha256": "cf51bdf6025ecd14b1032ca13907b68ae40738d3ab0b5c87894c33f414e541cc"
+    },
+    {
+      "file": "raw/002138.SZ/daily_basic.json",
+      "sha256": "487c1eeb7774f402ce3376cda06a8fa6d123c06194c7401bca734f9155884137"
+    },
+    {
+      "file": "raw/002138.SZ/fina_indicator.json",
+      "sha256": "76cb82c6923b60eac83fa5d16aba2a54dbef002da4ee778ac08dd896a17851f8"
+    },
+    {
+      "file": "raw/002156.SZ/adj_factor.json",
+      "sha256": "04b0cc8b9dab169a90ea762a2b04c2d783800f31fbfccf41a3651f97bdb99264"
+    },
+    {
+      "file": "raw/002156.SZ/daily.json",
+      "sha256": "e59d75d0fab9d81164b4ab60bd7aeebc5085397a1418e765d75409ffc6995362"
+    },
+    {
+      "file": "raw/002156.SZ/daily_basic.json",
+      "sha256": "c2d43a23b37631f939afade19dcee5737932aa38bd9e7c823089e87bdacdbc32"
+    },
+    {
+      "file": "raw/002156.SZ/fina_indicator.json",
+      "sha256": "37d0c3fb74bbd6dc4947a8fb73da78690f975d0f068a23ab7f54c81d9f57f2a3"
+    },
+    {
+      "file": "raw/002185.SZ/adj_factor.json",
+      "sha256": "7277f472d23e430d73acb7e45ded26aa2de18587c9dfaf135a57d3f0397da72d"
+    },
+    {
+      "file": "raw/002185.SZ/daily.json",
+      "sha256": "b2e1f7d72888d9ca7571ccc95a271c81786cbbd372c1037a4f2a31f894d44b36"
+    },
+    {
+      "file": "raw/002185.SZ/daily_basic.json",
+      "sha256": "8ebc587bdda805054b2721d9211b196a1cb4804c0628d702f70770c7ca251229"
+    },
+    {
+      "file": "raw/002185.SZ/fina_indicator.json",
+      "sha256": "0837cba0f96daf35f6fc26d89d7557e9793771d499fab39d7c81983e7db5d843"
+    },
+    {
+      "file": "raw/002222.SZ/adj_factor.json",
+      "sha256": "bf0f9e1c58d06100bb637f2f4df840d8d4e06c99778db5dc04ff80f914e120ca"
+    },
+    {
+      "file": "raw/002222.SZ/daily.json",
+      "sha256": "6542b4244197394e24022c893467f8029a6c4a05f55ee9dadb3cdecbdba1823e"
+    },
+    {
+      "file": "raw/002222.SZ/daily_basic.json",
+      "sha256": "77595c1101b884690d91891b4d11d46b10fb391144eb256d77b6e05513343519"
+    },
+    {
+      "file": "raw/002222.SZ/fina_indicator.json",
+      "sha256": "09cc914c03a687d9bbe47fef1ec9fae461158ead5ff208177a7c8cf5ab4172ca"
+    },
+    {
+      "file": "raw/002281.SZ/adj_factor.json",
+      "sha256": "b15b8944dd877b7a87ec105a552b587f4ff3fa665b9b4a2d75248938580b4065"
+    },
+    {
+      "file": "raw/002281.SZ/daily.json",
+      "sha256": "a8025f8ddce4a09771590bead23da5746cbf8bc14288c9f7703093d15bc3f593"
+    },
+    {
+      "file": "raw/002281.SZ/daily_basic.json",
+      "sha256": "fd1cb915f71bc653bc5313f57c2b00dd373420d893c17c108d401b9d4a236533"
+    },
+    {
+      "file": "raw/002281.SZ/fina_indicator.json",
+      "sha256": "3756cc93c640334c5336b63d622399a3cbaed0e49c993be4f13a70b317bd2776"
+    },
+    {
+      "file": "raw/002335.SZ/adj_factor.json",
+      "sha256": "5eafa35743c70127931a932efda4dd731adb5254ce1e6b80d85590ba0293920f"
+    },
+    {
+      "file": "raw/002335.SZ/daily.json",
+      "sha256": "f8fabddf8f8d6a1c14dc3e87cc308b16e72d6897bd77864836c85b30706545d3"
+    },
+    {
+      "file": "raw/002335.SZ/daily_basic.json",
+      "sha256": "43dcd62e754c84343427b38c7c0261d314c68ee6a9894d928f60a9233eb53d1a"
+    },
+    {
+      "file": "raw/002335.SZ/fina_indicator.json",
+      "sha256": "fd84ff4c74f56de30cd5b81e60fd902d77aede2aa08306c32cb3f40c9ef8d64c"
+    },
+    {
+      "file": "raw/002364.SZ/adj_factor.json",
+      "sha256": "112ec8d6e5c3cb9084744fb5926d9bb3f496b8286be2149e643c1b91a4d1b13c"
+    },
+    {
+      "file": "raw/002364.SZ/daily.json",
+      "sha256": "f5dd2de0716152f70950dde371221743c64146ade6a7230aac73c93c4e4f1829"
+    },
+    {
+      "file": "raw/002364.SZ/daily_basic.json",
+      "sha256": "416be1dba32981bfeeabf586a8297a8bf7d70c3be2c996f20993f88ebb0484a9"
+    },
+    {
+      "file": "raw/002364.SZ/fina_indicator.json",
+      "sha256": "7c8e34b4db768ad7878e702d12eeaf9f26fa304793906d3e2a04565c6754ad06"
+    },
+    {
+      "file": "raw/002371.SZ/adj_factor.json",
+      "sha256": "ec47ede43e0530aac56e1327ad68259dac5ac1790dbe8cd90b953c32e537aa1e"
+    },
+    {
+      "file": "raw/002371.SZ/daily.json",
+      "sha256": "78dd69d04a883447d6e6b4ce2c5c1cb323a4421f3823d7aa3ae1083c6f1c0e37"
+    },
+    {
+      "file": "raw/002371.SZ/daily_basic.json",
+      "sha256": "512157789f2d7a5c58c8640f504ca4168a1ab085c4f0f8b54026bd1c5e589d7a"
+    },
+    {
+      "file": "raw/002371.SZ/fina_indicator.json",
+      "sha256": "2e0d32105461c34416c939c120e973f2080977d6e701b227e8949018ad976b64"
+    },
+    {
+      "file": "raw/002409.SZ/adj_factor.json",
+      "sha256": "35dc2346732beab49264dd2f0a79389daaf5281d861e9d2a25262a42ba857471"
+    },
+    {
+      "file": "raw/002409.SZ/daily.json",
+      "sha256": "0797540b0be0d76866943b76e6661c912d0ae9e44ad3b0af0da3eae40df8cc6b"
+    },
+    {
+      "file": "raw/002409.SZ/daily_basic.json",
+      "sha256": "1bc580a580901f488e2bbb07e1d84eb27e1699c2840d0d9262ab8d4b170e9f95"
+    },
+    {
+      "file": "raw/002409.SZ/fina_indicator.json",
+      "sha256": "6b5dc52a2bede092194bc46580e811d35f75473fd9d6fcaac7c9aa2606448fd5"
+    },
+    {
+      "file": "raw/002436.SZ/adj_factor.json",
+      "sha256": "524d9d827353624a3dd8994c92432fe4e35b6c3344861a155640a074c1f9b6d0"
+    },
+    {
+      "file": "raw/002436.SZ/daily.json",
+      "sha256": "01dc0da970195e632722827373047dec857a63399137ed0476c9c3a12749c036"
+    },
+    {
+      "file": "raw/002436.SZ/daily_basic.json",
+      "sha256": "f1285ef21cdd26036c94fa9fc0547d5b60f2fd5fd11a50b233e08a89aaea2cf4"
+    },
+    {
+      "file": "raw/002436.SZ/fina_indicator.json",
+      "sha256": "8f267fbec26581d946c29d5df5195fea321e5e37d2d9de3750d4f321db9b2935"
+    },
+    {
+      "file": "raw/002463.SZ/adj_factor.json",
+      "sha256": "845d0a51e9517d8747809b782b0c154325c41e0b77f7eb15cd209d2b028ca4e8"
+    },
+    {
+      "file": "raw/002463.SZ/daily.json",
+      "sha256": "53c2929c775758662aa4c7883a25d5a305d2ec1582e90889b8d70674712ec93e"
+    },
+    {
+      "file": "raw/002463.SZ/daily_basic.json",
+      "sha256": "a92fb7a164bcaf609c6a3cdde9bde01262672097054d4d5852a03d4bd55490f4"
+    },
+    {
+      "file": "raw/002463.SZ/fina_indicator.json",
+      "sha256": "057fe6bb2d50cc07f51cfbc768dd765b1331b467356fd8ca584325427e12a9fb"
+    },
+    {
+      "file": "raw/002475.SZ/adj_factor.json",
+      "sha256": "f9267299287d7f2b25e3e75eaed03c7d099043fffb00b933f7eb89efc4b23f2a"
+    },
+    {
+      "file": "raw/002475.SZ/daily.json",
+      "sha256": "4cb10352af65b8fbcdcf11245f30ac53e74b4403efbdc682949bafa941e8d3f9"
+    },
+    {
+      "file": "raw/002475.SZ/daily_basic.json",
+      "sha256": "a9ed2d57c6813927dab4691f196d8521b989c2bd199c08ede767658cfacce90f"
+    },
+    {
+      "file": "raw/002475.SZ/fina_indicator.json",
+      "sha256": "1cec1a4c885b3b5a3559d296d74639f2eac33996a257d4c5a7bb39e232680833"
+    },
+    {
+      "file": "raw/002518.SZ/adj_factor.json",
+      "sha256": "7edfd266e66c17a25d8da11c40dafcfa210382b21e204db3d2254ee705eba954"
+    },
+    {
+      "file": "raw/002518.SZ/daily.json",
+      "sha256": "24ec9f0c959178c1f01eac03e326be43859644b49eb67745ed8b3b240f6ad702"
+    },
+    {
+      "file": "raw/002518.SZ/daily_basic.json",
+      "sha256": "3ab06d7bb1d427a8a5fc4a5a34959aad5c098bf8034ca56928605f89b445d51c"
+    },
+    {
+      "file": "raw/002518.SZ/fina_indicator.json",
+      "sha256": "8e8b1b265c43813938242e1b7bbf67d6561ace10709ad5ef6c60598c045bf74f"
+    },
+    {
+      "file": "raw/002837.SZ/adj_factor.json",
+      "sha256": "f1fc640ffa2af23eba0b0f1f946076d6328d9a1a67ff448e53c031c467ce3874"
+    },
+    {
+      "file": "raw/002837.SZ/daily.json",
+      "sha256": "6b6221d336b96b5688c401cfbd874ec97af4253495de7ffa296fad6aec75a6cf"
+    },
+    {
+      "file": "raw/002837.SZ/daily_basic.json",
+      "sha256": "1404eebaa28335a7ed232ca401bc65844e1ebb8bb0cbde1ea9ff1949f53dce9c"
+    },
+    {
+      "file": "raw/002837.SZ/fina_indicator.json",
+      "sha256": "054682fc78ce67d47de0725c2a9689c480e737799f96adcec7457e06b04d668e"
+    },
+    {
+      "file": "raw/002851.SZ/adj_factor.json",
+      "sha256": "2c13f5595aa5c4daa6ea9eb81f604e1282fc03f95e2bc4d3e0c951249f30962d"
+    },
+    {
+      "file": "raw/002851.SZ/daily.json",
+      "sha256": "50bb2fb758f73ef81207f37713564e3c5d333eba06ef6e610050673a2d44df83"
+    },
+    {
+      "file": "raw/002851.SZ/daily_basic.json",
+      "sha256": "8a24e7a82662ccb48168b3bf38eb03a2c115d722efd9189dc614bc0e5caba750"
+    },
+    {
+      "file": "raw/002851.SZ/fina_indicator.json",
+      "sha256": "d6e5033ad85573480b839b6dbdf9506c6d48e2e4c77b882e71253891bd312cf4"
+    },
+    {
+      "file": "raw/002916.SZ/adj_factor.json",
+      "sha256": "3381c0197f788351ecbf87cca70d0385c443cf334f530bc22ffa22d698f030aa"
+    },
+    {
+      "file": "raw/002916.SZ/daily.json",
+      "sha256": "878e883b4f13b9b6aadac879eeb6791bec367edcb64c7e141c12d8d8363af875"
+    },
+    {
+      "file": "raw/002916.SZ/daily_basic.json",
+      "sha256": "91cf0679e3c7f1d0338b0966e7e17c2102ec48fa2ac687dfdf9698c7695ae341"
+    },
+    {
+      "file": "raw/002916.SZ/fina_indicator.json",
+      "sha256": "d4a05d08d891f9f6f746bc6be46ac5f17fb653a348c40ffd6bfcacfc449afb46"
+    },
+    {
+      "file": "raw/002938.SZ/adj_factor.json",
+      "sha256": "b6445cbc458379031abce1bd184ce09b86d670c0067e1d4f2a01d787efc3bee6"
+    },
+    {
+      "file": "raw/002938.SZ/daily.json",
+      "sha256": "e4c5cb0f5d402997a982f05937b8bf49a4a2a2426bac034a1835221e289aac81"
+    },
+    {
+      "file": "raw/002938.SZ/daily_basic.json",
+      "sha256": "b9b5b2aabb299541bdaf145c08527a66d3f2f80c3a9f3bfa34d54562b0a1637e"
+    },
+    {
+      "file": "raw/002938.SZ/fina_indicator.json",
+      "sha256": "3c3d3da769a985e40cb206498e3a3510c8d2e8fcc2e24933e33ac031cb62a3e7"
+    },
+    {
+      "file": "raw/003816.SZ/adj_factor.json",
+      "sha256": "dab70c82888d545d6a279dcf94d7ad19b2db68b5f939cccb369821f9df77d207"
+    },
+    {
+      "file": "raw/003816.SZ/daily.json",
+      "sha256": "4179e01b1bb0429e371a03ea0ac4d9676ffc5b1164ebd8272e1df4c13d0119ce"
+    },
+    {
+      "file": "raw/003816.SZ/daily_basic.json",
+      "sha256": "1a0eab70ee1be7b98b344701762728d32d167d1ed4634c79944226d1d4c56690"
+    },
+    {
+      "file": "raw/003816.SZ/fina_indicator.json",
+      "sha256": "13501ab54af9e45969ce58073751cf6250c875b2c0514001707f9d618db58310"
+    },
+    {
+      "file": "raw/300223.SZ/adj_factor.json",
+      "sha256": "3e34591dda046a80d277a8afa572b966ae3cc58de7fd28e418f276f8ebe8984a"
+    },
+    {
+      "file": "raw/300223.SZ/daily.json",
+      "sha256": "456698f2fd20d621f5ddec321cc20cf57f5dbc793c413e87b00a62030c9dd812"
+    },
+    {
+      "file": "raw/300223.SZ/daily_basic.json",
+      "sha256": "cd73f245bc11220c1eef5749703b5b5ac3b500e8238e5937fe0e061d01c83039"
+    },
+    {
+      "file": "raw/300223.SZ/fina_indicator.json",
+      "sha256": "9aee73662734be6db62458b269f05933a19b94205d15897c3f22e0dc0378a467"
+    },
+    {
+      "file": "raw/300308.SZ/adj_factor.json",
+      "sha256": "d857c891a671974e407581bd4775488ea230d1f0b0070454bdb6f6ac390da543"
+    },
+    {
+      "file": "raw/300308.SZ/daily.json",
+      "sha256": "0cfcbe8b83418be0f8e40cb22862db608a645275d4da4141d5b363c3c36c97a5"
+    },
+    {
+      "file": "raw/300308.SZ/daily_basic.json",
+      "sha256": "a3f83e505ca4dbaeabc3485768a5d813fcd5858c84483ea0d9124b554079b187"
+    },
+    {
+      "file": "raw/300308.SZ/fina_indicator.json",
+      "sha256": "6afb2582793196f4dbbf6a87502be6854f058d2d63b3bc08d779f06dd0d47211"
+    },
+    {
+      "file": "raw/300346.SZ/adj_factor.json",
+      "sha256": "eefc9739326508d8e39cc9e2da64754c3abf525d23f0b5349f0f975820028b66"
+    },
+    {
+      "file": "raw/300346.SZ/daily.json",
+      "sha256": "5b32957668d7bddb3c85e03548a445b3a7a70d937efdc5462231971057e9f7ae"
+    },
+    {
+      "file": "raw/300346.SZ/daily_basic.json",
+      "sha256": "2c3cfac96ee6151436929b0ed51e58c99585d7bda59bc94210489be79829a8c8"
+    },
+    {
+      "file": "raw/300346.SZ/fina_indicator.json",
+      "sha256": "655df07f7e7086a2c6d69a2159969d994e2b6dd0e31e859deec9765cad60ee0a"
+    },
+    {
+      "file": "raw/300383.SZ/adj_factor.json",
+      "sha256": "770f5bd468b003d53f2c47364752622735a10d8cbc7e22a2c8336b4882501d52"
+    },
+    {
+      "file": "raw/300383.SZ/daily.json",
+      "sha256": "0bbb294a6ca0cb9b8132f365a8925430c8fe0053a9a288b37d42a4fafdaa08be"
+    },
+    {
+      "file": "raw/300383.SZ/daily_basic.json",
+      "sha256": "0db2744a1aa8dbb91f25cdd3879b8ef7131657e0cfae1db402e719a4c5d7afba"
+    },
+    {
+      "file": "raw/300383.SZ/fina_indicator.json",
+      "sha256": "2ca1a490e14e3978430c00b2aafc015c019d4b912f3a1fc37829bd869245ee89"
+    },
+    {
+      "file": "raw/300394.SZ/adj_factor.json",
+      "sha256": "0ad41c766252826eb90691ecd724b93e8047d48050040fc3cd9deb770a8b6b4c"
+    },
+    {
+      "file": "raw/300394.SZ/daily.json",
+      "sha256": "a6e0ad92ee5b0b932ead438f20c71c232cbdfcd48f1b06499106a2d669abd82e"
+    },
+    {
+      "file": "raw/300394.SZ/daily_basic.json",
+      "sha256": "19673d43857d8f47342d1bebdc33d1dbab8c1053937b1b51c30a9b602503c776"
+    },
+    {
+      "file": "raw/300394.SZ/fina_indicator.json",
+      "sha256": "217ba993ebce5ea14089728590ee5b6a93be08bd2855ea697c3020bf2b697546"
+    },
+    {
+      "file": "raw/300442.SZ/adj_factor.json",
+      "sha256": "afb91ce58183dacaf71862773e9ed9b38474249e0db49ac6c644b3fefca05a67"
+    },
+    {
+      "file": "raw/300442.SZ/daily.json",
+      "sha256": "19b00e99c203972b485d5cf6f3a22458ba0d531aeb276e8afd450b4dfbcf5af3"
+    },
+    {
+      "file": "raw/300442.SZ/daily_basic.json",
+      "sha256": "a52483e7af1f10dba038677b340fddc701cb1e47f32a3df2722a3ee0507734f8"
+    },
+    {
+      "file": "raw/300442.SZ/fina_indicator.json",
+      "sha256": "f4d3d10d34dfeaf335ce1272dd0c57d82969dae5b390ff90b51bc0802b0d2a10"
+    },
+    {
+      "file": "raw/300474.SZ/adj_factor.json",
+      "sha256": "bb614147b00e8e54213d4a3b4a84a0f9216e713928705d83743591cd274124b5"
+    },
+    {
+      "file": "raw/300474.SZ/daily.json",
+      "sha256": "6f208060dd28fb7e54d74162235c804469f9f977ab320f473c272ad971b106cf"
+    },
+    {
+      "file": "raw/300474.SZ/daily_basic.json",
+      "sha256": "8d999852f496024c512b52c5e55c66370a9bf16673175d082640575ee30965f1"
+    },
+    {
+      "file": "raw/300474.SZ/fina_indicator.json",
+      "sha256": "34805f3eac7fbd221bbaed208f2293505e942ed0861fb93edceefef9920faad9"
+    },
+    {
+      "file": "raw/300475.SZ/adj_factor.json",
+      "sha256": "61027dd13d93fcf8c17693d8e56f30270d42294a2850ef9cbd5b75d6f339ab47"
+    },
+    {
+      "file": "raw/300475.SZ/daily.json",
+      "sha256": "ebade80c1afb1c94a6a03b48ed6c3138e19eb363c119b5f453923805d95d533b"
+    },
+    {
+      "file": "raw/300475.SZ/daily_basic.json",
+      "sha256": "63c89348fab82e2fccdce313d25660d42e65c8e15d9bfd3f5c51bc135ea4a1a7"
+    },
+    {
+      "file": "raw/300475.SZ/fina_indicator.json",
+      "sha256": "f4c59913d0dafb624f825e2663bb970556f6317f3a958792d3c3ee515a1632a3"
+    },
+    {
+      "file": "raw/300476.SZ/adj_factor.json",
+      "sha256": "6c3304da8b1a840e099124313ae72eb4c4cfd12a1916158d33fdd332973eb5d8"
+    },
+    {
+      "file": "raw/300476.SZ/daily.json",
+      "sha256": "863db292bd8c26db223009421baf0955a141bd8c64b7aaeefc10314e74b834c2"
+    },
+    {
+      "file": "raw/300476.SZ/daily_basic.json",
+      "sha256": "bff34598b303a404278d17e5e56a5634e704a17a3c572fc4051e5e7092d66623"
+    },
+    {
+      "file": "raw/300476.SZ/fina_indicator.json",
+      "sha256": "4793175c7ba240d73b3e9698a36d8ef6e4566a1e71890bc498ebe9352933bd58"
+    },
+    {
+      "file": "raw/300491.SZ/adj_factor.json",
+      "sha256": "a3652fb08186472b7e32939a79f0079d3c4a6b2f989b9f749d29d0c996471774"
+    },
+    {
+      "file": "raw/300491.SZ/daily.json",
+      "sha256": "fe5f7489365481e55c34312d6c2183447bd440467e98d26c2a5baa8c80b27403"
+    },
+    {
+      "file": "raw/300491.SZ/daily_basic.json",
+      "sha256": "850454d036312153effd28b5ca8a7e60d6f5d1ac3034834523ff4ed96684ca89"
+    },
+    {
+      "file": "raw/300491.SZ/fina_indicator.json",
+      "sha256": "b65f5918aac31108758a31df6222b5006dd6f74e45af86a2ffc8d66d89d9d833"
+    },
+    {
+      "file": "raw/300499.SZ/adj_factor.json",
+      "sha256": "1359e16005de7769dbba44f07b143ff89817de0311ec1c8e2b49365d0617f851"
+    },
+    {
+      "file": "raw/300499.SZ/daily.json",
+      "sha256": "a8b612dc5018b726131d5777623ad70789a7ba02fcd3a251aff236ed65034634"
+    },
+    {
+      "file": "raw/300499.SZ/daily_basic.json",
+      "sha256": "02b2ecb316c6bde4aa7fceeb9c51a3be99f61286b58c858fa978a99aa912e88f"
+    },
+    {
+      "file": "raw/300499.SZ/fina_indicator.json",
+      "sha256": "8d6712dae0a39769e07dce80db9bee93426085fb7470b568d139cc97666c5e59"
+    },
+    {
+      "file": "raw/300502.SZ/adj_factor.json",
+      "sha256": "e3879af64901b612618e337c68f9ab55acafb9ebeb7d0c10efe64cd2ad48301e"
+    },
+    {
+      "file": "raw/300502.SZ/daily.json",
+      "sha256": "ffa3450f04de0134608cb97cdf408ab9ec72a5aeecf4ba11ebb9877d5502c676"
+    },
+    {
+      "file": "raw/300502.SZ/daily_basic.json",
+      "sha256": "63bb6cf2ff41de3ea3aa6ba1b2af77ace8ee388fd92778dd21fa9f693ef2966c"
+    },
+    {
+      "file": "raw/300502.SZ/fina_indicator.json",
+      "sha256": "4892cb2f546a898170d6a518b93f3bdbeccd32f3a8b4e628f52f1b9e11eaf0a5"
+    },
+    {
+      "file": "raw/300602.SZ/adj_factor.json",
+      "sha256": "872f80e7ff8f442ed1b06b6cb6fca2c397f0a36d91ac046fb95671b692dfcc8a"
+    },
+    {
+      "file": "raw/300602.SZ/daily.json",
+      "sha256": "e3ae38ee54e1d5ed9c38760046b7de840f358c182198b4ae0b2048d70e04146a"
+    },
+    {
+      "file": "raw/300602.SZ/daily_basic.json",
+      "sha256": "4e17812fe63f8c61fb14931d8dd6c8f4a88627c6f5ca841926abc5e270518bbd"
+    },
+    {
+      "file": "raw/300602.SZ/fina_indicator.json",
+      "sha256": "32954cad8db1364f58ac4d7733d07e508668d3481997aebbd7b2c95e5f59cbdd"
+    },
+    {
+      "file": "raw/300620.SZ/adj_factor.json",
+      "sha256": "9627e2592e1d01c86eeab160e81fe115d82c76b09a53bc42c55af293ce4cca52"
+    },
+    {
+      "file": "raw/300620.SZ/daily.json",
+      "sha256": "95d1a4e25a1b4185262c5cfde2a621f603945bd7b5f4d353a320b30f00249725"
+    },
+    {
+      "file": "raw/300620.SZ/daily_basic.json",
+      "sha256": "b5bce84255e8b255ac1a699a7df0165286ab65f578ad4da2948edfed31449a58"
+    },
+    {
+      "file": "raw/300620.SZ/fina_indicator.json",
+      "sha256": "af6c78d31b37d10eb1c92e1420d77420fd2e010c08e3148ff7a5d7c5eddb323b"
+    },
+    {
+      "file": "raw/300655.SZ/adj_factor.json",
+      "sha256": "e42a985d46722fe41f44e78c2f0ec766e34348fa51605bd3a3ed1be5b08b8ad2"
+    },
+    {
+      "file": "raw/300655.SZ/daily.json",
+      "sha256": "7364e41713a9eeede4d92f0436be3b9b5503a22fa3528f45870ce86051e1c56e"
+    },
+    {
+      "file": "raw/300655.SZ/daily_basic.json",
+      "sha256": "29cc3ef85f7e446810801541796ead62687e60d6435a44afbbb3564ead89fcf9"
+    },
+    {
+      "file": "raw/300655.SZ/fina_indicator.json",
+      "sha256": "d8c238696f17088f7ad3716159a1c4dcc93223866929b36d83a54e9061813503"
+    },
+    {
+      "file": "raw/300666.SZ/adj_factor.json",
+      "sha256": "f04a722c671cdea5deae2b44fa2938a11026b43be8de28b603e06e9801df8e1e"
+    },
+    {
+      "file": "raw/300666.SZ/daily.json",
+      "sha256": "2187f7cd5678b296625d8cb52347a150d4bfbd9bc86ff8010e8f3c267c2972b9"
+    },
+    {
+      "file": "raw/300666.SZ/daily_basic.json",
+      "sha256": "98a49d3020c73881811ea9879fe6fdb28718594d6855ba6709814af625dd3481"
+    },
+    {
+      "file": "raw/300666.SZ/fina_indicator.json",
+      "sha256": "8cc8b98b3ed1ed46c2ff9f2c6ea314865f5a0128dbeb92cd68c44f8b1698f513"
+    },
+    {
+      "file": "raw/300693.SZ/adj_factor.json",
+      "sha256": "b0078c8cd71b71857dc5735719de7125f3c871e1f54d21e08c8fe77137dcaad0"
+    },
+    {
+      "file": "raw/300693.SZ/daily.json",
+      "sha256": "ce61a207a7a21193aa45cb4ce6ecbb8d33ab92e03638d31afbc02281de78b10d"
+    },
+    {
+      "file": "raw/300693.SZ/daily_basic.json",
+      "sha256": "db989807e49e3b05a64d3422d80fc2d42c9556b1b21bf663137b5364d746eb86"
+    },
+    {
+      "file": "raw/300693.SZ/fina_indicator.json",
+      "sha256": "f770e1afcc46824df8550d28983bdac6f91661b43aa8895d7678945b474c919d"
+    },
+    {
+      "file": "raw/300738.SZ/adj_factor.json",
+      "sha256": "aef95a56c55f8c3b76a57bde52557c0f0119f4d203b7b38a18388b5227a8eeec"
+    },
+    {
+      "file": "raw/300738.SZ/daily.json",
+      "sha256": "0188804749ce78acfbb6cffb67bb1e998fdcda9f7fee9def5bb749a9aa3c1b6c"
+    },
+    {
+      "file": "raw/300738.SZ/daily_basic.json",
+      "sha256": "9c3723300a73e98d60c6a20a425ae585aa55a7c98e6d1ae25cf51cf9b370d388"
+    },
+    {
+      "file": "raw/300738.SZ/fina_indicator.json",
+      "sha256": "6e6bdd2c53fd728fc01dc33488a3e5c9a998c84800044c93c99008eec29e98f2"
+    },
+    {
+      "file": "raw/300870.SZ/adj_factor.json",
+      "sha256": "f82150832e15a22eed5dd251c071af7f4ead2cc7f8c1d236f8fd3ba905f4d753"
+    },
+    {
+      "file": "raw/300870.SZ/daily.json",
+      "sha256": "f9c01e9eeb84a24eb46e5f935b8b785e7eb00792358fb2b0517ddf546d1dd523"
+    },
+    {
+      "file": "raw/300870.SZ/daily_basic.json",
+      "sha256": "c6140b07429d41c3b82fb1122bd7116c410d87989c96c4b592ce432980f4bd68"
+    },
+    {
+      "file": "raw/300870.SZ/fina_indicator.json",
+      "sha256": "f9f86f9edf22bce61ff2eab97329bbac8edf5fedbaba29424aeb9fcb73d4df1b"
+    },
+    {
+      "file": "raw/301018.SZ/adj_factor.json",
+      "sha256": "b54ddbfd3eb49bdf40cbc61d22f99da67a402e4c801b583a77f45f5f8e9014a7"
+    },
+    {
+      "file": "raw/301018.SZ/daily.json",
+      "sha256": "3507a348b82fd5c28678d2d25357f069f6c1eb06fbbb9ea5d60a709e36c43c0a"
+    },
+    {
+      "file": "raw/301018.SZ/daily_basic.json",
+      "sha256": "5d55c5341d512f9f9d7df33da0e4a51e18654f2c55f2cee563c6fc877aac4fcc"
+    },
+    {
+      "file": "raw/301018.SZ/fina_indicator.json",
+      "sha256": "3aedc64d25413cbc995f20147991c803c499b98f32e613fbc06f23b9e0d6466f"
+    },
+    {
+      "file": "raw/301205.SZ/adj_factor.json",
+      "sha256": "6ab1c33c7703ec1efd9e8e35feedecec3d7e31f02a675eab43bce2da5596ad59"
+    },
+    {
+      "file": "raw/301205.SZ/daily.json",
+      "sha256": "702893bcadfaa8cdca7a52f7d29281d3e0cfceebd0cdd077fd0a1d09c23247c4"
+    },
+    {
+      "file": "raw/301205.SZ/daily_basic.json",
+      "sha256": "2e4d15a155ffef4621751102de3432ff10a2cd8b5259b0e3cac18e95daa7e00a"
+    },
+    {
+      "file": "raw/301205.SZ/fina_indicator.json",
+      "sha256": "51cc10d09207eac9f59ef286c49000fa77287353e9b70083ab093b3875008bdd"
+    },
+    {
+      "file": "raw/301308.SZ/adj_factor.json",
+      "sha256": "03016165464ce0e1068ea684c02008be82c61a351b35287e976d23e5d87417f2"
+    },
+    {
+      "file": "raw/301308.SZ/daily.json",
+      "sha256": "331f518923f762d8a670154ba97d03337541e47cfc49fb7d65130bfd1f3b6135"
+    },
+    {
+      "file": "raw/301308.SZ/daily_basic.json",
+      "sha256": "fe5780e674dd11a43bad19c36c3943e699e4fb00c9df2f2edebd97117be93253"
+    },
+    {
+      "file": "raw/301308.SZ/fina_indicator.json",
+      "sha256": "b69e4365562d05c95a0383ede802319a08ffeb16ca525730b92eeb7ce16867a5"
+    },
+    {
+      "file": "raw/600011.SH/adj_factor.json",
+      "sha256": "1d1e28ebbe6cff294cf884379391ad4229b478c8876af27a2a14a9cc94fb0668"
+    },
+    {
+      "file": "raw/600011.SH/daily.json",
+      "sha256": "e62b4df8b6c1ffbfff2b2e9db4d017b76b672e6dbc8e8b59b6df0854e4a27331"
+    },
+    {
+      "file": "raw/600011.SH/daily_basic.json",
+      "sha256": "8ff49a58d0e113204e4fbaecb01c7265894598ce25cac875e3643609462f6f0e"
+    },
+    {
+      "file": "raw/600011.SH/fina_indicator.json",
+      "sha256": "e2887cb6b2fdd4f8448d072b77f7e4b778628ad8f08eb80c4d097b1936605bb5"
+    },
+    {
+      "file": "raw/600050.SH/adj_factor.json",
+      "sha256": "b656535bda9181f45c99f8dd9515db61c70204cbb3632001fa1f0ac410baa8a6"
+    },
+    {
+      "file": "raw/600050.SH/daily.json",
+      "sha256": "ca5463123332b703a25b396387c075536bf937017c329d05c6352ed98e18a094"
+    },
+    {
+      "file": "raw/600050.SH/daily_basic.json",
+      "sha256": "ce161a646974144bdf1b1e4aa84941926d368dcc252a33bd0fd951ac2a1a8d03"
+    },
+    {
+      "file": "raw/600050.SH/fina_indicator.json",
+      "sha256": "de4269a6f2b805a8bb28cb365cb2b2fd1e140bff19ed5e44fd1398701061adf8"
+    },
+    {
+      "file": "raw/600183.SH/adj_factor.json",
+      "sha256": "c11058a9f3d3c7e67369fbc9394fada626106502b4246cc4afbe23eabfee38d5"
+    },
+    {
+      "file": "raw/600183.SH/daily.json",
+      "sha256": "54c1c0f0254e3323d50278a14fcd8dbff012adbb84eb60a3c2e4a87834ceb70e"
+    },
+    {
+      "file": "raw/600183.SH/daily_basic.json",
+      "sha256": "a205a17428aab15a8b9a5e7bfdbf709831b0ef0c967aa870ddd46e59e0bb734b"
+    },
+    {
+      "file": "raw/600183.SH/fina_indicator.json",
+      "sha256": "17fab64465b8913565bd346a12223327503e68b03fe98840aa5c6712f2fcb119"
+    },
+    {
+      "file": "raw/600330.SH/adj_factor.json",
+      "sha256": "f222468b1b0d34c0b8f11024ad07aca7edf33386ebf43a09d7e5ef6346194593"
+    },
+    {
+      "file": "raw/600330.SH/daily.json",
+      "sha256": "530f7410931a1fc6e48c4761048c4ca3e1ed59cdfda874571d1a722768a1a8ff"
+    },
+    {
+      "file": "raw/600330.SH/daily_basic.json",
+      "sha256": "cf1bacc0c618f83ed0e065eee84377c198b9ad915975bfd984d120c57adb0ba9"
+    },
+    {
+      "file": "raw/600330.SH/fina_indicator.json",
+      "sha256": "b2d5e457ee0ff0e31eae3555c4da31efab6a06f17652b4df80da6af31c789f64"
+    },
+    {
+      "file": "raw/600460.SH/adj_factor.json",
+      "sha256": "f3ad51874440e4f5c33c762e303e5942c106b792acdfb7b3ba7eb678c799bded"
+    },
+    {
+      "file": "raw/600460.SH/daily.json",
+      "sha256": "263838947376812ff1f67063fa7b45046cae7b1ed039355d451028dc6380cd5d"
+    },
+    {
+      "file": "raw/600460.SH/daily_basic.json",
+      "sha256": "ad30d055c36947c80d27261b10cc64a07c89f3058bbc333850c30568121121aa"
+    },
+    {
+      "file": "raw/600460.SH/fina_indicator.json",
+      "sha256": "cd67e1c7523db9a1f5c29f8d872b9205f1c003091556374e68f2af5dca17c4e5"
+    },
+    {
+      "file": "raw/600563.SH/adj_factor.json",
+      "sha256": "7cba3734e7bd5881e9b23f7a099bd210574cce48f83e4f83957e52f4e9a20113"
+    },
+    {
+      "file": "raw/600563.SH/daily.json",
+      "sha256": "a3dbf09338164e0fd82459dcc91ff9aafad477c824b614f60fe1c7475da8fa60"
+    },
+    {
+      "file": "raw/600563.SH/daily_basic.json",
+      "sha256": "ac199f6ff565a91a47ce23003034c82e83571755612f3b91ea0078ae6caa241d"
+    },
+    {
+      "file": "raw/600563.SH/fina_indicator.json",
+      "sha256": "b4d8f1cd373ce8aa9fb5c47ef8138ca9d53532424861d973502343fb0bf7adf7"
+    },
+    {
+      "file": "raw/600584.SH/adj_factor.json",
+      "sha256": "cb0077168937387459af8ac3e517b5eb423b17c8d9fd957bdefcad8910fb6fcc"
+    },
+    {
+      "file": "raw/600584.SH/daily.json",
+      "sha256": "ad2bfc634f3bd54d8d02f47ed482ecf4a6ccd536ba19d8b8b5e4a487ea3b3926"
+    },
+    {
+      "file": "raw/600584.SH/daily_basic.json",
+      "sha256": "d66fcb10336b407632388a6bde890a14f0118b0d386f530dbb61682a5751d30a"
+    },
+    {
+      "file": "raw/600584.SH/fina_indicator.json",
+      "sha256": "c42acf3cca1d1104e755efe592ec97b6703db7bb23d0c6f0c411cb2fae462444"
+    },
+    {
+      "file": "raw/600745.SH/adj_factor.json",
+      "sha256": "ab34bf59af8ff59898db510a49e3270a8a6532c221ea0fcc98124987e12afd4f"
+    },
+    {
+      "file": "raw/600745.SH/daily.json",
+      "sha256": "0e7c3c8530330cfaa24b8f49aaf47f733e7445cca6ae1d95b048b20e1aa1e467"
+    },
+    {
+      "file": "raw/600745.SH/daily_basic.json",
+      "sha256": "d3ad67ab2bfe522d5f8c548b006f6981ec0ebd335b0ea1c608d90b1f21dfedda"
+    },
+    {
+      "file": "raw/600745.SH/fina_indicator.json",
+      "sha256": "f9e759a4d9f74e21e4defbca0a88ea8944cc172c2ee681ecbd4763679434b431"
+    },
+    {
+      "file": "raw/600845.SH/adj_factor.json",
+      "sha256": "68999e0fe388652818e98e737295655beb61d9ed3629326206f58f9ee5779070"
+    },
+    {
+      "file": "raw/600845.SH/daily.json",
+      "sha256": "bfe975d8321c32448b185122ce1c18511506733059b2a01a86f46100bc0ce3f7"
+    },
+    {
+      "file": "raw/600845.SH/daily_basic.json",
+      "sha256": "c0aec33eb6bcdb5632623c173fac149db5b1d2aed87604e8a90d427542379074"
+    },
+    {
+      "file": "raw/600845.SH/fina_indicator.json",
+      "sha256": "c5e2bdbd6df63ddb97cf4eae40fb1e7483b1eb21eda303602708669eebc2b504"
+    },
+    {
+      "file": "raw/600886.SH/adj_factor.json",
+      "sha256": "969157a95cc9851211c0b27964f55712b4b3128e69b46bd8665631837bbf0088"
+    },
+    {
+      "file": "raw/600886.SH/daily.json",
+      "sha256": "4a4f40ecfcf8da586305f2f941df5ad58dd562b89d7fd529312f0d51384b6475"
+    },
+    {
+      "file": "raw/600886.SH/daily_basic.json",
+      "sha256": "0b00347408d2941d9e87b7413473264469ce9eb85e4bb56326279ef15d49917f"
+    },
+    {
+      "file": "raw/600886.SH/fina_indicator.json",
+      "sha256": "f95b77d4a04eb3f4956971027373f05b7f511efff95bfb2f2b1c3f4f4a42a916"
+    },
+    {
+      "file": "raw/600900.SH/adj_factor.json",
+      "sha256": "5db3e6dbbf1c9f4c5eac676872db89a3df7af7e3936680a91209519452ad23d9"
+    },
+    {
+      "file": "raw/600900.SH/daily.json",
+      "sha256": "887a2ed4e79fec230a702966c65518396eea801fadd932907ff3a77bcc31a93f"
+    },
+    {
+      "file": "raw/600900.SH/daily_basic.json",
+      "sha256": "f9031cc4faee98f39908b1993cf90d084f0002f3d257fd60ca04bd71b8102487"
+    },
+    {
+      "file": "raw/600900.SH/fina_indicator.json",
+      "sha256": "ad9777cd4cae8a9849180328f64945b32bf445c25bf7efecefa5b1633d39040e"
+    },
+    {
+      "file": "raw/600905.SH/adj_factor.json",
+      "sha256": "245ddd318470b3fe8ed5fe1f47c9a4ee2d41cc8279004220d40febb67056324f"
+    },
+    {
+      "file": "raw/600905.SH/daily.json",
+      "sha256": "6230ccc6ee89d1696bdf71d6b25c6fd8c78d0f60be503ee3bc3d53e0b8b43cf8"
+    },
+    {
+      "file": "raw/600905.SH/daily_basic.json",
+      "sha256": "cc4b4549b645fb1ca3014b41d49cda3255e9e6e3b1ae547cc9c377d453656a72"
+    },
+    {
+      "file": "raw/600905.SH/fina_indicator.json",
+      "sha256": "aea5c99d186bca2cbc129c21f63a32891ca2f07243ce53e01819aefa4f88a4ca"
+    },
+    {
+      "file": "raw/600941.SH/adj_factor.json",
+      "sha256": "b2a822bb1881760d3ce7b2531f3cdb2a9b5b1b42e2daff7a18c1880f2e044eb6"
+    },
+    {
+      "file": "raw/600941.SH/daily.json",
+      "sha256": "0c6d6cc555351afc8dfb53752c3743e9911c0a6e482c557ddeb6c1852e1f1e2c"
+    },
+    {
+      "file": "raw/600941.SH/daily_basic.json",
+      "sha256": "f0003ddaaa93960e1b3bcd3f56e734f80784be8bf4e357c20e35ae0bc446cdd5"
+    },
+    {
+      "file": "raw/600941.SH/fina_indicator.json",
+      "sha256": "1e7ec65b1af30bae33f1f3a1ed21f423dc05287dd4805f9c1c70c5ccadaa844f"
+    },
+    {
+      "file": "raw/601138.SH/adj_factor.json",
+      "sha256": "ca590c296497e9f2ddc10c5176867050c85869f8413916a5c3569a9953bc7802"
+    },
+    {
+      "file": "raw/601138.SH/daily.json",
+      "sha256": "9274d8f8a65eee087baefc407781195f11acfaf0c4125bb922fd33225222efef"
+    },
+    {
+      "file": "raw/601138.SH/daily_basic.json",
+      "sha256": "e8881dc29f39955bc846c30cc6c025f446dc7edff38407b807286f0a564f518a"
+    },
+    {
+      "file": "raw/601138.SH/fina_indicator.json",
+      "sha256": "2ff00e91cbcd98909f6fc9bed9d6dcf99f8e51b4450130b4960255d9e1e259e5"
+    },
+    {
+      "file": "raw/601728.SH/adj_factor.json",
+      "sha256": "6e57ba61530a58ee5488399c439a47eb447ad54676389f32579b9985a2c24d6b"
+    },
+    {
+      "file": "raw/601728.SH/daily.json",
+      "sha256": "23a23263517919aec1abeae0c4070e5791422eda06b3396a89f2427034d81030"
+    },
+    {
+      "file": "raw/601728.SH/daily_basic.json",
+      "sha256": "b233db08d119d0d71c50987940b38fbec05c7514696a2523118d42821e5c5ec5"
+    },
+    {
+      "file": "raw/601728.SH/fina_indicator.json",
+      "sha256": "95c0c6dfaf28ed12bfacc014a77a5b9fbf5ab0c21b2308b42fd2018b73bb88fa"
+    },
+    {
+      "file": "raw/601985.SH/adj_factor.json",
+      "sha256": "b1fcbb61cec637ce8295d7b845008d179372c30c4d5e1b654c95c56954d62bc2"
+    },
+    {
+      "file": "raw/601985.SH/daily.json",
+      "sha256": "acd3ec5be553558654252311e2bee98c0b0826cf046674c1e4ed62a70425b265"
+    },
+    {
+      "file": "raw/601985.SH/daily_basic.json",
+      "sha256": "87b3d1f46ad149ffca98fa525cba72de1da7e3875a2a02e21f99467b6a8810b4"
+    },
+    {
+      "file": "raw/601985.SH/fina_indicator.json",
+      "sha256": "8abaa8a5c90e155ccd0987322d4946c4c14f0f9be3d61740a6877e5dae5f927f"
+    },
+    {
+      "file": "raw/603019.SH/adj_factor.json",
+      "sha256": "117cc523ddccdc7e2b7d621e4338e4bd6298bfd50f9edfd6838779d95b4a8db2"
+    },
+    {
+      "file": "raw/603019.SH/daily.json",
+      "sha256": "65a97bf15de924d3b64868857a900719058a4ca13e69632cdd91e361631d5f58"
+    },
+    {
+      "file": "raw/603019.SH/daily_basic.json",
+      "sha256": "fb4d5588315d0372d6a4011a33f141d8107e1a79801fe55edf155947d5f7d650"
+    },
+    {
+      "file": "raw/603019.SH/fina_indicator.json",
+      "sha256": "921527a47ad3b180fcd18a08b79e5dcdb84acfe4dd45548db7c469352fd2cfa6"
+    },
+    {
+      "file": "raw/603083.SH/adj_factor.json",
+      "sha256": "b80672fced4f444c757d17e3e1ebb301928d7aa3e7bec868a5083ae554bbee92"
+    },
+    {
+      "file": "raw/603083.SH/daily.json",
+      "sha256": "a0dded3c0c42864ffa2621477cf48e6917b2ffeec96581e4e69fff6f50817752"
+    },
+    {
+      "file": "raw/603083.SH/daily_basic.json",
+      "sha256": "7589b410be11997deba49a97d18973492478273bb5fc4cbf95327bdcddbcedbc"
+    },
+    {
+      "file": "raw/603083.SH/fina_indicator.json",
+      "sha256": "c48deb2a80ab406a068433b956f7806be0115e25134aaf1207eeeca76667d4c5"
+    },
+    {
+      "file": "raw/603228.SH/adj_factor.json",
+      "sha256": "deaf166787acce288438066ca15f9630eeb31c9d9838106e8d21d2ec877a8fd6"
+    },
+    {
+      "file": "raw/603228.SH/daily.json",
+      "sha256": "5d93d419cdda22e735d021e6fdedc4f646875a9420f4395cfc5f4f5b623a7e59"
+    },
+    {
+      "file": "raw/603228.SH/daily_basic.json",
+      "sha256": "fb70dc2b649dfa620a1e0e8ba386015e33aa74f963f954266bb7fb0c47c1f3f7"
+    },
+    {
+      "file": "raw/603228.SH/fina_indicator.json",
+      "sha256": "ce7f8e9970eced7438499813218c3c6a11049f17f535ae1767671fd1872a28e8"
+    },
+    {
+      "file": "raw/603290.SH/adj_factor.json",
+      "sha256": "ca57b70142fb1577bdc854a3321cccf7b07d751fc5aca636502c5454dbeeff33"
+    },
+    {
+      "file": "raw/603290.SH/daily.json",
+      "sha256": "438645653140c055db933742ddf244b874505b05d82e99a22f55ec7285ea160c"
+    },
+    {
+      "file": "raw/603290.SH/daily_basic.json",
+      "sha256": "9e1b45ee14d30975ebe3b11bd58267ebbff499643793f71ffeeacf78e7e58d27"
+    },
+    {
+      "file": "raw/603290.SH/fina_indicator.json",
+      "sha256": "32dc06ee1e2a9f1e105b1098c835986aa9f9162c44fe4883778ebb6267d937bd"
+    },
+    {
+      "file": "raw/603678.SH/adj_factor.json",
+      "sha256": "008da9af02b6f9f259e0123b0f19afc455ca9140ea13fd7e990dc17ba3463e6d"
+    },
+    {
+      "file": "raw/603678.SH/daily.json",
+      "sha256": "6a5f49e7ab84791955802f25cb524adba1fcadd250738d8858a00eceac00b6db"
+    },
+    {
+      "file": "raw/603678.SH/daily_basic.json",
+      "sha256": "5798723ce40ca76c98acd0432f44d8474ae70a6423b5be8bbc0ba60da49d902d"
+    },
+    {
+      "file": "raw/603678.SH/fina_indicator.json",
+      "sha256": "f777d119c6110df3e766ba9b82ea0acabef59c8fe13fe919deddf945ec0bda36"
+    },
+    {
+      "file": "raw/603881.SH/adj_factor.json",
+      "sha256": "acfbf5da8449a501b8f46bca762d4730984a101bf806f01fc0797026c6727af2"
+    },
+    {
+      "file": "raw/603881.SH/daily.json",
+      "sha256": "7769af809b814e72ec8574fb28f1c339656a89004d31450999a9745d7877a1ef"
+    },
+    {
+      "file": "raw/603881.SH/daily_basic.json",
+      "sha256": "a860b1238ba275f9ab35b000e0106b042bf80ed6c0362233e5e9beeca34b5ed4"
+    },
+    {
+      "file": "raw/603881.SH/fina_indicator.json",
+      "sha256": "7c3b558e00c06b447ed340f62debff7075a951c8fa0abff045e9148901488ab3"
+    },
+    {
+      "file": "raw/603912.SH/adj_factor.json",
+      "sha256": "1e4eda858a227ba6263aacaeecbfbacd745fcbd71fefffb0cf1173a07ece85e5"
+    },
+    {
+      "file": "raw/603912.SH/daily.json",
+      "sha256": "b69a8bf794c780f0c10171ded31c79726e96ef2021de7051e7c864391f9eebf2"
+    },
+    {
+      "file": "raw/603912.SH/daily_basic.json",
+      "sha256": "e3e4d86c2d7bb7e1e4a60258ba564ded4fbc09bbf3eae9aaf754ba4c80b84e30"
+    },
+    {
+      "file": "raw/603912.SH/fina_indicator.json",
+      "sha256": "519c8b87cd61a9d22972567217c50895e2a9f27296c0c99053a9634b8816db63"
+    },
+    {
+      "file": "raw/603986.SH/adj_factor.json",
+      "sha256": "2b0a50110fb815267c34bc4c348fa11a20531c9d591484412f7844c36d9737d3"
+    },
+    {
+      "file": "raw/603986.SH/daily.json",
+      "sha256": "ec28bc5faf0c2a2833589449e4266490880964a3f69f84a6a54759b2c3af896e"
+    },
+    {
+      "file": "raw/603986.SH/daily_basic.json",
+      "sha256": "0187b3327205aafe372a567e18f1c953b2b7d78455814d8f201a6b097c4e26f4"
+    },
+    {
+      "file": "raw/603986.SH/fina_indicator.json",
+      "sha256": "fcc1eb7e61be2a538eabb1a7b109929b41639ad3c67069301c7c8105912a4c5e"
+    },
+    {
+      "file": "raw/605111.SH/adj_factor.json",
+      "sha256": "613c349d5f423dd650ef7799caf3c4ce58a0425babf5a9fe4bffa6983cca83cb"
+    },
+    {
+      "file": "raw/605111.SH/daily.json",
+      "sha256": "22674c1085bd7b2a8a9a015464f0cd5dd6a89286ad4050d38ed2f3617c10b129"
+    },
+    {
+      "file": "raw/605111.SH/daily_basic.json",
+      "sha256": "675b18d746d5227684a2f45562eedf853ea0df7d2a7129bfaee134c640e1004d"
+    },
+    {
+      "file": "raw/605111.SH/fina_indicator.json",
+      "sha256": "898ec7cf9658361806d5622a08b2e605b0d386385d2dc6ee349b68304f6abb82"
+    },
+    {
+      "file": "raw/688008.SH/adj_factor.json",
+      "sha256": "821aeac5f3987cf7df4a6f5440f03ebfc385dd2d5328405cfdfb80797d68add0"
+    },
+    {
+      "file": "raw/688008.SH/daily.json",
+      "sha256": "e8220225cd4fb8571e1625628fa4d0aa445d8542f0ebaa52aeabd08ec1fa64e1"
+    },
+    {
+      "file": "raw/688008.SH/daily_basic.json",
+      "sha256": "6f4ae03631e33a1805f9b299c0e978f2f52cdd903bc0b6537f854563630dcc87"
+    },
+    {
+      "file": "raw/688008.SH/fina_indicator.json",
+      "sha256": "8f55f026d67a82e0f78b7aa71e3a3321c7fd86b9f2ff3a53b15e79eb876dbd0f"
+    },
+    {
+      "file": "raw/688012.SH/adj_factor.json",
+      "sha256": "af5fb5a82363ed2102adedc06b3088ba78930318baee9e10e7a7ec924e8bcc9e"
+    },
+    {
+      "file": "raw/688012.SH/daily.json",
+      "sha256": "54f7c0fe32f40ad4eacce97fe4bcc78ae91be6cdae143c31e8dc9514703ee902"
+    },
+    {
+      "file": "raw/688012.SH/daily_basic.json",
+      "sha256": "fa4732988029f5405f779e39daecbff6face3607b593ccf39cd8f7256b4808ad"
+    },
+    {
+      "file": "raw/688012.SH/fina_indicator.json",
+      "sha256": "98e196c39ff37ef4a10243d5028b6c871e1b74c19e88c5bc1ea3915bcba0edab"
+    },
+    {
+      "file": "raw/688019.SH/adj_factor.json",
+      "sha256": "2effb48eb267b6732277ddfe0d16e50c85938aab4c08fc052e37c478606f80d9"
+    },
+    {
+      "file": "raw/688019.SH/daily.json",
+      "sha256": "2f1663f7d3e8658ac4b56726c36caf7d50698305057df58da99b58457abd67e2"
+    },
+    {
+      "file": "raw/688019.SH/daily_basic.json",
+      "sha256": "7f7713f3188c73520c9bcb5ff96ae248e2a12c243d2b6a35382d8ff5e81c9ac1"
+    },
+    {
+      "file": "raw/688019.SH/fina_indicator.json",
+      "sha256": "499f09125b979d190cf8cba447a4f4ffcc9676ea5c48e794a02b3f0edea2e91e"
+    },
+    {
+      "file": "raw/688037.SH/adj_factor.json",
+      "sha256": "1ca374aab0806e68a4f330da035b4ce8cf787c5fb60fc0301d3ee3dfd2eb73bb"
+    },
+    {
+      "file": "raw/688037.SH/daily.json",
+      "sha256": "a621422e9aea93cd9dfe2a0f32d2efdd23f1584a9a00fdcee6024ef74ac8792c"
+    },
+    {
+      "file": "raw/688037.SH/daily_basic.json",
+      "sha256": "06885d9ac6c1bf40a945dffb8f842aa9f067b023e62ce3d78946adfe30fe8cd4"
+    },
+    {
+      "file": "raw/688037.SH/fina_indicator.json",
+      "sha256": "50de041decf8eed5da47a1cb11eecdb1dd2b7ff648f5c7a77ffcc2b40a35bf1e"
+    },
+    {
+      "file": "raw/688041.SH/adj_factor.json",
+      "sha256": "e0b1e4ad3660a285080bece5a0ce9c13b99e271d755b8b5f8f3ef84798bcece2"
+    },
+    {
+      "file": "raw/688041.SH/daily.json",
+      "sha256": "58f99c37b3098688ce4685bfd9b7743a2997916f56ee1270d0b35674c1d6fbbf"
+    },
+    {
+      "file": "raw/688041.SH/daily_basic.json",
+      "sha256": "c6d008356fd21ae6869a69cd729cd7ab2085f274c51cf17c947446fda16525f2"
+    },
+    {
+      "file": "raw/688041.SH/fina_indicator.json",
+      "sha256": "f9d36bf74a67147ebad595f9cb36e09a800ff53ed30840e2aecdcf80a8c3a021"
+    },
+    {
+      "file": "raw/688047.SH/adj_factor.json",
+      "sha256": "394e9ce5d7278cba3d63f16cabf6d213c029238ef30726702c1555345815c1a3"
+    },
+    {
+      "file": "raw/688047.SH/daily.json",
+      "sha256": "14c318ddccdaffc260b966950951c58f9d622afc3a186aec434e8fe8a14e40f4"
+    },
+    {
+      "file": "raw/688047.SH/daily_basic.json",
+      "sha256": "262aed69b261f2bc99b33a12c348b986b525209fc7b8c7e786d3ba85d0ead6c6"
+    },
+    {
+      "file": "raw/688047.SH/fina_indicator.json",
+      "sha256": "5bb99e144edbca79f56b510b8937d3a24ed5ed6017cb3b7e6eda6056eac92e8e"
+    },
+    {
+      "file": "raw/688072.SH/adj_factor.json",
+      "sha256": "b66efd92a2e4482d324c186c40988ebf58d09a21db21538e70d255c32b0fa866"
+    },
+    {
+      "file": "raw/688072.SH/daily.json",
+      "sha256": "0ba365806208f1241b1312097553f6a09d2b8bace2ebac5916cd3318fa12d84f"
+    },
+    {
+      "file": "raw/688072.SH/daily_basic.json",
+      "sha256": "0efc7aa271325e7e6c8603049e3e839cd1a196b46def3cb09b657f5896228150"
+    },
+    {
+      "file": "raw/688072.SH/fina_indicator.json",
+      "sha256": "509e42e3d5603a8872a97d3d37ef0629e4028fab19bb2f1e6404e87659ec3bfa"
+    },
+    {
+      "file": "raw/688082.SH/adj_factor.json",
+      "sha256": "4e4dcae50bbc93da0daa785c390c09280047ce3dc52418ed367148a6406c2bb4"
+    },
+    {
+      "file": "raw/688082.SH/daily.json",
+      "sha256": "019d84d8d37654e4ca95dff5c7a0d9030b5ab9d4b0298e965e34c416cee3389a"
+    },
+    {
+      "file": "raw/688082.SH/daily_basic.json",
+      "sha256": "ba09b2f63a9b224ed759f944e3a928e73af184f68488d5b73d87974b0e8b6b19"
+    },
+    {
+      "file": "raw/688082.SH/fina_indicator.json",
+      "sha256": "e5b56f99fe690690477e5bd90dc30468dbbc88439ced8c5063ded231c46bf9d6"
+    },
+    {
+      "file": "raw/688120.SH/adj_factor.json",
+      "sha256": "0864bd6b62518fca89beeee3417f09c58d7860a5877cfcd13e76087560d85289"
+    },
+    {
+      "file": "raw/688120.SH/daily.json",
+      "sha256": "9aa488474611a5f3b716031942b209147af2955388a6483cf9ff116683b776d0"
+    },
+    {
+      "file": "raw/688120.SH/daily_basic.json",
+      "sha256": "7ffb60430d6d3441d7c381f9019f86ee9d1925840c70b2910a0fcaf8d5a0beb8"
+    },
+    {
+      "file": "raw/688120.SH/fina_indicator.json",
+      "sha256": "c93da55bee0b9a017097562e47b315d0087984d461d01599c507bf60be94234a"
+    },
+    {
+      "file": "raw/688126.SH/adj_factor.json",
+      "sha256": "6f682e3f7aa16316d5a7f22f2046305d838a1e0857b05735034121138bc70cd8"
+    },
+    {
+      "file": "raw/688126.SH/daily.json",
+      "sha256": "f00a84a3ce042bd4dbd0cb493e20b6b6d11a4e942c5f76f67fba8c75afbffb87"
+    },
+    {
+      "file": "raw/688126.SH/daily_basic.json",
+      "sha256": "7cfb5d952e4054e701a19a6b9eb2aad32b19d8fe38a6c4c184b0cdf379de7f45"
+    },
+    {
+      "file": "raw/688126.SH/fina_indicator.json",
+      "sha256": "25f530475d49941e9c0b5a07312b46d7010adcf395e021ed58e02ce404f2a5c0"
+    },
+    {
+      "file": "raw/688187.SH/adj_factor.json",
+      "sha256": "1efacd8279dbd4f47c667aca68c91b67eb2c25dbdd6449b980cf0891d7cab7a6"
+    },
+    {
+      "file": "raw/688187.SH/daily.json",
+      "sha256": "6d5d8442ab58f6c2595336331ed39ab6fabb8e25adf6f1f942021a88a4a3628f"
+    },
+    {
+      "file": "raw/688187.SH/daily_basic.json",
+      "sha256": "f0c41c76cabc43b7886aa01d14d6672e21d24e399153ea92c9583cb384a83d15"
+    },
+    {
+      "file": "raw/688187.SH/fina_indicator.json",
+      "sha256": "16235fa35e9af0f4b5e5195a4092e9a50364684da2bb7c147c6613055f684883"
+    },
+    {
+      "file": "raw/688205.SH/adj_factor.json",
+      "sha256": "3f77cbd736fb8e6c887e42135d66522f391bee79b439ed10ccbf4acf2cae4e2d"
+    },
+    {
+      "file": "raw/688205.SH/daily.json",
+      "sha256": "19c20eca9347c51ced05c256d281b2dd722f33362d6f796fb37198276a80cd41"
+    },
+    {
+      "file": "raw/688205.SH/daily_basic.json",
+      "sha256": "f1761f12f02f50d231bf4bb19b3af841fc4008978dca9ad2c1e086b42f854414"
+    },
+    {
+      "file": "raw/688205.SH/fina_indicator.json",
+      "sha256": "eabf47f5499f4fc5be98d5006c3b0b72083aee7b9a40093a1a7e22c001f8b76f"
+    },
+    {
+      "file": "raw/688234.SH/adj_factor.json",
+      "sha256": "801f2b5263bab98ea617f6dc8110d967019a61aa17e0509a112305c3e95cc083"
+    },
+    {
+      "file": "raw/688234.SH/daily.json",
+      "sha256": "5a1a74c49a315f80a0e0cf0132ffc83a9954026d6e5290dc504b1369cf976049"
+    },
+    {
+      "file": "raw/688234.SH/daily_basic.json",
+      "sha256": "29d8d31c19b48c9d0dc5500c1f32e332c3900c4982839daa7b10d228084f5be9"
+    },
+    {
+      "file": "raw/688234.SH/fina_indicator.json",
+      "sha256": "62e06039dc40ebdebf8d02895635d093d1dd9f2106f40194d027c125228ca26c"
+    },
+    {
+      "file": "raw/688256.SH/adj_factor.json",
+      "sha256": "de403835aaeb3884966abb91e6e2474412c07c9acfe3d530dcb90387fca18168"
+    },
+    {
+      "file": "raw/688256.SH/daily.json",
+      "sha256": "b27bba3b4551f8355aab79dc03ae8c2ee513309221557889e5198d5c3e367c60"
+    },
+    {
+      "file": "raw/688256.SH/daily_basic.json",
+      "sha256": "226e9bde4ca9c7f916b35c326e3ba77fc72abe8436fb81e535cdadc2b9724c6b"
+    },
+    {
+      "file": "raw/688256.SH/fina_indicator.json",
+      "sha256": "4472d037d1c2f868b1afc96f86d5461abfe8c736f7636643c107fad0029b71a3"
+    },
+    {
+      "file": "raw/688261.SH/adj_factor.json",
+      "sha256": "a9d9594e972696fa87e1979cd98b27775b2c31169d229efe4616fc2fc93695db"
+    },
+    {
+      "file": "raw/688261.SH/daily.json",
+      "sha256": "10b6021f99f5836004016c3895fbc16608d97f97891c5b8700d3cb53a07b2d5e"
+    },
+    {
+      "file": "raw/688261.SH/daily_basic.json",
+      "sha256": "1ae042556971d4897a0e0a8c4af4366cb4cb20bb717ba3cef227773b8c6a9742"
+    },
+    {
+      "file": "raw/688261.SH/fina_indicator.json",
+      "sha256": "fe996a05ddc24c48d889d80f4b768f62eb78b30a1092b4f24346d7bf52ca839e"
+    },
+    {
+      "file": "raw/688268.SH/adj_factor.json",
+      "sha256": "65b5d20f2ef138d79750c3d1d4d1805ef8c0e8aa40087df53eceb2471094d888"
+    },
+    {
+      "file": "raw/688268.SH/daily.json",
+      "sha256": "2764c3f9d636dece033e644bf64e97c6cf35e8db85f2509841cda9367aaa9091"
+    },
+    {
+      "file": "raw/688268.SH/daily_basic.json",
+      "sha256": "44c33c4e1a24fffc726ff446146f58fecf17f5d9686b191a4dc51109b7d7d05d"
+    },
+    {
+      "file": "raw/688268.SH/fina_indicator.json",
+      "sha256": "a16cdf19fe2d46fe16168904799b65ae22cf662d10ff6b117d2442237a6fcda3"
+    },
+    {
+      "file": "raw/688347.SH/adj_factor.json",
+      "sha256": "c38db1159f6c98685404d524cceefdfe03abdd4683b3c8a7113474c5d5ec2229"
+    },
+    {
+      "file": "raw/688347.SH/daily.json",
+      "sha256": "4e32be4ec08441058af8c6b9611f952a7455b564ed292db4ea3c2cc5b282f098"
+    },
+    {
+      "file": "raw/688347.SH/daily_basic.json",
+      "sha256": "158fc14019944a0ac4e7e77843c3a00612a722b15665f75c43bc2196f18dde8a"
+    },
+    {
+      "file": "raw/688347.SH/fina_indicator.json",
+      "sha256": "9ac5da7c936afb559b42a1f418341414960a60bcd5821b28b80dd150dc765461"
+    },
+    {
+      "file": "raw/688385.SH/adj_factor.json",
+      "sha256": "1baf1ff80a4c0be77f82c66c6cf4558ba54e0637f90ec7aec4207e1a35eb876b"
+    },
+    {
+      "file": "raw/688385.SH/daily.json",
+      "sha256": "36fb80829d237abb0bdeb7bc4981af094856269a2c6f03f038cb836f79617283"
+    },
+    {
+      "file": "raw/688385.SH/daily_basic.json",
+      "sha256": "ca47d3d0063a19e278bf8e785b800eda3c28cfee0d43d4e704f5a2c311c42a56"
+    },
+    {
+      "file": "raw/688385.SH/fina_indicator.json",
+      "sha256": "3f710de7bdfaeacfa2f71d97816c92da70d3cdc0f88efd61a26d4ca0b33958e8"
+    },
+    {
+      "file": "raw/688396.SH/adj_factor.json",
+      "sha256": "68889cc6b1235a3b950fb0ee943ef64a80382d6f826c23c0e998cf15b5a15871"
+    },
+    {
+      "file": "raw/688396.SH/daily.json",
+      "sha256": "f4871d90ef1c65d2f7347ffee3d4205e47115bb8cbd71075fa678bb5cbe28ab8"
+    },
+    {
+      "file": "raw/688396.SH/daily_basic.json",
+      "sha256": "2249ef5b7250de80313a569d6ef57daae16e0891b5de401158ec271b5c9d548d"
+    },
+    {
+      "file": "raw/688396.SH/fina_indicator.json",
+      "sha256": "87a08a387fc643201ceb7b59f05f958e97f3c53af8f8550e2cbd746302180c74"
+    },
+    {
+      "file": "raw/688498.SH/adj_factor.json",
+      "sha256": "2130c4cabdc074676dd3c39f49aca76510f09612fb358815fa36966c57aaa446"
+    },
+    {
+      "file": "raw/688498.SH/daily.json",
+      "sha256": "4bdd7c4532bb7af3b64cebcdfbafb63652a0ca8e6873ea8acd959b82808cfcb1"
+    },
+    {
+      "file": "raw/688498.SH/daily_basic.json",
+      "sha256": "cb0e4acf987c246543eceae558cd8955f8cac1ed09d869590c8eac663f8110f8"
+    },
+    {
+      "file": "raw/688498.SH/fina_indicator.json",
+      "sha256": "c6985e28b4823fa59a0994c69ea1849398e03497e394ef40467c259589731919"
+    },
+    {
+      "file": "raw/688525.SH/adj_factor.json",
+      "sha256": "3894b3937af7b1d07081c780f720bd62e8aa21e61011f97746e3276068935b0b"
+    },
+    {
+      "file": "raw/688525.SH/daily.json",
+      "sha256": "9f3a2cfefd4bec732fab01d68acbdf0ec2aa59607d5f33770c8d494751ea94d6"
+    },
+    {
+      "file": "raw/688525.SH/daily_basic.json",
+      "sha256": "d44d3077615a7c18bb312b48262233b2a26505271fd6f33d9e2a0f9a0a7432d9"
+    },
+    {
+      "file": "raw/688525.SH/fina_indicator.json",
+      "sha256": "ae70bb8325d9a733b126d5ca6be36ffecc38962d47ac606280b7324517731469"
+    },
+    {
+      "file": "raw/688676.SH/adj_factor.json",
+      "sha256": "77a72a89ebaa076ee57881ef04e5e839d4d526c6026189c27ccfd8e59708d21f"
+    },
+    {
+      "file": "raw/688676.SH/daily.json",
+      "sha256": "8cbbb449220dbc67d2ec19f73ce6b5921d34b94b02c09f6b69ce69d7f0a682f1"
+    },
+    {
+      "file": "raw/688676.SH/daily_basic.json",
+      "sha256": "b0da77c72e4a9213f579ec75ae880b34274e5aecf1d292cb3c87144117fcbd5e"
+    },
+    {
+      "file": "raw/688676.SH/fina_indicator.json",
+      "sha256": "8e0126a129ef2b4564c43d155435a3b423aa2d8590f5dd1cacd5a258f8fbb114"
+    },
+    {
+      "file": "raw/688711.SH/adj_factor.json",
+      "sha256": "a70d44616aa1dc7f004327176f348c73e8b6ca39cdd3eaa664c3ac26475af5fa"
+    },
+    {
+      "file": "raw/688711.SH/daily.json",
+      "sha256": "ff8a1e88ab03e0fdd020db977d2f806a5dbc6ac1bd20ebad50563393331eec99"
+    },
+    {
+      "file": "raw/688711.SH/daily_basic.json",
+      "sha256": "87916f15fbc9fc5b10db09a15bb3ccba8125d3b5d2132f0c5aa670eecfb05094"
+    },
+    {
+      "file": "raw/688711.SH/fina_indicator.json",
+      "sha256": "5598c372fd7e5d1e484725121e5064df780cbfd43057a7e396e622df0893708c"
+    },
+    {
+      "file": "raw/688981.SH/adj_factor.json",
+      "sha256": "2d69903cff79be821b891f84136bfd7188c6257b5ac18ae8cfa84387c43ce6cb"
+    },
+    {
+      "file": "raw/688981.SH/daily.json",
+      "sha256": "2ab9dae9fe62f6aec49ecc25712556d1e8c9aa64919265f40ba2e4b278c168d0"
+    },
+    {
+      "file": "raw/688981.SH/daily_basic.json",
+      "sha256": "0851dbd7667918dda7318031fb3e6e626d152ae9f6d0c1bb632ed8c0da550f1e"
+    },
+    {
+      "file": "raw/688981.SH/fina_indicator.json",
+      "sha256": "3aac148b8d22e6479f1a0a56131c893c816ab56c015e9471ac9d70b726b59661"
+    }
+  ],
+  "methodology": "Frozen rules; newly acquired historical data, not live forward performance. Continuous replay inherits restated holdings. Cash-start adds a cash anchor on the prior day. Tushare qfq prices and actual announcement-date fundamentals; no profile reselection.",
+  "continuous": {
+    "startDate": "2026-08-06",
+    "endDate": "2026-09-04",
+    "observations": 22,
+    "strategyReturnPct": 0.5766740969742612,
+    "benchmarkReturnPct": -2.3637041353004484,
+    "excessReturnPp": 2.9403782322747096,
+    "fixed45ReturnPct": -1.0471177749451055,
+    "matchedExposureReturnPct": -0.912690285431017,
+    "strategyDrawdownPct": -5.349700100221055,
+    "benchmarkDrawdownPct": -4.07378619733686,
+    "averageExposurePct": 38.842100239973604,
+    "cashDays": 0,
+    "curve": [
+      {
+        "date": "2026-08-05",
+        "equity": 1000000,
+        "benchmark": 999999.9999999999,
+        "fixed45": 1000000,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-06",
+        "equity": 1001349.8352667837,
+        "benchmark": 998530.5125855732,
+        "fixed45": 999338.730663508,
+        "matchedExposure": 999407.7246138871
+      },
+      {
+        "date": "2026-08-07",
+        "equity": 1015841.7002272534,
+        "benchmark": 1007788.8350170578,
+        "fixed45": 1003508.347947669,
+        "matchedExposure": 1003150.016811994
+      },
+      {
+        "date": "2026-08-10",
+        "equity": 1016129.3786284429,
+        "benchmark": 1009417.8491144637,
+        "fixed45": 1004238.2907045161,
+        "matchedExposure": 1003818.662170006
+      },
+      {
+        "date": "2026-08-11",
+        "equity": 1027728.7394458044,
+        "benchmark": 1001209.4488313387,
+        "fixed45": 1000563.4642244425,
+        "matchedExposure": 1000451.278164495
+      },
+      {
+        "date": "2026-08-12",
+        "equity": 1045378.2547625003,
+        "benchmark": 1007033.1710094054,
+        "fixed45": 1003182.4483338972,
+        "matchedExposure": 1002890.4723271049
+      },
+      {
+        "date": "2026-08-13",
+        "equity": 1044215.4890571458,
+        "benchmark": 1001244.3553562376,
+        "fixed45": 1000587.4422385816,
+        "matchedExposure": 1000417.5074027367
+      },
+      {
+        "date": "2026-08-14",
+        "equity": 1051457.7535067643,
+        "benchmark": 1001658.6610290696,
+        "fixed45": 1000773.7574702927,
+        "matchedExposure": 1000594.8186721479
+      },
+      {
+        "date": "2026-08-17",
+        "equity": 1059880.5998104447,
+        "benchmark": 1017806.020147591,
+        "fixed45": 1008033.6497361353,
+        "matchedExposure": 1007567.3180742996
+      },
+      {
+        "date": "2026-08-18",
+        "equity": 1053708.8762964006,
+        "benchmark": 1014524.7424039075,
+        "fixed45": 1006571.251949691,
+        "matchedExposure": 1006148.5545077769
+      },
+      {
+        "date": "2026-08-19",
+        "equity": 1022336.2104355285,
+        "benchmark": 985088.6452917226,
+        "fixed45": 993428.853792271,
+        "matchedExposure": 993494.0522469783
+      },
+      {
+        "date": "2026-08-20",
+        "equity": 1021937.9671114775,
+        "benchmark": 985959.1401737197,
+        "fixed45": 993823.8929916817,
+        "matchedExposure": 993859.3481411547
+      },
+      {
+        "date": "2026-08-21",
+        "equity": 1027626.558592923,
+        "benchmark": 991571.8345905585,
+        "fixed45": 996369.7524646611,
+        "matchedExposure": 996212.1667818662
+      },
+      {
+        "date": "2026-08-24",
+        "equity": 1015604.3262459439,
+        "benchmark": 979599.5835174995,
+        "fixed45": 990956.170926854,
+        "matchedExposure": 991171.1476128199
+      },
+      {
+        "date": "2026-08-25",
+        "equity": 1018645.6476311972,
+        "benchmark": 977217.9538297448,
+        "fixed45": 989872.0128646783,
+        "matchedExposure": 990177.7931075387
+      },
+      {
+        "date": "2026-08-26",
+        "equity": 1016284.4839230733,
+        "benchmark": 985539.0382144655,
+        "fixed45": 993664.9884568457,
+        "matchedExposure": 993668.2043031926
+      },
+      {
+        "date": "2026-08-27",
+        "equity": 1022989.6438895966,
+        "benchmark": 994015.2483980298,
+        "fixed45": 997510.7325983066,
+        "matchedExposure": 997194.4575024878
+      },
+      {
+        "date": "2026-08-28",
+        "equity": 1013282.4628658514,
+        "benchmark": 989485.4290912481,
+        "fixed45": 995465.1457502804,
+        "matchedExposure": 995301.9160014121
+      },
+      {
+        "date": "2026-08-31",
+        "equity": 1016245.573454296,
+        "benchmark": 992900.9015994723,
+        "fixed45": 997011.3966421178,
+        "matchedExposure": 996713.494075222
+      },
+      {
+        "date": "2026-09-01",
+        "equity": 1007020.476454402,
+        "benchmark": 989971.2437643496,
+        "fixed45": 995687.592816048,
+        "matchedExposure": 995647.4327944794
+      },
+      {
+        "date": "2026-09-02",
+        "equity": 1003180.1663001619,
+        "benchmark": 976342.7789831548,
+        "fixed45": 989519.3712442016,
+        "matchedExposure": 990758.9174602762
+      },
+      {
+        "date": "2026-09-03",
+        "equity": 1008744.1338213981,
+        "benchmark": 977335.124686386,
+        "fixed45": 989971.9534651745,
+        "matchedExposure": 991068.4129691997
+      },
+      {
+        "date": "2026-09-04",
+        "equity": 1005766.7409697425,
+        "benchmark": 976362.9586469955,
+        "fixed45": 989528.822250549,
+        "matchedExposure": 990873.0971456899
+      }
+    ],
+    "anchorDate": "2026-08-05",
+    "riskBreachDays": 0,
+    "maxExposurePct": 43.67752066185569,
+    "trades": [
+      {
+        "date": "2026-08-31",
+        "symbol": "300476",
+        "side": "sell",
+        "shares": 400,
+        "price": 243.13999999999996,
+        "reason": "退出/止损/持有期届满"
+      },
+      {
+        "date": "2026-09-02",
+        "symbol": "300738",
+        "side": "sell",
+        "shares": 4500,
+        "price": 19.95,
+        "reason": "退出/止损/持有期届满"
+      },
+      {
+        "date": "2026-09-03",
+        "symbol": "300693",
+        "side": "sell",
+        "shares": 5300,
+        "price": 41.1,
+        "reason": "退出/止损/持有期届满"
+      }
+    ]
+  },
+  "cashStart": {
+    "startDate": "2026-08-06",
+    "endDate": "2026-09-04",
+    "observations": 22,
+    "strategyReturnPct": 0.5259811999999808,
+    "benchmarkReturnPct": -2.3637041353004484,
+    "excessReturnPp": 2.8896853353004293,
+    "fixed45ReturnPct": -1.0471177749451055,
+    "matchedExposureReturnPct": -0.1051412275612118,
+    "strategyDrawdownPct": -0.5062477745140015,
+    "benchmarkDrawdownPct": -4.07378619733686,
+    "averageExposurePct": 4.76418696342737,
+    "cashDays": 13,
+    "curve": [
+      {
+        "date": "2026-08-05",
+        "equity": 1000000,
+        "benchmark": 999999.9999999999,
+        "fixed45": 1000000,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-06",
+        "equity": 1000000,
+        "benchmark": 998530.5125855732,
+        "fixed45": 999338.730663508,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-07",
+        "equity": 1000000,
+        "benchmark": 1007788.8350170578,
+        "fixed45": 1003508.347947669,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-10",
+        "equity": 1000000,
+        "benchmark": 1009417.8491144637,
+        "fixed45": 1004238.2907045161,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-11",
+        "equity": 1000000,
+        "benchmark": 1001209.4488313387,
+        "fixed45": 1000563.4642244425,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-12",
+        "equity": 1000000,
+        "benchmark": 1007033.1710094054,
+        "fixed45": 1003182.4483338972,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-13",
+        "equity": 1000000,
+        "benchmark": 1001244.3553562376,
+        "fixed45": 1000587.4422385816,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-14",
+        "equity": 1000000,
+        "benchmark": 1001658.6610290696,
+        "fixed45": 1000773.7574702927,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-17",
+        "equity": 1000000,
+        "benchmark": 1017806.020147591,
+        "fixed45": 1008033.6497361353,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-18",
+        "equity": 1000000,
+        "benchmark": 1014524.7424039075,
+        "fixed45": 1006571.251949691,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-19",
+        "equity": 1000000,
+        "benchmark": 985088.6452917226,
+        "fixed45": 993428.853792271,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-20",
+        "equity": 1000000,
+        "benchmark": 985959.1401737197,
+        "fixed45": 993823.8929916817,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-21",
+        "equity": 1000000,
+        "benchmark": 991571.8345905585,
+        "fixed45": 996369.7524646611,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-24",
+        "equity": 1000000,
+        "benchmark": 979599.5835174995,
+        "fixed45": 990956.170926854,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-25",
+        "equity": 999953.588,
+        "benchmark": 977217.9538297448,
+        "fixed45": 989872.0128646783,
+        "matchedExposure": 1000000
+      },
+      {
+        "date": "2026-08-26",
+        "equity": 999687.396,
+        "benchmark": 985539.0382144655,
+        "fixed45": 993664.9884568457,
+        "matchedExposure": 1000395.2200141344
+      },
+      {
+        "date": "2026-08-27",
+        "equity": 1005642.2019999999,
+        "benchmark": 994015.2483980298,
+        "fixed45": 997510.7325983066,
+        "matchedExposure": 1001190.3388451473
+      },
+      {
+        "date": "2026-08-28",
+        "equity": 1005354.2019999999,
+        "benchmark": 989485.4290912481,
+        "fixed45": 995465.1457502804,
+        "matchedExposure": 1000520.7713176401
+      },
+      {
+        "date": "2026-08-31",
+        "equity": 1010374.8119999999,
+        "benchmark": 992900.9015994723,
+        "fixed45": 997011.3966421178,
+        "matchedExposure": 1001026.751443518
+      },
+      {
+        "date": "2026-09-01",
+        "equity": 1008639.8119999999,
+        "benchmark": 989971.2437643496,
+        "fixed45": 995687.592816048,
+        "matchedExposure": 1000655.6378405755
+      },
+      {
+        "date": "2026-09-02",
+        "equity": 1007029.8119999999,
+        "benchmark": 976342.7789831548,
+        "fixed45": 989519.3712442016,
+        "matchedExposure": 998945.5073318959
+      },
+      {
+        "date": "2026-09-03",
+        "equity": 1006524.8119999999,
+        "benchmark": 977335.124686386,
+        "fixed45": 989971.9534651745,
+        "matchedExposure": 999070.1297530455
+      },
+      {
+        "date": "2026-09-04",
+        "equity": 1005259.8119999999,
+        "benchmark": 976362.9586469955,
+        "fixed45": 989528.822250549,
+        "matchedExposure": 998948.5877243879
+      }
+    ],
+    "anchorDate": "2026-08-05",
+    "riskBreachDays": 0,
+    "maxExposurePct": 14.675398437584663,
+    "trades": [
+      {
+        "date": "2026-08-25",
+        "symbol": "688041",
+        "side": "buy",
+        "shares": 200,
+        "price": 232.06,
+        "reason": "普通超跌 RSI28 偏离-16.5% 回撤37.7%"
+      },
+      {
+        "date": "2026-08-26",
+        "symbol": "688041",
+        "side": "buy",
+        "shares": 200,
+        "price": 230.96,
+        "reason": "普通超跌 RSI29 偏离-15.0% 回撤37.3%"
+      },
+      {
+        "date": "2026-08-27",
+        "symbol": "688041",
+        "side": "buy",
+        "shares": 200,
+        "price": 245.97,
+        "reason": "普通超跌 RSI29 偏离-14.6% 回撤37.6%"
+      },
+      {
+        "date": "2026-08-31",
+        "symbol": "688041",
+        "side": "sell",
+        "shares": 100,
+        "price": 253.9,
+        "reason": "单股仓位上限"
+      }
+    ]
+  },
+  "historicalRestatement": {
+    "through": "2026-08-05",
+    "oldEquity": 1917230.301399871,
+    "newEquity": 1908381.0175873907,
+    "reason": "Fresh Tushare price/adjustment basis and actual announcement-date financials replace the former CSV source and estimated/empty dates; this difference is not new-period alpha."
+  },
+  "auditedNewBuys": 3,
+  "latestHoldings": {
+    "300394": {
+      "shares": 500,
+      "price": 248.7
+    },
+    "000988": {
+      "shares": 900,
+      "price": 95.6
+    },
+    "002335": {
+      "shares": 5500,
+      "price": 30.060000000000002
+    }
+  },
+  "latestEquity": 1919386.1565873907,
+  "latestCash": 1543666.1565873907
+}

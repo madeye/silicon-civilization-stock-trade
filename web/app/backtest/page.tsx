@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { STRATEGY_SUMMARY } from "@/lib/oversoldStrategy";
 import type { BacktestResult } from "@/lib/backtest";
 
 type Phase = "loading" | "signals" | "simulating";
@@ -37,7 +38,7 @@ const PHASE_ORDER: Phase[] = ["loading", "signals", "simulating"];
 export default function BacktestPage() {
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
-  const [rebalance, setRebalance] = useState(10);
+  const [rebalance, setRebalance] = useState(1);
   const [maxPositions, setMaxPositions] = useState(6);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,7 +133,7 @@ export default function BacktestPage() {
         <div>
           <div className="eyebrow">Backtest</div>
           <h1>策略回测</h1>
-          <p>滚动生成 DeepSeek 信号并按调仓周期撮合，行情与信号会被缓存。</p>
+          <p>{STRATEGY_SUMMARY} 每日检查退出及仓位上限。</p>
         </div>
       </header>
 
@@ -205,6 +206,7 @@ export default function BacktestPage() {
             <Kpi label="年化" value={`${result.stats.cagrPct.toFixed(2)}%`} pos={result.stats.cagrPct >= 0} />
             <Kpi label="最大回撤" value={`${result.stats.maxDrawdownPct.toFixed(2)}%`} pos={false} />
             <Kpi label="夏普" value={result.stats.sharpe.toFixed(2)} pos={result.stats.sharpe >= 0} />
+            <Kpi label="仓位超限天数" value={String(result.equityCurve.filter((b) => b.riskBreach).length)} />
             <Kpi label="交易次数" value={result.stats.trades.toString()} />
           </div>
 

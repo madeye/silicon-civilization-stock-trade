@@ -7,16 +7,22 @@
 //
 // Signals are cached by (model, messages) hash, so re-running the same
 // backtest is free in tokens — only adding new bars or symbols pays cost.
+import { executeOversoldDay, type OversoldState } from "./oversoldExecution";
+import { oversoldSignals, STRATEGY_VERSION, EXIT_PROFILES, type ExitProfile } from "./oversoldStrategy";
 import type { Kline } from "./pyserver";
 import { scoreSymbols, type SymbolSnapshot, type Signal } from "./deepseek";
 import type { UniverseEntry } from "./universe";
 
 export interface BacktestConfig {
+  /** Legacy mode is retained only for historical comparisons and engine tests. */
+  strategy?: "oversold-v1" | "legacy-ranking";
+  /** Exit-only experimental profile; live/API defaults remain rebound. */
+  exitProfile?: ExitProfile;
   startCash: number;
   rebalanceEveryNDays: number;
   startDate: string;         // YYYY-MM-DD
   endDate: string;
-  feeBps: number;            // round-trip in basis points
+  feeBps: number;            // per-side fee in basis points
   maxPositions: number;
   /** When true, any held position not selected by a buy signal at rebalance is sold.
    *  Useful for ranking-based strategies where the portfolio should exactly mirror
@@ -47,6 +53,10 @@ export interface PortfolioBar {
   equity: number;
   cash: number;
   positions: Record<string, { shares: number; price: number }>;
+  exposurePct?: number;
+  exposureLimitPct?: number;
+  regime?: "normal" | "extreme";
+  riskBreach?: boolean;
 }
 
 export interface BacktestResult {
@@ -58,6 +68,7 @@ export interface BacktestResult {
     side: "buy" | "sell";
     shares: number;
     price: number;
+    reason?: string;
   }>;
   signalsByDate: Record<string, Signal[]>;
   stats: {
@@ -143,6 +154,30 @@ export async function runBacktest(
   cfg: BacktestConfig,
   optsOrOnProgress?: RunBacktestOptions | ((p: Progress) => void),
 ): Promise<BacktestResult> {
+  cfg = { ...cfg, strategy: cfg.strategy ?? STRATEGY_VERSION };
+  if (!Number.isFinite(cfg.startCash) || cfg.startCash <= 0 ||
+    !Number.isInteger(cfg.rebalanceEveryNDays) || cfg.rebalanceEveryNDays < 1 ||
+    !Number.isInteger(cfg.maxPositions) || cfg.maxPositions < 1 ||
+    !Number.isFinite(cfg.feeBps) || cfg.feeBps < 0 || cfg.feeBps >= 10000) {
+    throw new Error("Invalid backtest cash, rebalance period, position count or fees");
+  }
+  if (!Object.hasOwn(EXIT_PROFILES, cfg.exitProfile ?? "rebound")) throw new Error("Invalid exit profile");
+  const useOversold = cfg.strategy === STRATEGY_VERSION;
+  // Sort once: indicators and prior-close decisions must be chronological.
+  series = series.map((s) => ({ ...s, klines: [...s.klines].sort((a, b) => a.date.localeCompare(b.date)) }));
+  const fullDates = unionTradingDates(series);
+  const snapshotsAt = (date: string): SymbolSnapshot[] => {
+    const previousDate = fullDates.filter((d) => d < date).at(-1);
+    return series.map((s) => {
+      const history = s.klines.filter((k) => k.date < date);
+      return {
+        symbol: s.entry.symbol, name: s.entry.name, theme: s.entry.theme,
+        closes: history.map((k) => k.close),
+        stale: history.at(-1)?.date !== previousDate,
+        fundamental: latestFundamentalAsOf(s.fundamentals, previousDate ?? ""),
+      };
+    });
+  };
   const opts: RunBacktestOptions = typeof optsOrOnProgress === "function"
     ? { onProgress: optsOrOnProgress }
     : (optsOrOnProgress ?? {});
@@ -210,7 +245,8 @@ export async function runBacktest(
             };
           })
           .filter((s) => s.closes.length > 0); // not yet listed as of d
-        const sigs = await scorer(snapshots, { asOf: d, mode: "backtest" });
+        const proposals = await scorer(useOversold ? snapshotsAt(d) : snapshots, { asOf: d, mode: "backtest" });
+        const sigs = useOversold ? oversoldSignals(snapshotsAt(d), proposals, cfg.exitProfile) : proposals;
         signalsDone++;
         onProgress?.({ phase: "signals", done: signalsDone, total: rebalanceDates.length });
         return [d, sigs] as const;
@@ -235,6 +271,7 @@ export async function runBacktest(
   const equityCurve: PortfolioBar[] = [];
   const trades: BacktestResult["trades"] = [];
   const fee = cfg.feeBps / 10_000;
+  const riskState: OversoldState = { cash, shares, cost: {}, opened: {}, pendingExit: new Set() };
 
   const progressEvery = Math.max(1, Math.floor(dates.length / 20));
   onProgress?.({ phase: "simulating", done: 0, total: dates.length });
@@ -248,7 +285,7 @@ export async function runBacktest(
     const prices: Record<string, number> = {};
     for (let j = 0; j < symbols.length; j++) {
       const k = byDate[j].get(date);
-      if (k) {
+      if (k && Number.isFinite(k.close) && k.close > 0) {
         prices[symbols[j]] = k.close;
         lastPrice[symbols[j]] = k.close;
       }
@@ -257,6 +294,18 @@ export async function runBacktest(
     const isRebalance = i % cfg.rebalanceEveryNDays === 0;
     const signals = isRebalance ? signalsByDate[date] ?? [] : [];
 
+    let riskMark: Pick<PortfolioBar, "exposurePct" | "exposureLimitPct" | "regime" | "riskBreach"> = {};
+    if (useOversold) {
+      riskState.cash = cash;
+      riskMark = executeOversoldDay(riskState, {
+        date, bar: i, exitProfile: cfg.exitProfile, snapshots: snapshotsAt(date),
+        proposals: isRebalance ? signals : undefined, prices, marks: lastPrice,
+        fee, maxPositions: cfg.maxPositions, trades,
+        canBuy: (sym) => prices[sym] > 0 && !atLimitUp(symbolIndex.get(sym)!, date, prices[sym]),
+        canSell: (sym) => prices[sym] > 0 && !atLimitDown(symbolIndex.get(sym)!, date, prices[sym]),
+      });
+      cash = riskState.cash;
+    } else {
     // A fresh buy decision supersedes a sell deferred from an earlier
     // rebalance — otherwise the stale deferral force-dumps the position the
     // newer signal just (re)built, paying fees both ways.
@@ -414,6 +463,8 @@ export async function runBacktest(
       }
     }
 
+    }
+
     // Mark-to-market (suspended names mark at last traded close)
     let equity = cash;
     const positions: PortfolioBar["positions"] = {};
@@ -424,12 +475,12 @@ export async function runBacktest(
         positions[sym] = { shares: shares[sym], price: px };
       }
     }
-    equityCurve.push({ date, equity, cash, positions });
+    equityCurve.push({ date, equity, cash, positions, ...riskMark });
   }
 
   // Stats
   const equities = equityCurve.map((b) => b.equity);
-  const start = equities[0];
+  const start = cfg.startCash; // Include entry fees on the first execution day.
   const end = equities[equities.length - 1];
   const totalReturnPct = (end / start - 1) * 100;
   // Calendar span, not bar count: bar count undercounts elapsed time whenever
