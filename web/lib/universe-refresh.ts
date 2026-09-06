@@ -90,14 +90,17 @@ function isHongKongSymbol(symbol: string): boolean {
  *  a null `name` for any well-formed-but-nonexistent code, so a 200 alone is not
  *  evidence the symbol trades. Require a non-empty `name` — that is only populated
  *  for codes Tushare resolves to a real listed A-share. */
-async function validateSymbol(symbol: string): Promise<{ ok: boolean; reason?: string }> {
+async function validateSymbol(symbol: string): Promise<{ ok: boolean; name?: string; reason?: string }> {
+  if (!/^\d{6}$/.test(symbol)) return { ok: false, reason: "A-share code must contain six digits" };
   try {
     const f = await fetchFundamental(symbol);
     if (!f) return { ok: false, reason: "pyserver returned empty" };
     if (!f.name || !f.name.trim()) {
       return { ok: false, reason: "no listed A-share resolves this code (null name)" };
     }
-    return { ok: true };
+    const name = f.name.trim();
+    if (/ST|退/i.test(name)) return { ok: false, reason: "ST and delisting-risk stocks are excluded" };
+    return { ok: true, name };
   } catch (e) {
     return { ok: false, reason: e instanceof Error ? e.message : String(e) };
   }
@@ -136,7 +139,7 @@ export async function applyRefresh(
       }),
     );
     for (const { add, v } of results) {
-      if (v.ok) added.push(add);
+      if (v.ok) added.push({ ...add, name: v.name! });
       else rejected.push({ symbol: add.symbol, reason: v.reason ?? "unknown" });
     }
   }

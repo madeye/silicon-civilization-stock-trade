@@ -3,7 +3,7 @@ import path from "node:path";
 import Link from "next/link";
 import { STRATEGY_SUMMARY, STRATEGY_VERSION } from "@/lib/oversoldStrategy";
 import { compareBenchmark } from "@/lib/benchmarkComparison";
-import { loadEntries } from "@/lib/universe";
+import { loadEntries, type UniverseFile } from "@/lib/universe";
 import { EquityChart, ThemeChart } from "./Charts";
 import type { FreshValidationReport } from "./freshTypes";
 import type { DashboardData } from "./types";
@@ -36,7 +36,10 @@ export default function DashboardPage() {
     : null;
   const coldByDate = new Map(fresh?.cashStart.curve.map((bar) => [bar.date, bar.equity]) ?? []);
   const freshCurve = fresh?.continuous.curve.map((bar) => ({ ...bar, candidate: coldByDate.get(bar.date) ?? null })) ?? [];
-  const universe = loadEntries();
+  const universeFile = path.join(process.cwd(), "data", "dashboard-universe.json");
+  const backtestUniverse: UniverseFile | null = fs.existsSync(universeFile)
+    ? JSON.parse(fs.readFileSync(universeFile, "utf8")) : null;
+  const universe = backtestUniverse?.entries ?? loadEntries();
   const nameMap = new Map(universe.map((e) => [e.symbol, e.name]));
   const themeMap = new Map(universe.map((e) => [e.symbol, e.theme]));
 
@@ -73,6 +76,9 @@ export default function DashboardPage() {
           </div>
           <p className="muted">{holdingsData.sourceInfo?.name ?? "历史行情"} · 每边费用 {holdingsData.config.feeBps} bps ·
             最多持有 {holdingsData.config.maxPositions} 只 · 以下为模拟结果，包含策略选择期。</p>
+          {backtestUniverse && <p className="muted">
+            回测股票池：{universe.length}只，版本日期 {backtestUniverse.updated_at}。首页股票池更新不会自动改变此回测结果。
+          </p>}
           {holdingsData.config.exitProfile === "trend120" && <p className="muted">
             超跌入场，8%止损；盈利曾达到10%后，按持有期间最高价回落15%退出，最长持有120个交易日。
           </p>}

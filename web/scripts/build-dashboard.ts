@@ -16,7 +16,7 @@
 //   DASHBOARD_CACHE=.cache/datasource
 import fs from "node:fs";
 import path from "node:path";
-import { loadEntries } from "../lib/universe";
+import { readUniverse } from "../lib/universe";
 import { runBacktest, type BacktestConfig, type BacktestResult } from "../lib/backtest";
 import { validateFreshDataset, type FreshDataset } from "../lib/freshValidation";
 import { compareCalendarYears } from "../lib/benchmarkComparison";
@@ -149,7 +149,8 @@ async function main() {
     process.exit(1);
   }
 
-  const universe = loadEntries();
+  const universeSnapshot = readUniverse();
+  const universe = universeSnapshot.entries;
   console.log(`Loaded ${universe.length} universe entries`);
 
   const fresh: FreshDataset | undefined = process.env.FRESH_DATASET
@@ -207,6 +208,9 @@ async function main() {
 
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(output, null, 2) + "\n", "utf-8");
+  if (path.basename(outFile) === "dashboard-latest.json") {
+    fs.writeFileSync(path.join(process.cwd(), "data", "dashboard-universe.json"), JSON.stringify(universeSnapshot, null, 2) + "\n");
+  }
   console.log(`Wrote dashboard backtest to ${outFile}`);
   console.log(
     `Return: ${result.stats.totalReturnPct.toFixed(2)}%  ` +
