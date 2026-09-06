@@ -18,6 +18,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { loadEntries } from "../lib/universe";
 import { runBacktest, type BacktestConfig, type BacktestResult } from "../lib/backtest";
+import { validateFreshDataset, type FreshDataset } from "../lib/freshValidation";
 import type { ExitProfile } from "../lib/oversoldStrategy";
 import { ruleBasedScorer } from "../lib/dashboardBacktest";
 import { buildSymbolSeries, type PriceRow } from "../lib/dashboardData";
@@ -33,6 +34,7 @@ const exitProfile = (process.env.DASHBOARD_EXIT_PROFILE ?? "rebound") as ExitPro
 
 interface DashboardOutput {
   generated_at: string;
+  sourceInfo?: { name: string; fetchedAt: string; financialDates: string };
   config: BacktestConfig;
   stats: BacktestResult["stats"];
   equityCurve: BacktestResult["equityCurve"];
@@ -51,7 +53,7 @@ interface DashboardOutput {
   latestDate: string;
 }
 
-function computeBenchmarkCurve(benchmark: PriceRow[], cfg: BacktestConfig) {
+function computeBenchmarkCurve(benchmark: Pick<PriceRow, "date" | "close">[], cfg: BacktestConfig) {
   const sorted = [...benchmark].sort((a, b) => (a.date < b.date ? -1 : 1));
   const inWindow = sorted.filter((r) => r.date >= cfg.startDate && r.date <= cfg.endDate);
   if (inWindow.length === 0) return [];
@@ -137,7 +139,7 @@ function computeThemePerformance(
 }
 
 async function main() {
-  if (!fs.existsSync(cacheDir)) {
+  if (!process.env.FRESH_DATASET && !fs.existsSync(cacheDir)) {
     console.error(`Cache directory not found: ${cacheDir}`);
     console.error(
       "Please fetch data-source CSVs first. See AGENTS.md for the dashboard data-fetching steps.",
@@ -148,7 +150,12 @@ async function main() {
   const universe = loadEntries();
   console.log(`Loaded ${universe.length} universe entries`);
 
-  const { series: loadedSeries, benchmark } = buildSymbolSeries(universe, cacheDir);
+  const fresh: FreshDataset | undefined = process.env.FRESH_DATASET
+    ? JSON.parse(fs.readFileSync(process.env.FRESH_DATASET,"utf8")) : undefined;
+  if (fresh) validateFreshDataset(fresh, universe.map((e)=>e.symbol), fresh.requestedEnd);
+  const { series: loadedSeries, benchmark } = fresh
+    ? {series:fresh.series,benchmark:fresh.benchmark.map((b)=>({date:b.date,close:b.equity}))}
+    : buildSymbolSeries(universe, cacheDir);
   // Preserve missing constituents in the breadth denominator. No data means no
   // trading, rather than silently shrinking the universe to surviving downloads.
   const bySymbol = new Map(loadedSeries.map((s) => [s.entry.symbol, s]));
@@ -164,7 +171,7 @@ async function main() {
     startCash: 1_000_000,
     rebalanceEveryNDays,
     startDate,
-    endDate,
+    endDate: fresh && fresh.requestedEnd < endDate ? fresh.requestedEnd : endDate,
     feeBps: 10,
     maxPositions,
     strategy: "oversold-v1",
@@ -177,6 +184,7 @@ async function main() {
   const lastBar = result.equityCurve[result.equityCurve.length - 1];
   const output: DashboardOutput = {
     generated_at: new Date().toISOString(),
+    sourceInfo: fresh ? {name:fresh.source,fetchedAt:fresh.fetchedAt,financialDates:"actual-announcement"} : undefined,
     config: result.config,
     stats: result.stats,
     equityCurve: result.equityCurve,

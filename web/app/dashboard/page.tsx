@@ -5,6 +5,7 @@ import { STRATEGY_SUMMARY, STRATEGY_VERSION } from "@/lib/oversoldStrategy";
 import { compareBenchmark } from "@/lib/benchmarkComparison";
 import { loadEntries } from "@/lib/universe";
 import { EquityChart, ThemeChart } from "./Charts";
+import type { FreshValidationReport } from "./freshTypes";
 import type { DashboardData } from "./types";
 
 export const dynamic = "force-dynamic";
@@ -35,8 +36,12 @@ function money(v: number) {
 
 export default function DashboardPage() {
   const data = loadDashboardData();
+  const latest = loadDashboardData("dashboard-latest.json");
+  const freshFile = path.join(process.cwd(), "data", "fresh-validation.json");
+  const fresh: FreshValidationReport | null = fs.existsSync(freshFile) ? JSON.parse(fs.readFileSync(freshFile,"utf8")) : null;
   const candidate = loadDashboardData("dashboard-candidate.json");
   const evaluation = loadEvaluation();
+  const holdingsData = latest ?? candidate ?? data;
   const universe = loadEntries();
   const nameMap = new Map(universe.map((e) => [e.symbol, e.name]));
   const themeMap = new Map(universe.map((e) => [e.symbol, e.theme]));
@@ -52,8 +57,8 @@ export default function DashboardPage() {
     ? [...evaluation.development, ...evaluation.evaluation].filter((row) => row.profile === evaluation.selected)
     : [];
 
-  const themeData = data
-    ? data.themePerformance
+  const themeData = holdingsData
+    ? holdingsData.themePerformance
         .map((t) => ({
           theme: t.theme,
           returnPct: Number(t.returnPct.toFixed(2)),
@@ -72,10 +77,30 @@ export default function DashboardPage() {
           <div className="eyebrow">Dashboard</div>
           <h1>策略 Dashboard</h1>
           <p>
-            {STRATEGY_SUMMARY} 基于历史价格的规则回测；财报可用日期为估算值。
+            {STRATEGY_SUMMARY} {fresh ? "最新数据来自Tushare，财报按实际公告日期处理；旧数据结果保留作历史对照。" : "基于历史价格的规则回测；财报可用日期为估算值。"}
           </p>
         </div>
       </header>
+
+      {fresh && (
+        <section className="card" style={{marginTop:16}}>
+          <h2>新数据验证：锁定 trend120</h2>
+          <p>{fresh.newDataStart} → {fresh.newDataEnd}，共{fresh.continuous.observations}个交易日；
+            {fresh.quality.symbols}只股票和沪深300已更新，未重新选参数。</p>
+          <div className="table-wrap"><table>
+            <thead><tr><th>运行方式</th><th className="num">新期间收益</th><th className="num">超额（百分点）</th><th className="num">最大回撤</th><th className="num">平均仓位</th><th className="num">成交笔数</th></tr></thead>
+            <tbody>
+              {([["承接重算的历史持仓",fresh.continuous],["8月6日从空仓开始",fresh.cashStart]] as const).map(([label,m])=>(
+                <tr key={label}><td>{label}</td><td className="num">{pct(m.strategyReturnPct)}</td><td className="num">{m.excessReturnPp.toFixed(2)}</td><td className="num">{pct(m.strategyDrawdownPct)}</td><td className="num">{m.averageExposurePct.toFixed(1)}%</td><td className="num">{m.trades.length}</td></tr>
+              ))}
+              <tr><td>同期沪深300</td><td className="num">{pct(fresh.continuous.benchmarkReturnPct)}</td><td className="num">—</td><td className="num">{pct(fresh.continuous.benchmarkDrawdownPct)}</td><td className="num">100%</td><td className="num">—</td></tr>
+            </tbody>
+          </table></div>
+          <p className="muted">以{fresh.continuous.anchorDate}收盘为收益起点。承接方式最高仓位{fresh.continuous.maxExposurePct.toFixed(1)}%，超限{fresh.continuous.riskBreachDays}天。
+            本次是新增历史数据检验，样本仅{fresh.continuous.observations}天，不能替代真实前瞻或实盘验证。</p>
+          <p className="muted">新来源的复权价格和实际公告日期会重算旧持仓，因此不能把历史重算差额计入新期间收益。</p>
+        </section>
+      )}
 
       {!data && (
         <div className="card" style={{ borderColor: "var(--warn)" }}>
@@ -93,7 +118,7 @@ export default function DashboardPage() {
         <>
           {candidateAligned && candidateComparison && (
             <section className="card" style={{ marginTop: 16 }}>
-              <h2>退出规则改进：趋势持有候选</h2>
+              <h2>旧数据对照：趋势持有候选</h2>
               <p>
                 超跌入场后继续持有趋势，保留8%止损；盈利曾达到10%后，按持有期间最高价回落15%退出，最长持有120个交易日。
                 常态45%、深度超跌80%的组合上限与超跌买入门槛持续生效。
@@ -123,7 +148,7 @@ export default function DashboardPage() {
               <p className="muted">当前股票池存在幸存者偏差，历史区间已被查看过；历史留出表现不能替代新数据或实盘检验。</p>
             </section>
           )}
-          <h2 className="subheading">原版策略全期结果</h2>
+          <h2 className="subheading">旧数据对照：原版策略全期结果</h2>
           <div className="row" style={{ marginTop: 16 }}>
             <Kpi label="总收益" value={pct(data.stats.totalReturnPct)} pos={data.stats.totalReturnPct >= 0} />
             <Kpi label="年化" value={pct(data.stats.cagrPct)} pos={data.stats.cagrPct >= 0} />
@@ -147,7 +172,7 @@ export default function DashboardPage() {
             <span>生成于 {new Date(data.generated_at).toLocaleString("zh-CN")}</span>
           </div>
 
-          <h2 className="subheading">同期比较：策略 vs 沪深300</h2>
+          <h2 className="subheading">旧数据同期比较：原版策略 vs 沪深300</h2>
           {comparison ? (
             <>
               <p className="muted">
@@ -172,24 +197,24 @@ export default function DashboardPage() {
             <EquityChart data={equityData} />
           </div>
 
-          <h2 className="subheading">主题配置与收益贡献</h2>
+          <h2 className="subheading">trend120 主题配置与收益贡献</h2>
           <div className="card chart-card">
             <ThemeChart data={themeData} />
           </div>
 
           <div className="theme-grid" style={{ marginTop: 16 }}>
             <div className="theme-panel">
-              <div className="theme-title"><strong>当前持仓</strong><span>{data.latestDate}</span></div>
+              <div className="theme-title"><strong>trend120 最新模拟持仓</strong><span>{holdingsData!.latestDate}</span></div>
               <div className="table-wrap compact-table">
                 <table>
                   <thead>
                     <tr><th>代码</th><th>名称</th><th>主题</th><th className="num">数量</th><th className="num">市值</th></tr>
                   </thead>
                   <tbody>
-                    {Object.entries(data.latestHoldings).length === 0 && (
+                    {Object.entries(holdingsData!.latestHoldings).length === 0 && (
                       <tr><td colSpan={5} className="muted">空仓</td></tr>
                     )}
-                    {Object.entries(data.latestHoldings).map(([sym, pos]) => (
+                    {Object.entries(holdingsData!.latestHoldings).map(([sym, pos]) => (
                       <tr key={sym}>
                         <td className="mono">{sym}</td>
                         <td>{nameMap.get(sym) ?? "—"}</td>
@@ -204,14 +229,14 @@ export default function DashboardPage() {
             </div>
 
             <div className="theme-panel">
-              <div className="theme-title"><strong>最近交易</strong><span>共 {data.trades.length} 笔</span></div>
+              <div className="theme-title"><strong>trend120 最近模拟交易</strong><span>共 {holdingsData!.trades.length} 笔</span></div>
               <div className="table-wrap compact-table">
                 <table>
                   <thead>
                     <tr><th>日期</th><th>代码</th><th>方向</th><th className="num">数量</th><th className="num">价格</th></tr>
                   </thead>
                   <tbody>
-                    {data.trades.slice(-20).reverse().map((t, i) => (
+                    {holdingsData!.trades.slice(-20).reverse().map((t, i) => (
                       <tr key={i}>
                         <td>{t.date}</td>
                         <td className="mono">{t.symbol}</td>
