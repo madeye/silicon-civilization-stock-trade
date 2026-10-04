@@ -147,7 +147,12 @@ async function main() {
   let latestBacktest: SnapshotBacktest | null = null;
 
   function write(name: string, value: unknown) {
-    fs.writeFileSync(path.join(OUT, name), JSON.stringify(value, null, 2) + "\n");
+    // Temp+rename so an interrupted run can't leave a truncated JSON file in
+    // the published docs/ tree.
+    const target = path.join(OUT, name);
+    const tmp = `${target}.${process.pid}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(value, null, 2) + "\n");
+    fs.renameSync(tmp, target);
     console.log(`  wrote docs/data/${name}`);
   }
 
@@ -181,6 +186,12 @@ async function main() {
       }
     }
   });
+  const analystOk = analyst.filter((a) => !("error" in a)).length;
+  if (analystOk < u.entries.length / 2) {
+    throw new Error(
+      `[analyst] only ${analystOk}/${u.entries.length} symbols resolved — pyserver degraded? Refusing to publish.`,
+    );
+  }
   write("analyst.json", { generated_at: new Date().toISOString(), items: analyst });
 
   // ----- signals ---------------------------------------------------------
@@ -207,9 +218,21 @@ async function main() {
           : undefined,
       };
     });
+    // Score every symbol (short histories resolve to hold in the rule layer),
+    // but gate on kline coverage: fetches fail silently per-symbol above, so a
+    // downed pyserver would otherwise publish a near-empty signals.json with exit 0.
     const usable = snapshots;
+    const withKlines = snapshots.filter((s) => s.closes.length >= 10).length;
+    if (withKlines < u.entries.length / 2) {
+      throw new Error(
+        `[signals] only ${withKlines}/${u.entries.length} symbols have usable klines — pyserver degraded? Refusing to publish.`,
+      );
+    }
     console.log(`[signals] scoring ${usable.length} symbols with DeepSeek…`);
     const signals = await scoreSymbols(usable);
+    if (signals.length === 0) {
+      throw new Error("[signals] DeepSeek returned zero signals — refusing to publish an empty snapshot.");
+    }
     write("signals.json", {
       strategy_version: STRATEGY_VERSION,
       generated_at: new Date().toISOString(),
