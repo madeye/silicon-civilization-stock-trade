@@ -42,7 +42,7 @@ export function EquityChart({ data, strategyLabel, candidateLabel }: {
         <Line type="monotone" dataKey="equity" stroke="#7cf0a0" dot={false} strokeWidth={2} name={strategyLabel} />
         <Legend />
         {candidateLabel && <Line type="monotone" dataKey="candidate" stroke="#63a1ff" dot={false} strokeWidth={2} name={candidateLabel} />}
-        <Line type="monotone" dataKey="benchmark" stroke="#f2b84b" dot={false} strokeWidth={2} name="沪深300" />
+        <Line type="monotone" dataKey="benchmark" stroke="#f2b84b" dot={false} strokeWidth={2} name="沪深300" connectNulls />
       </LineChart>
     </ResponsiveContainer>
   );

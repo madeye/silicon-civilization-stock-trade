@@ -22,7 +22,9 @@ export interface BacktestConfig {
   rebalanceEveryNDays: number;
   startDate: string;         // YYYY-MM-DD
   endDate: string;
-  feeBps: number;            // per-side fee in basis points
+  /** Per-side fee in basis points, charged on each fill — a buy+sell round
+   *  trip therefore costs ~2×feeBps. */
+  feeBps: number;
   maxPositions: number;
   /** When true, any held position not selected by a buy signal at rebalance is sold.
    *  Useful for ranking-based strategies where the portfolio should exactly mirror

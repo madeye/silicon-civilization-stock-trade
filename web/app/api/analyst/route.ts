@@ -32,11 +32,11 @@ export async function GET(req: NextRequest) {
         upside_pct: null,
       });
     } catch {
-      // Preserve the original analyst error; it is more useful for debugging.
+      // Fall through to the generic error below.
     }
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : String(e) },
-      { status: 502 },
-    );
+    // Log the detail server-side; the raw message can embed the internal
+    // pyserver URL and upstream response bodies (see lib/pyserver.ts get()).
+    console.error(`[api/analyst] ${symbol}:`, e);
+    return NextResponse.json({ error: "analyst service unavailable" }, { status: 502 });
   }
 }
